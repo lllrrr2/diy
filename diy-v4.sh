@@ -33,6 +33,7 @@ log() {
 }
 
 # docker exec -it jd /bin/bash
+
 cd $ShellDir
 [[ -d $panelDir ]] || git clone https://ghproxy.com/https://github.com/hong0980/panel
 [[ -s $ConfigDir/auth.json ]] || echo '{"user":"admin","password":"admin"}' > $ConfigDir/auth.json
