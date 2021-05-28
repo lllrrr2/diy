@@ -159,7 +159,7 @@ fi
 
 if [[ $Cookie1 ]] && [[ $(ls $LogDir/jcode 2>/dev/null | wc -l) -ne "0" ]]; then
 	[[ -d $LogDir/config_sh_bak ]] || mkdir -p $LogDir/config_sh_bak
-	[[ "$(diff $ConfigDir/config.sh $LogDir/config_sh_bak/$(ls -r $LogDir/config_sh_bak | sed -n 1p))" ]] && cp $FileConf $LogDir/config_sh_bak/$(date "+%Y-%m-%d-%H-%M-%S").txt
+	[[ "$(diff -u $ConfigDir/config.sh $LogDir/config_sh_bak/$(ls -r $LogDir/config_sh_bak | sed -n 1p))" ]] && cp $FileConf $LogDir/config_sh_bak/$(date "+%Y-%m-%d-%H-%M-%S").txt
 	jcode >/dev/null 2>&1
 	for p in $(awk -F"[0-9]" '/^My/{print $1}' $LogDir/jcode/$(ls -r $LogDir/jcode | sed -n 1p) | uniq | cut -b 3-); do
 		Name=$(grep -B 1 "My${p}1=" $LogDir/jcode/$(ls -r $LogDir/jcode | sed -n 1p) | sed -n 1p)
