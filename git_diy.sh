@@ -124,7 +124,6 @@ addnewcron() {
 		fi
 	done
 	[[ "$addname" ]] && notify "新增 $author 的js脚本" "$addname"
-
 }
 
 delcron() {
