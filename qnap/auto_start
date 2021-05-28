@@ -1,0 +1,137 @@
+#!/bin/sh
+# This is developed by laojifuli to install QNAP to ssd device
+
+# Define general functions
+out() {
+	echo
+	echo "The System will be power off in 10 seconds!"
+	sleep 10
+	sync;sync
+	sudo poweroff
+	exit 1
+}
+
+check_md5() {
+	if [ ! -f $1 ] || [ ! -f $2 ]; then
+		return 1
+	fi
+	FILEMD5=`md5sum $1 | cut -d' ' -f 1`
+	DATAMD5=`cat $2 | cut -d' ' -f 1`
+	if [ $FILEMD5 = $DATAMD5 ]; then
+		return 0
+	fi
+	return 1
+}
+
+# Get the current boot device
+BOOTPOINT=$(df | grep -m1 "/mnt/" | cut -d' ' -f1)
+BOOTDIR=/mnt/$(echo $BOOTPOINT | cut -d'/' -f3)
+BOOTPOINT=${BOOTPOINT::-1}
+FILENAME="$BOOTDIR/boot/grub/grub"
+check_md5 "$FILENAME.cfg" "$FILENAME.md5"
+[ "$?" -ne 0 ] && clear && echo "The install disk was modified. Stopped!" && out
+
+# Select target device
+TARGET_LIST=`blkid | cut -d':' -f 1 | tr " " "\n" | grep "1" | cut -d' ' -f 1 | sed 's/[1]//g'`
+echo "There are following targets for you to install QNAP boot disk"
+i=1
+for x in $TARGET_LIST; do
+    echo "[$i]=>[$x]"
+    i=$((i+1))
+done
+echo "Please select the following [number] for the target device:"
+read i
+[ "x$i" == "x" ] && i=1
+TARGET=`echo $TARGET_LIST | cut -d' ' -f $i`
+[ "x$TARGET" == "x" ] && clear && echo "Select invalid target device" && out
+[ "$TARGET" == "$BOOTPOINT" ] && clear && echo "Could not install QNAP System on this disk" && out
+echo "=====[start to install QNAP boot disk on $TARGET]====="
+
+# Check there is a disk
+fdisk -l $TARGET 2>&1 | grep -q sector
+[ "$?" -ne 0 ] && clear && echo "No disk found" && out
+
+# Partition the target disk
+sudo parted -s $TARGET mklabel gpt
+[ "$?" -ne 0 ] && clear && echo "Make disk label gpt failure!" && out
+
+sudo parted $TARGET unit s mkpart primary fat32 2048 264191
+[ "$?" -ne 0 ] && clear && echo "Make the 1st disk partitions failure" && out
+sudo parted $TARGET toggle 1 boot
+sudo parted $TARGET name 1 QTS_BOOT
+sudo parted $TARGET set 1 boot on
+sudo parted $TARGET unit s mkpart primary ext2 264192 1050623
+[ "$?" -ne 0 ] && clear && echo "Make the 2nd disk partitions failure" && out
+sudo parted $TARGET name 2 QTS_BOOT_PART2
+sudo parted $TARGET unit s mkpart primary ext2 1050624 1837055
+[ "$?" -ne 0 ] && clear && echo "Make the 3rd disk partitions failure" out
+sudo parted $TARGET name 3 QTS_BOOT_PART3
+sudo parted $TARGET unit s mkpart primary ext2 1837056 1869823
+[ "$?" -ne 0 ] && clear && echo "Make the 4th disk partitions failure" && out
+sudo parted $TARGET name 4 QTS_BOOT_PART4
+sudo parted $TARGET unit s mkpart primary ext2 1869824 1902591
+[ "$?" -ne 0 ] && clear && echo "Make the 5th disk partitions failure" && out
+sudo parted $TARGET name 5 QTS_BOOT_PART5
+sudo parted $TARGET unit s mkpart primary ext2 1902592 1935359
+[ "$?" -ne 0 ] && clear && echo "Make the 6th disk partitions failure" && out
+sudo parted $TARGET name 6 QTS_BOOT_PART6
+sudo parted $TARGET unit s mkpart primary ext2 1935360 1968127
+[ "$?" -ne 0 ] && clear && echo "Make the 7th disk partitions failure" && out
+sudo parted $TARGET name 7 QTS_BOOT_PART7
+
+part_data=$(parted --script $TARGET unit s p free | grep "Free Space")
+part_data=$(echo $part_data | sed -e 's/Free Space/;/g')
+part_data=$(echo $part_data |cut -d';' -f2)
+end_at=$(echo $part_data |cut -d's' -f2)
+sudo parted $TARGET unit s mkpart primary ext2 1968128 $end_at
+[ "$?" -ne 0 ] && clear && echo "Make the 8th disk partitions failure" && out
+sudo parted $TARGET name 8 QTS_BOOT_PART8
+
+# Format filesystems
+FILENAME=${DATAMD5:8:8}
+echo $FILEMD5 > /home/grub/$FILENAME
+sudo mkfs.vfat -F 32 $TARGET$(echo 1)
+sudo mkfs.ext2 -F $TARGET$(echo 2) 
+sudo mkfs.ext2 -F $TARGET$(echo 3)
+sudo mkfs.ext2 -F $TARGET$(echo 4)
+sudo mkfs.ext2 -F $TARGET$(echo 5)
+sudo mkfs.ext2 -F $TARGET$(echo 6)
+sudo mkfs.ext2 -F $TARGET$(echo 7)
+sudo mkfs.ext2 -F $TARGET$(echo 8)
+
+# Install grub2 boot loader
+BOOTDIR="BootDir"
+[ -d /mnt/$BOOTDIR ] || sudo mkdir /mnt/$BOOTDIR
+sudo mount $TARGET$(echo 1) /mnt/$BOOTDIR
+[ "$?" -ne 0 ] && clear && echo "Mount boot directory failure" && out
+sudo grub-install --boot-directory=/mnt/$BOOTDIR --efi-directory=/mnt/$BOOTDIR $TARGET
+[ "$?" -ne 0 ] && clear && echo "Instll grub2 boot loader failure" && out
+sudo mv /mnt/$BOOTDIR/EFI/grub /mnt/$BOOTDIR/EFI/BOOT
+sudo cp /mnt/$BOOTDIR/EFI/BOOT/grubx64.efi /mnt/$BOOTDIR/EFI/BOOT/BOOTx64.EFI
+echo "Config grub2 main menu"
+sudo cp -r /home/grub/* /mnt/$BOOTDIR/grub/
+sudo umount /mnt/$BOOTDIR
+
+# Copy QNAP System into targer disk
+echo "Copy QNAP System into targer disk"
+sudo mount $TARGET$(echo 2) /mnt/$BOOTDIR
+[ "$?" -ne 0 ] && clear && echo "Mount QNAP System main directory failure" && out
+sudo mkdir /mnt/$BOOTDIR/boot
+sudo cp /home/J1900/* /mnt/$BOOTDIR/boot/
+sudo umount /mnt/$BOOTDIR
+sudo mount $TARGET$(echo 3) /mnt/$BOOTDIR
+[ "$?" -ne 0 ] && clear && echo "Mount QNAP System backup directory failure" && out
+sudo mkdir /mnt/$BOOTDIR/boot
+sudo cp /home/J1900/* /mnt/$BOOTDIR/boot/
+sudo umount /mnt/$BOOTDIR
+echo "Copy Laojifuli Tools into targer disk"
+sudo mount $TARGET$(echo 8) /mnt/$BOOTDIR
+[ "$?" -ne 0 ] && clear && echo "Mount QNAP System backup directory failure" && out
+sudo cp /home/tc/unpacking /mnt/$BOOTDIR/
+sudo cp /home/tc/repacking /mnt/$BOOTDIR/
+sudo cp /home/tc/J1900ConfigQNAP.sh /mnt/$BOOTDIR/
+sudo umount /mnt/$BOOTDIR
+
+echo
+echo "Install Successful!"
+out

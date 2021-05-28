@@ -1,0 +1,53 @@
+#!/bin/sh
+
+[ -f "$1" ] && [ -f "$2" ] && COMP=1
+
+fsnap() {
+	txt="fsnap_`date "+%y%m%d_%H%M%S".txt`"
+	>"$txt"
+	exclude='\\( -path /mnt -o -path /tmp -o -path /proc \\) -prune -o'
+	if [ "$(echo|awk 'system("ls -la `which find`|grep busybox")')" ]; then
+		if [ "`which stat`" ]; then
+			echo "using busybox find..."
+			outs=" -exec stat -c \"%n %y\" {} \\\\;"
+		else
+			echo "stat not found"&&exit 1
+		fi
+	else
+		outs=" -printf \"%p %TY-%Tm-%Td %TH:%TM:%TS %Tz\\n\""
+	fi
+	echo | awk -v rootdir="$1" -v exclude="$exclude" -v outs="$outs" -v txt="$txt" '
+	END {
+		while ("sudo find "rootdir" "exclude outs" 2>/dev/null" | getline curx)
+			RESULT[curx]=1
+		for (x in RESULT)
+			print x >>txt
+	}'
+	sort -f "$txt">"$txt.0"&&mv -f "$txt.0" "$txt"
+}
+
+comp() {
+	difftxt="fsnap_diff_`date "+%y%m%d_%H%M%S".txt`"
+	>"$difftxt"
+	echo | awk -v fa="$1" -v fb="$2" -v difftxt="$difftxt" '
+	END {
+		while (getline line < fa > 0)
+			FSA[line]=1
+		while (getline line < fb > 0) {
+			FSB[line]=1
+			if (! (line in FSA))
+				print line" @"fb>>difftxt
+		}
+		for (line in FSA)
+			if (! (line in FSB))
+				print line" @"fa>>difftxt
+	}'
+	sort -f "$difftxt">"$difftxt.0"&&mv -f "$difftxt.0" "$difftxt"
+}
+
+if [ "$COMP" ]; then
+	comp "$1" "$2"
+else
+	fsnap "$1"
+fi
+

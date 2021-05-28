@@ -1,0 +1,9 @@
+#!/bin/sh
+
+sudo mkdir -p /mnt/iso
+sudo umount /mnt/iso 2>/dev/null
+sudo mount -o loop $* /mnt/iso || {
+    popup "mount failed: $*"
+    exit 1
+}
+pcmanfm --no-desktop '/mnt/iso' &

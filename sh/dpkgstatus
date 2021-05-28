@@ -1,0 +1,28 @@
+#!/bin/sh
+
+mkdir -p /var/lib/dpkg/info
+ls -lt /usr/local/tce.installed 2>/dev/null | awk -v sf="/var/lib/dpkg/status" -v ldir="/var/lib/dpkg/info" '
+BEGIN {
+    while (getline line < sf > 0) {
+        if (substr(line, 1, 9) == "Package: ")
+            exists[substr(line, 10)] = 1
+    }
+    close(sf)
+}
+{
+    _name = $9
+    n = split(_name, ns, "_")
+    name = n==3 ? ns[1] : _name
+    if (name && ! (name in exists)) {
+        exists[name] = 1
+        res[++idx] = name
+    }
+}
+END {
+    for (i=idx+0; i>=1; i--) {
+        name = res[i]
+        print "Package: "name"\nStatus: install ok installed\nVersion: "(ns[2] ~ /[%a0123456789-\.:]+/ ? gensub(/%3a/, ":", "g", ns[2]) : "0")"\nArchitecture: "(ns[3] ? ns[3] : "all")"\nMaintainer: -\nDescription: -\n" >> sf
+        print "/tmp" > ldir"/"name".list"
+    }
+}'
+

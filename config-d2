@@ -1,0 +1,69 @@
+CONFIG_TARGET_ramips=y
+CONFIG_TARGET_ramips_mt7621=y
+CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+CONFIG_KERNEL_BUILD_USER="win3gp"
+CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
+CONFIG_PACKAGE_automount=y
+CONFIG_PACKAGE_autosamba=y
+CONFIG_PACKAGE_luci-app-ddnsto=y
+CONFIG_PACKAGE_luci-app-aria2=y
+CONFIG_PACKAGE_luci-app-axel=y
+CONFIG_PACKAGE_luci-app-transmission=y
+CONFIG_PACKAGE_transmission-cli-openssl=y
+CONFIG_PACKAGE_luci-app-qbittorrent=y
+CONFIG_PACKAGE_luci-app-guest-wifi=y
+CONFIG_PACKAGE_luci-app-hd-idle=y
+CONFIG_PACKAGE_luci-app-ttyd=y
+#CONFIG_PACKAGE_luci-app-cifs-mount=y
+#CONFIG_PACKAGE_luci-app-cifsd=y
+CONFIG_PACKAGE_luci-app-passwall=y
+CONFIG_PACKAGE_luci-app-ssr-plus=y
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Kcptun is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_NaiveProxy is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Redsocks2 is not set
+CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks=y
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Server is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Rust is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks_Rust_Server is not set
+CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR=y
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Server is not set
+CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Simple_Obfs=y
+CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Trojan=y
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray_Plugin is not set
+# CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Xray is not set
+CONFIG_PACKAGE_luci-app-nlbwmon=y
+#CONFIG_PACKAGE_luci-app-PwdHackDeny=y
+#CONFIG_PACKAGE_luci-app-autoipsetadder=y
+CONFIG_PACKAGE_luci-app-adbyby-plus=y
+#CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
+# CONFIG_PACKAGE_luci-app-rebootschedule=y
+# CONFIG_PACKAGE_luci-app-jd-dailybonus is not set
+## CONFIG_PACKAGE_luci-app-autoreboot is not set
+# CONFIG_PACKAGE_luci-app-uugamebooster is not set
+CONFIG_PACKAGE_luci-app-control-timewol=y
+#CONFIG_PACKAGE_luci-app-control-webrestriction=y
+CONFIG_PACKAGE_luci-app-control-weburl=y
+CONFIG_PACKAGE_luci-app-timecontrol=y
+# CONFIG_PACKAGE_luci-app-accesscontrol is not set
+CONFIG_PACKAGE_luci-app-Network-settings=y
+#CONFIG_PACKAGE_luci-app-zerotier=y
+CONFIG_PACKAGE_luci-app-cpulimit=y
+CONFIG_PACKAGE_luci-app-diskman=y
+CONFIG_PACKAGE_luci-app-serverchan=y
+CONFIG_PACKAGE_luci-app-filetransfer=y
+# CONFIG_PACKAGE_luci-app-unblockmusic is not set
+CONFIG_PACKAGE_luci-app-samba=y
+CONFIG_PACKAGE_luci-app-oaf=y
+CONFIG_PACKAGE_luci-app-smartinfo=y
+CONFIG_PACKAGE_luci-app-softwarecenter=y
+CONFIG_PACKAGE_kmod-rt2500-usb=y
+CONFIG_PACKAGE_kmod-rt2800-usb=y
+CONFIG_PACKAGE_kmod-rtl8187=y
+# CONFIG_PACKAGE_mdadm is not set
+# CONFIG_PACKAGE_luci-app-cowbping=y
+# CONFIG_PACKAGE_lsscsi=y
+# CONFIG_PACKAGE_fdisk=y
+# CONFIG_PACKAGE_lscpu=y
+
+CONFIG_PACKAGE_patch=y
+CONFIG_PACKAGE_diffutils=y

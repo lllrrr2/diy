@@ -1,0 +1,790 @@
+#!/bin/sh
+#Licensed under the BSD 3-Clause license
+#Author: aswjh
+#http://nicereader.net
+
+. /etc/init.d/busybox-aliases
+. /etc/init.d/tc-functions
+
+abort() {
+    echo "Version: 1.1.2"
+    echo "要求: core >= 6.2, squashfs-tools"
+    echo "用法: dpm [ mirror update config upgrade clean (link/link clear) ] "
+    echo "       dpm [ -i -ic -if -w -wi -d -D -r -s -u ] extensions"
+    echo " mirror    选择最快的镜像，指定要匹配的字符串：dpm mirror chin"
+    echo " update  更新程序包数据库"
+    echo " config  Config ld.so.conf and dpm.rc(TCEDIR/dpkg)"
+    echo " upgrade  更新所有软件包"
+    echo " clean    删除下载的deb文件"
+    echo " link/link clear    链接/链接清除链接到TCEDIR /可选或清除"
+    echo " show    显示包信息"
+    echo "  -i   安装本地扩展"
+    echo "  -c   复制到文件系统"
+    echo "  -f   强制安装"
+    echo "  -y   覆盖"
+    echo "  -w   下载deb文件并进行tcz扩展"
+    echo "  -d   Show depends"
+    echo "  -D   显示依赖关系"
+    echo "  -r   显示反向依存关系"
+    echo "  -s   搜索软件包"
+    echo "  -l   list packages"
+    echo "  -u   更新软件包"
+    exit 2
+}
+
+#
+while getopts icfwdDlrt:suy OPTION; do
+    case "$OPTION" in
+        i) INSTALL=TRUE  ;;
+        c) COPY=TRUE  ;;
+        f) FORCE=TRUE  ;;
+        y) OVERWRITE=TRUE  ;;
+        w) WGET=TRUE;  ;;
+        d) LISTDEP="d"  ;;
+        D) LISTDEP="D"  ;;
+        r) LISTDEP="r"  ;;
+        s) shift 1; TO_SEARCH="$@";  ;;
+        t) DPKGHOME="$OPTARG";  ;;
+        l) shift 1; TO_LIST_PKG="$@";  ;;
+        u) UPGRADE="u"  ;;
+        *) abort  ;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+[ "$TCEDIR" ] || TCEDIR=/etc/sysconfig/tcedir
+(cd "$TCEDIR") || exit 1
+USER=`cat /etc/sysconfig/tcuser`
+[ "$USER" ] || USER=tc
+
+#
+[ "$DPKGHOME" ] || DPKGHOME="`realpath $TCEDIR`/dpkg"
+export DPKGHOME
+
+#
+[ -f "$DPKGHOME/dpm.rc" ] &&
+DPMRC=$(awk -v FS="[= \t]+" '{if ($2 && ! ($1 in ENVIRON)) print $1"="$2;}' "$DPKGHOME/dpm.rc") &&
+source /dev/stdin <<EOF
+$DPMRC
+EOF
+
+[ "$OPTIONAL" ] || OPTIONAL="$DPKGHOME/optional"
+[ "$DEBS" ] || DEBS="$DPKGHOME/debs"
+[ "$CODENAME" ] || CODENAME=$(echo -e '3,4 wheezy\n5,6 jessie\n7,8 stretch\n9,10 buster\n11,12 bullseye' | awk -vv=`getMajorVer` -vd=testing '$1~"(^|,)"v"(,|$)"{d=$2}END{printf d}')
+[ "$SUBDIV" ] || SUBDIV="main"
+[ "$ARCH" ] || ARCH=$(uname -m | awk '/i.86/{a="i386";exit} /x.*64/ {a="amd64";exit} /^arm/ {a=$1~/64/?"arm64":"armhf";exit} END {print a?a:"all"}')
+[ "$MIRRORFILE" ] || MIRRORFILE="$DPKGHOME/mirrors.txt"
+
+#
+get_mirror() {
+    mkdir -p "$DPKGHOME"
+    if [ "$1" ] || [ ! "$MIRROR" ]; then
+        [ -f "$MIRRORFILE" ] && MIRROR=$(awk 'NF>1 {print $2; exit}' "$MIRRORFILE")
+    fi
+    [ "$MIRROR" ] || { [ "${LANG%%_*}" = "zh" ] && MIRROR="http://mirrors.163.com/debian" || MIRROR="http://ftp.debian.org/debian/"; }
+    [ "$1" ] && echo "Mirror: $MIRROR"
+    MIRRORSITE="`echo $MIRROR | sed -r 's#.*://|/.*##g'`"
+}
+get_mirror
+echo -e "*MIRROR=$MIRROR CODENAME=$CODENAME SUBDIV=$SUBDIV" 1>&2
+
+#
+pick_mirror() {
+    echo | awk -v str="$1" 'END{exit str~"^[[:space:]]*(http|https|ftp)://"?9:0}'
+    if [ "$?" = "9" ]; then
+        MIRROR="$1"
+    else
+        mkdir -p /tmp/pick_mirror && cd /tmp/pick_mirror
+        wget -O /tmp/debain_mirrors.html http://www.debian.org/mirror/list || exit
+        awk -v IGNORECASE=1 '
+        /^[\t ]*<td>[^<>]+<\/td>[\t ]*$/ {loc=gensub(/<td>(.+)<\/td>/, "\\1", 1); gsub(/[\t ]+/, "", loc);}
+        /^<tr><td.+<\/td><\/tr>/ {gsub(/<[^>]*>/, ""); if ($1) loc=$1;}
+        /^[\t ]*<td.+<a.+href=\"http:.+<\/td>[\t ]*$/ {url=gensub(/<td.+href\=\"([^\"]+).+<\/td>/, "\\1", 1);}
+        /^[\t ]*<\/tr>[\t ]*$/ {if (loc && url) {print loc" "url;}}
+        ' /tmp/debain_mirrors.html > list.txt
+        cat > pick.sh <<EOF
+[ "\$2" ] || exit 1
+touch "\$\$".testing
+t=\$(time busybox wget -q -T 15 -O /dev/null "\$2"/dists/"$CODENAME"/main/Contents-udeb-amd64.gz 2>&1 | awk 'NF==3 {n=\$2*60+\$3; if(n) print n; exit}')
+[ -f pick.sh ] && echo "\$1 \$2 \$t" | tee "\$\$.result"
+rm -f "\$\$.testing"
+EOF
+        chmod 777 ./pick.sh
+        rm -f *.testing *.result *.tmp
+        [ "$1" ] && COUNTRY="$1" || {
+            awk -v ORS=" " '{if (!($1 in p)) {print $1;p[$1]}}END{print "\n"}' list.txt
+            read -p "Select one? Please type:" COUNTRY
+        }
+        awk -v IGNORECASE=1 -v c="$COUNTRY" '$1~c && ! ($2 in p) {print; p[$2]}' list.txt | while read line; do
+            while [ "`ls *.testing 2>/dev/null | wc -w`" -gt 9 ]; do
+                sleep 0.2s
+            done
+            ./pick.sh $line 2>/dev/null&
+            sleep 0.5s
+        done
+        num=`wc -l list.txt | cut -f1 -d" "`
+        count=""
+        while [ "`ls *.result 2>/dev/null | wc -w`" -lt "$num" ] && [ "${#count}" -lt 20 ]; do
+            count="${count}+"
+            sleep 1s
+        done
+        find -name "*.result" -exec awk '$3>0{print>>"mirrors.out"}' {} \;
+        sort -f mirrors.out -k 3 -n > mirrors.tmp 2>/dev/null
+        [ -s mirrors.tmp ] && mv -f mirrors.tmp "$MIRRORFILE"
+        cd && rm -rf /tmp/pick_mirror
+        get_mirror "1"
+    fi
+    grep -sq '^MIRROR\s*=' 2>/dev/null "$DPKGHOME/dpm.rc" || echo "MIRROR=$MIRROR" >> "$DPKGHOME/dpm.rc"
+    sed -i "/^MIRROR\s*=/c\MIRROR=$MIRROR" "$DPKGHOME/dpm.rc" 2>/dev/null
+}
+
+update() {
+    tdir="$DPKGHOME/mirrors/$MIRRORSITE/dists/$CODENAME/$SUBDIV/$ARCH"
+    mkdir -p "$tdir"
+    echo -e "xz xz\nbz2 bzip2\ngz gzip" | while read EXT UNZ; do
+        echo -e "*$MIRROR/dists/$CODENAME/$SUBDIV/binary-$ARCH/Packages.$EXT" 1>&2
+        rm -f "$tdir/Packages" "$tdir/Packages.$EXT"
+        wget "$MIRROR/dists/$CODENAME/$SUBDIV/binary-$ARCH/Packages.$EXT" -P "$tdir" &&
+        { $UNZ -d "$tdir/Packages.$EXT" && break || { echo "Update packages database failed."; exit 1; } }
+    done
+}
+
+config() {
+    [ "${ARCH:0:3}" = "arm" ] && LDDIRS="arm-linux-gnueabihf" || LDDIRS="x86_64-linux-gnu i386-linux-gnu aarch64-linux-gnu"
+    echo -e "$LDDIRS" | awk -v conf="/etc/ld.so.conf"  '
+        {for (i=1; i<=NF; i++) if ($i) arr[$i]}
+        END {
+            for (x in arr) {
+                paths["/lib/"x] = 1
+                paths["/usr/lib/"x] = 1
+                paths["/usr/local/lib/"x] = 1
+            }
+            while (getline < conf > 0) {
+                if ($1 in paths)
+                    delete paths[$1]
+            }
+            for (x in paths)
+                print x
+        }
+    ' | sort | sudo tee -a /etc/ld.so.conf | while read tdir; do sudo install -d "$tdir"; done
+    sudo ldconfig 2>/dev/null
+    cat > "$DPKGHOME/dpm.rc" << EOF
+MIRROR=$MIRROR
+CODENAME=$CODENAME
+SUBDIV=$SUBDIV
+ARCH=$ARCH
+EOF
+}
+
+clean_debs() {
+    find "$DEBS" -name "*.deb" -type f -maxdepth 1 -exec rm -f {} \;
+}
+
+scan_dep() {
+    PKGDB="$DPKGHOME/mirrors/$MIRRORSITE/dists/$CODENAME/$SUBDIV/$ARCH/Packages"
+    [ -f "$PKGDB" ] || update
+    if [ -f "$PKGDB.tmp" ] && [ "`ls -t "$PKGDB".tmp "$PKGDB" | head -n 1`" = "$PKGDB.tmp" ]; then
+        PKGDB="$PKGDB.tmp"
+    fi
+    echo -e "$@" | awk -v ARCH="$ARCH" -v PKGDB="$PKGDB" -v DEBS="$DEBS"  \
+        -v OPTIONAL="$OPTIONAL" -v MIRROR="$MIRROR"  -v UPGRADE="$UPGRADE"  \
+        -v SEARCH="$SEARCH" -v WGET="$WGET" -v INSTALL="$INSTALL" -v LISTDEP="$LISTDEP" '
+    function read_db(dbname, _, name, nametmp, dbtmp, pvx, n, i) {
+        while (getline < dbname > 0) {
+            if ($1 == "Package:") {
+                name = $2
+                PKGS[name] = 1
+            } else if ($1 == "Version:") {
+                VERSION[name] = $2
+            } else if ($1 == "Provides:") {
+                $1 = ""
+                PROVIDES[name] = $0
+                n = split($0, pvx, /[, \t]+/)
+                for (i=1; i<=n; i++) {
+                    PROVIDEX[pvx[i]] = name
+                }
+            } else if ($1 == "Depends:") {
+                $1 = ""
+                DEPENDS[name] = $0
+            } else if ($1 == "Pre-Depends:") {
+                $1 = ""
+                PREDEPENDS[name] = $0
+            } else if ($1 == "Filename:") {
+                PKGSFN[name] = $2
+            } else if ($1 == "MD5sum:") {
+                MD5SUM[name] = $2
+            }
+        }
+        if (dbname !~ /.*\.tmp$/) {
+            nametmp = "/tmp/nametmp"
+            print "" > nametmp
+            for (name in PKGS) {
+                if (name)
+                    print name >> nametmp
+            }
+            close(nametmp)
+            system("busybox sort -f "nametmp" > /tmp/sort.$$ && mv -f /tmp/sort.$$ "nametmp" 2>/dev/null")
+            dbtmp = dbname".tmp"
+            printf "" > dbtmp
+            while (getline name < nametmp > 0) {
+                if (name) {
+                    print "Package: "name"\nVersion: "VERSION[name](name in PROVIDES ? "\nProvides:"PROVIDES[name] : "")(name in PREDEPENDS ? "\nPre-Depends: "PREDEPENDS[name] : "")(name in DEPENDS ? "\nDepends: "DEPENDS[name] : "")"\nFilename: "PKGSFN[name]"\nMD5sum: "MD5SUM[name]"\n" >> dbtmp
+                }
+            }
+        }
+    }
+    function dep_items(name, _, depends, depstr, ones, one, rets, n, i, m, j) {
+        n=split(PREDEPENDS[name]","DEPENDS[name], depends, ",")
+        for (i=1; i<=n; i++) {
+            depstr = gensub(/ *\([^\)]*\) *|, *$| +$|^ +/, "", "g", depends[i])
+            #process depends like x | y | z
+            m = split(depstr, ones, /[ \t\|]+/)
+            one = ""
+            for (j=1; j<=m; j++) {
+                if ((ones[j] in LOCALPKGS && ones[j] in PKGS) || tcz_exists(ones[j])) {
+                    one = ones[j]
+                    break
+                }
+            }
+            if (! one) {
+                for (j=1; j<=m; j++) {
+                    one = ones[j] ? ones[j] : one
+                    if (one in PKGS) {
+                        break
+                    } else {
+                        #trim like :amd64
+                        gsub(/:\w+$/, "", one)
+                    }
+                }
+            }
+            if (one) {
+                rets = rets""one" "
+            }
+        }
+        return rets
+    }
+    function recursive_scan(name, _, depends, n, i) {
+        gsub(/[\t ]+|:any$/, "", name)
+        if (! (name in PKGSFN) && name in PROVIDEX) {
+            name = PROVIDEX[name]
+        }
+        if (name) {
+            if (name in MARK) {
+                if (MARK[name] == 2) {
+                    info("Warning loop dependency: "name)
+                } else {
+                    RESULT[++IDX] = "@#"name
+                }
+            } else {
+                RESULT[++IDX] = name
+                IRANGE[name"#1"] = IDX
+                MARK[name] = 2
+                n=split(dep_items(name), depends)
+                for (i=1; i<=n; i++) {
+                    recursive_scan(depends[i])
+                }
+                MARK[name] = 1
+                IRANGE[name"#2"] = IDX
+            }
+        }
+    }
+    function search_pkg(s, _, names, name, x, i) {
+        split(s, names)
+        for (i in names) {
+            name = gensub(/([\.\+\-])/, "\\\\\\1", "g", names[i])
+            if (name) {
+                for (x in PKGS) {
+                    if (x ~ name)
+                        print x
+                }
+            }
+        }
+    }
+    function ver_compare(x, y, seps, min, _, sep, nx, ny, ax, ay, maxn, i) {
+        if (seps) {
+            sep = substr(seps, 1, 1)
+            seps = substr(seps, 2)
+            nx = split(x, ax, sep)
+            ny = split(y, ay, sep)
+            maxn = nx>ny ? nx : ny
+            for (i=1; i<=maxn; i++) {
+                if (ax[i] == ay[i]) {
+                    if (i == maxn)
+                        return x
+                } else {
+                    return ver_compare(ax[i], ay[i], seps, min) == ax[i] ? x : y
+                }
+            }
+        } else {
+            return x>y ? (min ? y : x) : (min ? x : y)
+        }
+    }
+    function pick_ver(a, b, min, noext, _, na, nb, x, y) {
+        if (noext) {
+            sub(/\.[^\.]+$/, "", a)
+            sub(/\.[^\.]+$/, "", b)
+        }
+        if (split(a, x, "_") ==3 && split(b, y, "_") == 3 && x[1] == y[1] && x[3] == y[3]) {
+            return ver_compare(x[2], y[2], "-.", min) == x[2] ? a : b
+        } else {
+            return ""
+        }
+    }
+    function upgrade_pkg(name, optional, _, new) {
+        if (name && ! (name in UPGRADED)) {
+            UPGRADED[name] = ""
+            if (name in LOCALPKGS) {
+                new = gensub(/.*\//, "", "g", PKGSFN[name])
+                sub(/\.deb$/, ".tcz", new)
+                if (new == pick_ver(LOCALPKGS[name], new)) {
+                    if (! (new in LOCALTCZS)) {
+                        optional = optional ? optional : OPTIONAL
+                        deltcz(name, optional)
+                        fetch(name, optional, MIRROR)
+                        UPGRADED[name] = LOCALPKGS[name]
+                        return new
+                    }
+                }
+            } else {
+                info("tcz package not found: "name)
+            }
+        }
+    }
+    function upgrade_all(_, pkg, new, depfile, line, deps, n, i, depends, depsnew, tcz, chgadd, chgdel, x, y, content) {
+        info("Upgrading...")
+        get_localtczs(OPTIONAL, 1)
+        for (pkg in LOCALPKGS) {
+            new = upgrade_pkg(pkg, OPTIONAL)
+        }
+        for (pkg in LOCALPKGS) {
+            if (pkg && ! (pkg in UPGRADED)) {
+                depfile = optional"/"LOCALPKGS[pkg]".dep"
+                while (getline line < depfile > 0) {
+                    gsub(/[\t ]+/, "", line)
+                    if (line) {
+                        deps[line]
+                    }
+                }
+                close(depfile)
+                n = split(dep_items(pkg), depends)
+                for (i=1; i<=n; i++) {
+                    if (depends[i]) {
+                        depsnew[depends[i]] = 1
+                        tcz = LOCALPKGS[depends[i]]
+                        if (! (tcz && (tcz in deps))) {
+                            chgadd = chgadd""depends[i]"\n"
+                            fetch(pkg, OPTIONAL, MIRROR)
+                        }
+                    }
+                }
+                for (x in deps) {
+                    if (x && ! (x in depsnew)) {
+                        chgdel = chgdel""x"\n"
+                    }
+                }
+                if (chgadd || chgdel) {
+                    for (y in depsnew) {
+                        content = content LOCALPKGS[y] "\n"
+                    }
+                    print content > depfile
+                    close(depfile)
+                }
+                #info("Changed: "pkg"=="chgadd"=="chgdel)
+            }
+        }
+    }
+    function tcz_exists(name, optional, _, ret) {
+        get_localtczs(optional)
+        if (name in LOCALPKGS) {
+            ret = LOCALPKGS[name]
+        } else if (name in LOCALTCZS) {
+            ret = name
+        }
+        return ret
+    }
+    function get_localtczs(optional, force, _, x, y) {
+        if (! optional) {
+            optional = OPTIONAL
+        }
+        if (force || ! (optional in LISTED)) {
+            while ("find "optional" -type f -maxdepth 1 -name \"*.tcz\" 2>/dev/null" | getline x) {
+                sub(/.*\//, "", x)
+                if (x ~ "_"ARCH"\\\.tcz$|_all\\\.tcz$") {
+                    LOCALTCZS[x] = 1
+                    y = gensub(/_.*/, "", "g", x)
+                    if (! (y in LOCALPKGS) || x == pick_ver(x, LOCALPKGS[y])) {
+                        LOCALPKGS[y] = x
+                    }
+                }
+            }
+            LISTED[optional] = 1
+        }
+    }
+    function deltcz(name, optional, _, tcz, pkg) {
+        if (name in LOCALTCZS) {
+            tcz = name
+            pkg = gensub(/_.*/, "", 1, name)
+        } else if (name in LOCALPKGS) {
+            tcz = LOCALPKGS[name]
+            pkg = name
+        }
+        if (tcz) {
+            system("rm -f "optional"/"tcz" "optional"/"tcz".dep")
+            info("*deltcz: "pkg" "tcz)
+            delete LOCALTCZS[tcz]
+            delete LOCALPKGS[pkg]
+            DELETEDTCZS[tcz] = pkg
+            DELEDPKGS[pkg] = tcz
+        }
+    }
+    function mktcz(name, pfn, optional, instead, _, tcz, cmds) {
+        tcz = gensub(/\.deb$/, ".tcz", "g", pfn)
+        if (system("test -f "optional"/"tcz) == 0 || system("sudo deb2tcz.sh "DEBS"/"pfn" "optional" 1>/dev/null") == 0) {
+            LOCALTCZS[tcz] = 1
+            LOCALPKGS[name] = tcz
+            info(tcz" done")
+            make_depfile(name, tcz, optional)
+            if (instead) {
+                system("d=\""optional"\"&&z=\""tcz"\"&&x=\""instead"\"; test -f \"$d/$z\"&&ln -s \"$d/$z\" \"$d/$x\".tcz; test -f \"$d/$z\".dep&&ln -s \"$d/$z\".dep \"$d/$x\".tcz.dep")
+                LOCALTCZS[instead".tcz"] = 1
+                LOCALPKGS[instead] = instead".tcz"
+            }
+        } else {
+            #system("rm -f "DEBS"/"pfn)
+            info(tcz" FAIL")
+            exit
+        }
+    }
+    function make_depfile(name, tcz, optional, _, depfile, deps, n, i) {
+        depfile = optional"/"tcz".dep"
+        system("rm -f "depfile)
+        n = split(dep_items(name), depends)
+        for (i=1; i<=n; i++) {
+            deps = deps""LOCALPKGS[gensub(/_.*|:any$/, "", "g", depends[i])]"\n"
+        }
+        if (deps) {
+            printf deps >> depfile
+            close(depfile)
+        }
+    }
+    function rewrite_depfile(_, pkg, tcz, depfile, line, changed, content) {
+        for (pkg in LOCALPKGS) {
+            tcz = LOCALPKGS[pkg]
+            if (tcz) {
+                changed = 0
+                content = ""
+                depfile = OPTIONAL"/"tcz".dep"
+                while (getline line < depfile > 0) {
+                    gsub(/[\t ]+/, "", line)
+                    if (line) {
+                        if (line in DELETEDTCZS) {
+                            changed = 1
+                            line = UPGRADED[gensub(/_.*/, "", 1, line)]
+                        }
+                        content = content""line"\n"
+                    }
+                }
+                close(depfile)
+                if (changed) {
+                    print content > depfile
+                    close(depfile)
+                }
+            }
+        }
+    }
+    function check_md5(filename, optional, md5) {
+        return system("echo \""md5"  "optional"/"filename"\" | busybox md5sum -c 1>&2") == 0
+    }
+    function fetch(name, optional, mirror, force, _, debname, pfn, instead) {
+        if (name) {
+            gsub(/_.*|:any$/, "", name)
+            if (! (name in PKGS)) {
+                if (name in PROVIDEX) {
+                    instead = name
+                    name = PROVIDEX[name]
+                } else if (tcz_exists(name, optional)) {
+                    info("package exists: "name)
+                } else {
+                    info("package not found: "name)
+                    exit
+                }
+            }
+            if (! tcz_exists(name, optional)) {
+                debname = gensub(/:/, "%3a", "g", PKGSFN[name])
+                pfn = gensub(/.*\//, "", "g", debname)
+                if (pfn && (system("test -f "DEBS"/"pfn" || wget -c -P "DEBS" "mirror"/"debname) == 0)) {
+                    if (check_md5(pfn, DEBS, MD5SUM[name])) {
+                        mktcz(name, pfn, optional, instead)
+                    } else {
+                        #system("rm -f "DEBS"/"pfn)
+                        exit
+                    }
+                } else {
+                    info("download failed: "name)
+                    exit
+                }
+            }
+        }
+    }
+    function proc_dep(idx1, idx2, optional, mirror, _, name, i, refname) {
+        for (i=idx2; i>=idx1; i--) {
+            name = RESULT[i]
+            if (! (name in PRINTED)) {
+                PRINTED[name] = 1
+                if (substr(name, 1, 2) == "@#") {
+                    refname = substr(name, 3)
+                    proc_dep(IRANGE[refname"#1"], IRANGE[refname"#2"], optional, mirror)
+                } else {
+                    if (mirror) {
+                        fetch(name, optional, mirror)
+                    } else if (LISTDEP == "D") {
+                        print name
+                    }
+                }
+            }
+        }
+    }
+    function list_rdepends(name, _, pkg, depends, n, i, x) {
+        for (pkg in DEPENDS) {
+            n = split(PREDEPENDS[pkg]","DEPENDS[pkg], depends, ",")
+            for (i=1; i<=n; i++) {
+                split(depends[i], x)
+                if (x[1] == name) {
+                    print pkg"\t("VERSION[pkg]")\t\t"gensub(/.*\//, "", "g", PKGSFN[pkg])
+                    break
+                }
+            }
+        }
+    }
+    function info(str) {
+        system("echo \""str"\" 1>&2")
+    }
+    BEGIN {
+        IDX=0;
+        if (INSTALL || SEARCH || LISTDEP || WGET || UPGRADE) read_db(PKGDB);
+        if (UPGRADE == "U") {upgrade_all("*"); exit}
+    }
+    $1 {
+        if (SEARCH) {
+            search_pkg($0)
+        } else {
+            if (! ($1 in PKGSFN) && ($1 in PROVIDEX)) {
+                $1 = PROVIDEX[$1]
+                info("Provided: "$1)
+            }
+            if (LISTDEP == "D" || WGET) {
+                if (WGET) {
+                    tczname = tcz_exists($1, $2)
+                    if (tczname) {
+                        info("tcz exists: "$1)
+                        if (INSTALL) {
+                            print tczname" "$2
+                        }
+                        next
+                    }
+                }
+                idxa = IDX
+                get_localtczs(OPTIONAL)
+                recursive_scan($1)
+                proc_dep(idxa+1, IDX, $2, $3)
+            } else if (LISTDEP == "d") {
+                print dep_items($1)
+            } else if (LISTDEP == "r") {
+                list_rdepends($1)
+            } else if (UPGRADE == "u") {
+                get_localtczs($2)
+                info("Upgrade package: "$1)
+                new = upgrade_pkg($1, $2)
+                if (new) {
+                    info("Upgrade package OK: "$1" -> "new)
+                }
+            }
+            if (INSTALL) {
+                tczname = tcz_exists($1, $2)
+                print (tczname ? tczname : $1)" "$2
+                next
+            }
+        }
+    }
+    END {
+        if (length(DELETEDTCZS)) {
+            rewrite_depfile("u")
+            info("rewrite dep file finished")
+        }
+    }'
+}
+
+search() {
+    SEARCH=TRUE
+    scan_dep "$@" | sort
+}
+
+upgrade_ask() {
+    printf "Upgrade all packages?(Y/n):"
+    read upgradeask
+    { echo "$upgradeask" | grep -isq '^\(\|y\|yes\)$'; } || exit 0
+}
+
+#
+link2tce() {
+    if [ "$1" = "clear" ]; then
+        find "$TCEDIR/optional" ! -type d -maxdepth 1 | while read sf; do
+            if [ -L "$sf" ]; then
+                linkx=$(readlink "$sf")
+                [ "${linkx#../dpkg/optional/}" != "$linkx" ] && rm -f "$sf"
+            fi
+        done
+    else
+        mkdir -p "$TCEDIR/optional"
+        find "$OPTIONAL" ! -type d -maxdepth 1 | sed 's/.*\///' | while read sf; do
+            if [ ! -e "$TCEDIR/optional/$sf" ] || [ -L "$TCEDIR/optional/$sf" ]; then
+                ln -fs "../dpkg/optional/$sf" "$TCEDIR/optional/$sf"
+            fi
+        done
+    fi
+}
+
+#
+showinfo() {
+    shift 1
+    PKGDB="$DPKGHOME/mirrors/$MIRRORSITE/dists/$CODENAME/$SUBDIV/$ARCH/Packages"
+    [ -f "$PKGDB" ] || update
+    awk -v pkgstr="$*" '
+        BEGIN {n=split(pkgstr, ps); for (i=n; i>=1; i--) if (ps[i]) pkgs[ps[i]] = ++num }
+        {if ($1 == "Package:") {if ($2 in pkgs) {one = $2; num--;} else {one=""; if (num<1) exit;}} if (one) print;}
+    ' "$PKGDB"
+}
+
+#
+list_pkg() {
+    names="$@"
+    (cd "$OPTIONAL" && ls *.tcz 2>/dev/null) | awk -v FS="_+" -v names="$names" '
+    BEGIN {n=split(names, ns, /\s+/)}
+    $1 {
+        for (i=1; i<=n; i++) {
+            if (ns[i] && $1 ~ ns[i]) {
+                print $0
+                break
+            }
+        }
+    }
+    ' | sort | awk -v optional="$OPTIONAL" '{print (NR==1 ? optional"/" : " ")$1} END {printf "\n"}'
+}
+
+[ -n "$TO_SEARCH" ] && {
+    search "$TO_SEARCH"
+    exit
+}
+[ -n "$TO_LIST_PKG" ] && {
+    list_pkg "$TO_LIST_PKG"
+    exit
+}
+
+
+case "$1" in
+    update) update; exit;  ;;
+    config) config; exit;  ;;
+    mirror) pick_mirror "$2"; exit;  ;;
+    upgrade) UPGRADE="U"; upgrade_ask;  ;;
+    clean) clean_debs; exit;  ;;
+    link) link2tce "$2"; exit;  ;;
+    show) showinfo $@; exit;  ;;
+esac
+
+[ -z "$1" ] || ( [ -z "$INSTALL" ] && [ -z "$LISTDEP" ] && [ -z "$WGET" ] && [ -z "$UPGRADE" ] ) && abort
+
+
+#
+for TARGETAPP in $@; do
+    TARGETAPP="${TARGETAPP/-KERNEL./-${KERNELVER}.}"
+    EXTENSION="${TARGETAPP##*/}"
+
+    if [ "$TARGETAPP" = "$EXTENSION" ] && [ ! -f "$EXTENSION" ]; then
+        FROMWHERE="$OPTIONAL"
+    else
+        FROMWHERE=`dirname "$TARGETAPP"`
+    fi
+
+    if [ "$LISTDEP" ] || [ "$UPGRADE" ]; then
+        TARGETSLIST="$TARGETSLIST\n$EXTENSION"
+    else
+        if [ "$WGET" ]; then
+            mkdir -p "$FROMWHERE"
+            TARGETSFETCH="$TARGETSFETCH\n$EXTENSION $FROMWHERE"
+        else
+            TARGETSLOCAL="$TARGETSLOCAL\n$EXTENSION $FROMWHERE"
+        fi
+    fi
+done
+
+#
+if [ "$TARGETSLIST" ]; then
+    scan_dep "$TARGETSLIST"
+fi
+
+TARGETSLOAD=""
+
+if [ "$TARGETSFETCH" ]; then
+    mkdir -p "$DEBS"
+    TARGETSFETCH="`echo -e $TARGETSFETCH | awk '/\w/ {print $1" "$2" '"$MIRROR"'"}'`"
+    res=`scan_dep "$TARGETSFETCH"`
+    while read F D; do
+        [ "$F" ] && [ "$D" ] && TARGETSLOAD="$TARGETSLOAD $D/$F"
+    done <<EOF
+    $res
+EOF
+fi
+
+if [ "$TARGETSLOCAL" ]; then
+    TARGETSLOCAL="`echo -e $TARGETSLOCAL | awk '/\w/ {print $1" "$2}'`"
+    res=`scan_dep "$TARGETSLOCAL"`
+    while read F D; do
+        [ "$F" ] && [ "$D" ] && TARGETSLOAD="$TARGETSLOAD $D/$F"
+    done <<EOF
+    $res
+EOF
+fi
+
+incopy2fs() {
+    echo -e "$COPY2FS" | awk -v name="${1%.tcz}" -v FS="-" '
+    {
+        gsub(/\.tcz$/, "", $0)
+        if ($0 == name) {
+            ok = 1
+            exit
+        } else if (NF == 1 || NF == 3) {
+            n = split(name, ns, /\-/)
+            if (n == 3 && ns[1] == $1) {
+                ok = 1
+                exit
+            }
+        }
+    }
+    END {exit ok ? 0 : 1}
+    '
+}
+
+#copy2ram() {
+    #sudo mkdir -p /tmp/dploop/"$2" &&
+    #sudo mount "$1" /tmp/dploop/"$2" -t squashfs -o loop,ro,bs=4096 2>&1
+    #[ "$?" = 0 ] && sudo cp -prf /tmp/dploop/"$2"/* / && echo "Copy $2 OK" &&
+    #sudo umount /tmp/dploop/"$2" && sudo rm -rf /tmp/dploop/"$2"
+#}
+
+if [ "$TARGETSLOAD" ]; then
+    FLAG="-il"  #-t "$DPKGHOME"
+    [ "$COPY" ] && FLAG="${FLAG}c" && COPY2FS="`cat $TCEDIR/copy2fs.lst 2>/dev/null`"
+    [ "$FORCE" ] && FLAG="${FLAG}f"
+    [ "$OVERWRITE" ] && FLAG="${FLAG}y"
+    #oIFS=$IFS;  IFS=$'\n'  #echo $IFS | od
+    [ "$TARGETSLOAD" ] && sudo su "$USER" -c "eload -e dpkgstatus $FLAG $TARGETSLOAD"
+    #for TCZ in $TARGETSLOAD; do
+        #X=$(echo $TCZ | sed -r 's#.*/|\.[^\.]*$##g')
+        #if [ "$FORCE" ]; then
+            #[ -d /tmp/tcloop/"$X" ] && sudo cp -as /tmp/tcloop/"$X"/* / && echo "Copy(-as) $X OK"
+        #else
+            #{ [ "$COPY" ] || incopy2fs "$X"; } && copy2ram "$TCZ" "$X"
+        #fi
+    #done
+fi
+

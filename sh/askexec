@@ -1,0 +1,13 @@
+#!/bin/sh
+
+info=""
+cmds=""
+
+while getopts i:c: OPTION; do
+	case "$OPTION" in
+		i) info="$OPTARG"  ;;
+		c) cmds="$OPTARG"  ;;
+	esac
+done
+
+[ -n "$cmds" ] && [ "`popask $info`" = "1" ] && $cmds

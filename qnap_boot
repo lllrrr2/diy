@@ -1,0 +1,1132 @@
+#!/bin/sh
+# This is developed by laojifuli to create QNAP boot disk
+# This script was modified by Mojelly for QNAP 4.4.1.1000+ firmware.
+. /etc/init.d/tc-functions
+DOWNLOAD=https://download.qnap.com.cn/Storage/TS-X51/TS-X51_20201123-4.5.1.1495.zip
+# DOWNLOAD=https://download.qnap.com.cn/Storage/TS-X51/TS-X51_20200907-4.4.3.1421.zip
+# DOWNLOAD=https://download.qnap.com.cn/Storage/TS-X51/TS-X51_20201108-4.5.1.1480.zip
+# DOWNLOAD=https://download.qnap.com.cn/Storage/TS-X53B/TS-X53B_20191206-4.4.1.1146.zip
+# DOWNLOAD=https://download.qnap.com.cn/Storage/TS-X82/TS-X82_20200702-4.4.3.1354.zip
+# DOWNLOAD=https://download.qnap.com/Storage/TS-X53D/TS-X53D_20200702-4.4.3.1354.zip
+PAT=$(echo $DOWNLOAD | awk -F/ '{print $NF}' | sed -r s'/(.*)*.zip/\1/')
+# PAT=`echo $DOWNLOAD | awk -F/ '{print $NF}' | sed 's/\.zip//'`
+# PAT=$(ls *.patch | head -n1 | cut -d'.' -f1-4)
+TYPE="QW371_QW340_20_12"
+
+BOOT=$(./hal_app2)
+DIR=$(pwd)
+IS_PAT="true"
+
+main_interface(){
+	do_tcz pv
+	clear
+	echo -e "\n       $(date +%Y年%m月%d日\ %X)"
+	echo -e " =======================================\n"
+	echo -e "	  $BLUE【 QNAP工具盘 】${NORMAL}\n"
+	echo -e " 	  1.制作QNAP启动盘\n"
+	echo -e "	  2.boot文件操作\n"
+	echo -e "	  3.patch生成\n"
+	echo -e "	  4.启动盘分区信息\n"
+	echo -e "	  5.lspci存储控制器\n"
+	echo -e "	  6.${RED}vi${NORMAL} model_${TYPE}.conf\n"
+	echo -e "	  7.信息\n"
+	echo -e "	  8.关机\n"
+	echo -e "	  9.重启\n"
+	echo -e "	  10.新建(升级)启动盘\n"
+	echo -e "	  0.退出\n"
+	echo " ======================================="
+	read -p "请输入数字，你需要的选项: " p
+	case "$p" in
+		1)
+		create_qnap_boot
+		;;
+		2)
+		boot
+		;;
+		3)
+		patch_extract
+		;;
+		4)
+		echo -e "启动盘的设备总块数：${GREEN}$blocks${NORMAL}\n"
+		;;
+		5)
+		DEV_BUS
+		;;
+		6)
+		[ -e model_"${TYPE}".conf ] && vi model_"${TYPE}".conf \
+		|| echo "${RED}model_$TYPE.conf${NORMAL}的配置文件不存在"
+		;;
+		7)
+		information
+		;;
+		8)
+		poweroff
+		;;
+		9)
+		reboot
+		;;
+		10)
+		create_disk
+		;;
+		0)
+		exit 0
+		;;
+		*)
+	clear && echo "请输入正确的数字 [1,2,3,4,5,6,7,8,9,0]"
+	main_interface
+	;;
+esac
+}
+
+boot(){
+	clear
+	echo -e "\n       当前时间:$(date "+%Y-%m%d-%H%M")"
+	echo -e " =======================================\n"
+	echo -e "	  $BLUE【 boot文件操作 】${NORMAL}\n"
+	echo -e "	  1.提取新固件initrd\n"
+	echo -e "	  2.修改启动盘initrd\n"
+	echo -e "	  3.提取启动盘initrd\n"
+	echo -e "	  4.重新打包initrd\n"
+	echo -e "	  5.查看boot\n"
+	echo -e "	  6.备份boot\n"
+	echo -e "	  7.恢复boot\n"
+	echo -e "	  8.删除boot\n"
+	echo -e "	  9.返回上级菜单\n"
+	echo -e "	  0.退出\n"
+	echo -e " ======================================="
+	read -p "请输入数字，你需要的选项: " p
+	echo
+	case "$p" in
+		1)
+		extract_orig_initrd
+		;;
+		2)
+		repacking_boot ep
+		;;
+		3)
+		repacking_boot ex
+		;;
+		4)
+		repacking_boot pa
+		;;
+		5)
+		_mount_disk "${BOOT}2"
+		if [ -d /mnt/"${BOOT}2"/boot ]; then
+			ls -lh /mnt/"${BOOT}2"/boot
+			echo  "${GREEN}上面是在/mnt/${BOOT}2/boot中的启动文件。${NORMAL}"
+			umount /dev/"${BOOT}2"
+		else
+			echo "${RED}/mnt/${BOOT}2下没有QNAP的启动文件!${NORMAL}"
+		fi
+		;;
+		6)
+		repacking_boot "save_boot"
+		;;
+		7)
+		recovery_boot
+		;;
+		8)
+		clear_boot
+		;;
+		9)
+		main_interface
+		;;
+		0)
+		return
+		;;
+		*)
+	clear && echo "请输入正确的数字 [1,2,3,4,5,6,7,8,9,0]"
+	boot
+	;;
+esac
+}
+
+time(){
+	for i in $(seq "$1" -1 1); do echo -ne "${i}秒后开始$2！如要中断用 Ctrl + c \r"; sleep 1; done
+}
+
+error_stop(){
+	echo -e "$1"
+	umount /dev/s* 1>/dev/null 2>&1
+	exit 1
+}
+
+download(){
+	if [ ! -e "${PAT}.zip" ]; then
+	echo "开始下载QNAP固件，请稍等..."
+		if ! wget --no-check-certificate ${DOWNLOAD}; then
+			rm -rf "${PAT}".zip
+			error_stop "下载失败！检查链接${RED}${DOWNLOAD}${NORMAL}是否正确。"
+		fi
+	fi
+}
+
+do_tcz(){
+[ 0 -eq `grep -c 163 /opt/tcemirror` ] && echo "http://mirrors.163.com/tinycorelinux/" > /opt/tcemirror
+for p in "$@"; do
+	if [ ! -e /tmp/tce/optional/$p.tcz ]; then
+		echo -e "稍等，下载 ${GREEN}$p.tcz${NORMAL} 中...\c"
+		su - tc -c "tce-load -iw $p" 1>/dev/null 2>&1
+		status
+	fi
+done
+return 0
+}
+
+make_dir(){
+for p in "$@"; do
+	[ -d "$p" ] || { mkdir -p $p && echo "创建$p目录成功！";}
+done
+return 0
+}
+
+_mount_disk(){
+for p in "$@"; do
+	if ! mountpoint -q /mnt/$p; then
+		if ! mount -t ext2 /dev/$p /mnt/$p 1>/dev/null 2>&1; then
+		mount /dev/$p /mnt/$p 1>/dev/null 2>&1
+		fi
+	fi
+done
+return 0
+}
+
+# 提取initrd
+extract_initrd(){
+	[ -f ./initrd.boot ] || return 1
+		if [ "$1" = "lzma" ]; then
+			mv -f ./initrd.boot ./initrd.boot.lzma
+			echo "${YELLOW}解压initrd.boot文件中，请稍等...${NORMAL}"
+			pv initrd.boot.lzma | unlzma > initrd.boot
+		else
+			mv initrd.boot initrd.boot.gz
+			gzip -d initrd.boot.gz 1>/dev/null 2>&1
+		fi
+	make_dir initrd && rm -rf initrd.boot.lzma initrd.boot.gz
+	cd initrd && cpio -id < ../initrd.boot 1>/dev/null 2>&1
+	cd .. && rm -f ./initrd.boot* ./"${PAT}".img ./*.tar.gz
+}
+
+initrd_(){
+	echo -e "${GREEN}=====提取initrd文件=====${NORMAL}"
+	IS_PAT="false"
+	download && rm -rf ./initrd*
+	echo "${YELLOW}解压${PAT}.zip文件中，请稍等...${NORMAL}"
+
+		if ! unzip "${PAT}".zip; then
+		rm -f ./"${PAT}".zip; fi
+
+		if ! ./pc1 d QNAPNASVERSION4 "${PAT}".img "${PAT}".tar.gz; then
+		rm -f "${PAT}".zip "${PAT}".img "${PAT}".tar.gz
+		error_stop "无法解开QNAP固件。"; fi
+
+	echo "${YELLOW}解压firmware.tar.gz文件中，请稍等...${NORMAL}"
+
+		if ! tar -xvf "${PAT}".tar.gz initrd.boot; then
+		rm -f "${PAT}".tar.gz; fi
+
+	extract_initrd "lzma"
+}
+
+create_qnap_boot(){
+# 压缩initrd.boot文件
+packing_initrd(){
+	echo -e $1 && cd ./initrd
+	find . | cpio -o -H newc | pv | gzip -v > ../initrd.boot && echo "initrd.boot打包完成！"
+	cd ${DIR}
+}
+#修复rootfs2.bz文件
+lzma_2_gz(){
+	FileType=$(file "$1".bz | cut -d' ' -f2)
+	echo "${GREEN}=======修复$1.bz文件=======${NORMAL}"
+	[ -f "$1".bz ] || return 1
+	if [ "$FileType" = "LZMA" ]; then
+		mv "$1".bz "$1".lzma
+		echo "${YELLOW}解压$1.lzma文件中，请稍等...${NORMAL}"
+		pv "$1".lzma | unlzma > "$1"
+		echo "${YELLOW}压缩$1文件中，请稍等...${NORMAL}"
+		pv "$1" | bzip2 -z > "$1".bz2
+		mv "$1".bz2 "$1".bz && cksum "$1".bz > "$1".bz.cksum
+		mv -f "$1".bz "$1".bz.cksum /mnt/${BOOT}2/boot/
+		rm -rf "$1"*
+	else
+		error_stop "修复$1.bz失败，请重新启动系统并重试。"
+	fi
+}
+
+# 尝试找到laojifuli启动盘
+	if [ "x$BOOT" = "x" ]; then
+		echo "找不到laojifuli的QNAP启动盘。"
+		exit 1
+	fi
+
+# 挂载QNAP主引导分区
+	make_dir "/mnt/${BOOT}2" "/mnt/${BOOT}3"
+	_mount_disk "${BOOT}2" "${BOOT}3"
+# QNAP启动盘的删除确认
+	clear_boot
+	download
+	if [ -f ./"${PAT}".zip ]; then
+		IS_PAT="false"
+		rm -rf ./initrd*
+		echo "${GREEN}=======提取initrd文件=======${NORMAL}"
+		echo "${YELLOW}解压${PAT}.zip文件中，请稍等...${NORMAL}"
+		if ! unzip ./"${PAT}".zip 1>/dev/null 2>&1; then
+			rm -f "${PAT}".zip "${PAT}".img firmware.tar.gz
+			error_stop "无法解开QNAP固件。"
+		fi
+		if ./pc1 d QNAPNASVERSION4 ./"${PAT}".img firmware.tar.gz; then
+		rm -rf "${PAT}".img; fi
+		echo "${YELLOW}解压firmware.tar.gz文件中，请稍等...${NORMAL}"
+		tar -xvf firmware.tar.gz bzImage bzImage.cksum initrd.boot initrd.boot.cksum qpkg.tar \
+		qpkg.tar.cksum rootfs2.bz rootfs2.bz.cksum rootfs_ext.tgz rootfs_ext.tgz.cksum
+		rm -f firmware.tar.gz
+		make_dir "/mnt/${BOOT}2/boot"
+		mv -f bzImage bzImage.cksum initrd.boot.cksum qpkg.tar qpkg.tar.cksum \
+		rootfs2.bz.cksum rootfs_ext.tgz rootfs_ext.tgz.cksum /mnt/${BOOT}2/boot/
+		extract_initrd "lzma"
+	fi
+	[ -d ./initrd ] || error_stop "${RED}无法提取initrd文件。${NORMAL}"
+
+echo "${GREEN}=======修改initrd文件=======${NORMAL}"
+if [ ! -e ./"${PAT}".patch ];then
+	echo "没有找到${RED}${PAT}.patch${NORMAL}文件。"
+	patch_extract
+	[ -e ${PAT}.patch ] || error_stop "${RED}无法生成${PAT}.patch文件${NORMAL}"
+fi
+if [ ! -e model_"${TYPE}".conf ]; then
+	echo -e "\n没有找到\033[31mmodel_${TYPE}.conf\033[0m文件。"
+	DEV_BUS && model_conf
+fi
+	if [ ${IS_PAT} != "true" ]; then
+		rm -f ./initrd.boot
+		cp -vf ./hal_app1 hal_app2 ./initrd/sbin/
+		cp -vf ./model_${TYPE}.conf ./initrd/etc/model.conf
+		cp -fv ./initrd/etc/hal_util_${TYPE}.conf ./initrd/etc/hal_util.conf
+		cd ./initrd/bin && ln -s busybox tail
+		cd ../etc/init.d
+		if ! patch -p1 < ../../../${PAT}.patch; then
+		error_stop "使用patch失败。";fi
+	fi
+	cd ${DIR}
+	echo "${GREEN}=======打包initrd.boot文件=======${NORMAL}"
+	packing_initrd "${YELLOW}压缩initrd.boot文件中，请稍等...${NORMAL}"
+	[ -f ./initrd.boot ] || error_stop "打包initrd.boot失败。"
+	cksum initrd.boot > initrd.boot.cksum
+
+	if ! mv -f ./initrd.boot initrd.boot.cksum /mnt/${BOOT}2/boot/; then
+	error_stop "上传initrd.boot失败。"; fi
+
+	lzma_2_gz rootfs2
+	#rm -rf initrd
+	[ $? = 0 ] && echo "${GREEN}QNAP的引导盘制作成功！${NORMAL}"
+	error_stop "重启系统后安装QNAP系统。"
+}
+
+extract_orig_initrd(){
+#该脚本出自nasyun.com那是云论坛Mojelly，便于黑Q玩家提取各机型RAM DISK中原始的patch补丁相关文件、
+#驱动文件、model配置等QTS系统文件，仅用于学习、了解Linux相关技术知识，禁止将本脚本或者黑Q用于任何商业用途！
+
+initrd_exit(){
+	echo "没有找到${GREEN}${PAT}.zip${NORMAL}文件，请上传到TC目录或下载后提取。"
+	echo "设置下载的版本是${GREEN}${PAT}${NORMAL}"
+	read -r -p "请选择：[y]下载 [i]已上传 [n]退出 " p
+case $p in
+	[yY])
+		download
+		return
+		;;
+	[Ii])
+		[ -f "${PAT}".zip ] || echo "你没有上传${PAT}.zip文件"
+		;;
+	[nN])
+		exit 0
+		;;
+esac
+}
+
+[ "$PAT.zip" = "$(ls "$PAT".zip 2> /dev/null)" ] 2> /dev/null || initrd_exit
+ls ./*.zip 1>/dev/null 2>&1
+for i in *.zip; do
+	if  [ ! -d ${i/.zip/}/initrd ]; then
+		echo "当前提取的固件${GREEN}${i/.zip/}${NORMAL}"
+		make_dir ${i/.zip/}
+		echo "${YELLOW}解压${i}文件中，请稍等...${NORMAL}"
+		unzip ${i} -d ${i/.zip/}
+		[ -e ${i/.zip/}/${i/.zip/}.img ] || { echo "解压${i}失败" && rm -rf ${i}; }
+		cd ${i/.zip/}
+		[ -e "${PAT}".tar.gz ] || ../pc1 d QNAPNASVERSION4 *.img "${PAT}".tar.gz
+		[ $? = 0 ] && rm -rf *.img
+		if [ -e "${PAT}".tar.gz ]; then
+			echo "${YELLOW}解压"${PAT}".tar.gz文件中，请稍等...${NORMAL}"
+			tar -xvf "${PAT}".tar.gz initrd.boot
+			[ $? = 0 ] && rm -rf "${PAT}".tar.gz
+			extract_initrd "lzma"
+			echo "initrd已提取到${GREEN}${i/.zip/}${NORMAL}目录中!"
+		else
+			rm -rf ${i}
+			echo "无法解开${RED}${i/.zip/}${NORMAL}固件!"
+			exit 1
+		fi
+		cd ${DIR}
+	else
+		echo "${i/.zip/}的initrd文件已经存在，如需重新提取要先删除已有的文件!"
+	read -r -p "请选择：[y]删除并提取 [n]忽略/返回上级" p
+		case $p in
+			[yY])
+				rm -rf ${i/.zip/} && \
+				echo "已经删除原有的${RED}${i/.zip/}${NORMAL}文件，并重新提取！" || \
+				echo "删除${i/.zip/}失败"
+				extract_orig_initrd
+				;;
+			[nN])
+				boot
+				;;
+		esac
+	fi
+done
+exit 0
+}
+
+repacking_boot(){
+
+extract_initrd(){
+	echo $1
+	[ -d "${DIB}" ] && rm -rf "${DIB}"
+	make_dir "${DIB}"
+	cp -f /mnt/${BOOT}2/boot/initrd.boot "${DIB}"
+	cd "${DIB}"
+	if [ -e initrd.boot ]; then
+		mv ./initrd.boot ./initrd.boot.gz
+		gzip -d ./initrd.boot.gz
+	else
+		rm -f ./initrd.boot.*
+		error_stop "${RED}解压initrd.boot失败。${NORMAL}"
+	fi
+	make_dir initrd
+	cd ./initrd
+	cpio -id < ../initrd.boot 1>/dev/null 2>&1
+	rm -f "${DIB}"/initrd.boot
+}
+
+packing_initrd(){
+	echo -e $1
+	[ -d "${DIB}"/initrd ] || error_stop "没有${DIB##*/}目录，请先用提取initrd后再打包！"
+	cd "${DIB}"
+	[ ! -e initrd.boot ] || rm -f ./initrd.boot
+	cd initrd
+	echo "打包initrd.boot，请稍等..."
+	find . | cpio -o -H newc | pv | gzip -v > ../initrd.boot && echo "initrd.boot打包完成！"
+}
+
+cp_initrd(){
+	echo -e $1 && cd "${DIB}"
+	[ -e initrd.boot ] && cksum initrd.boot > initrd.boot.cksum
+	if mv -f initrd.boot initrd.boot.cksum /mnt/${BOOT}2/boot/; then
+	error_stop "复制QNAP文件失败";fi
+}
+
+edit_boot(){
+	echo "你可以修改${DIB##*/}下的initrd文件或放入你所需要的conf的配置"
+	echo "文件以及ko的驱动文件在${DIY##*/}目录里面，再确认修改打包initrd.boot"
+	echo
+	read -r -p "请选择：[y]复制打包 [n]修改打包 [i]忽略/退出 " p
+	case $p in
+		[yY])
+			for i in "${DIY}"/*.ko; do
+			cp -vf "$i" "${DIB}"/initrd/lib/modules/
+			done
+			for i in "${DIY}"/*.conf; do
+			cp -vf "$i" "${DIB}"/initrd/etc/model.conf
+			done
+			[ -e "${DIY}"/platform.conf ] && cp -vf "${DIY}"/platform.conf "${DIB}"/initrd/etc/
+			rm -rf "${DIY}"
+			;;
+		[nN])
+			rm -rf "${DIY}"
+			;;
+		[iI])
+			rm -rf "${DIY}" "${DIB}"
+			error_stop
+			;;
+	esac
+}
+
+DIB=${DIR}/edit_boot
+DIY=${DIR}/copy
+
+case $1 in
+	ep) #修改启动盘initrd
+	_mount_disk ${BOOT}2
+
+	if [ ! -d /mnt/"${BOOT}2"/boot ]; then error_stop "${RED}/mnt/${BOOT}2下没有QNAP的启动文件!${NORMAL}"; fi
+	if ! extract_initrd "提取${BOOT}2的initrd文件。"; then
+	rror_stop "${RED}提取initrd文件失败。${NORMAL}"; fi
+	make_dir "${DIY}"
+	edit_boot
+	if ! packing_initrd "重新打包nitrd.boot中,请稍等..."; then
+	error_stop "${RED}重新打包initrd失败。${NORMAL}"; fi
+	if ! cp_initrd "将nitrd.boot文件复制到引导。"; then
+	error_stop "${RED}复制initrd到引导失败。${NORMAL}"; fi
+	echo "${GREEN}initrd.boot${NORMAL}修改成功！"
+	error_stop
+	;;
+	ex)   #提取启动盘initrd
+	_mount_disk "${BOOT}2"
+	if [ ! -d /mnt/"${BOOT}2"/boot ]; then error_stop "${RED}/mnt/${BOOT}2下没有QNAP的启动文件!${NORMAL}"; fi
+	if ! extract_initrd "提取${BOOT}2的initrd文件。"; then
+	error_stop "${RED}提取initrd文件失败。${NORMAL}"; fi
+	echo -e "引导的initrd.boot已提取在${DIB##*/}目录下。版本是:${GREEN}`grep -E '^Model =|Version|^Build Number|^Number =' \
+			${DIB}/*/*/*/uLinux.conf | sed -n 1,4p | sed -r s'/.* = (.*)/\1/' | xargs | \
+			awk '{printf "%s_%s-%s.%s\n" ,$1,$3,$2,$4 }'`${NORMAL}\n修改${DIB##*/}下的initrd文件再重新打包initrd.boot。"
+	error_stop
+	;;
+	pa)   #重新打包initrd
+	[ -d "${DIB}"/initrd ] || error_stop "${RED}没发现${DIB##*/}目录，请先用提取initrd后再打包！${NORMAL}"
+	_mount_disk ${BOOT}2
+	if ! packing_initrd "重新打包nitrd.boot中，请稍等..."; then
+	error_stop "${RED}重新打包initrd失败。${NORMAL}"; fi
+	if ! cp_initrd "将nitrd.boot文件复制到引导。"; then
+	error_stop "${RED}复制initrd到引导失败。${NORMAL}"; fi
+	echo -e "${GREEN}initrd.boot${NORMAL}修改成功,版本是：${GREEN}`grep -E '^Model =|Version|^Build Number|^Number =' \
+			${DIB}/*/*/*/uLinux.conf | sed -n 1,4p | sed -r s'/.* = (.*)/\1/' | xargs | \
+			awk '{printf "%s_%s-%s.%s\n" ,$1,$3,$2,$4 }'`${NORMAL}。"
+	error_stop
+	;;
+	save_boot) #备份boot
+	_mount_disk ${BOOT}2
+	if [ -d /mnt/${BOOT}2/boot ]; then
+	echo "是否要备份启动文件到boot目录下？"
+	read -r -p "请选择：[y]备份 [n]忽略 " p
+		case $p in
+			[yY])
+				make_dir boot
+				cp -rfv /mnt/${BOOT}2/boot/* boot/
+				extract_initrd 1>/dev/null 2>&1
+				if [ -d "${DIB}" ]; then
+				echo -e "已成功备份到boot下,版本是${GREEN}$(grep -E '^Model =|Version|^Build Number|^Number =' \
+				${DIB}/*/*/*/uLinux.conf | sed -n 1,4p | sed -r s'/.* = (.*)/\1/' \
+				| xargs | awk '{printf "%s_%s-%s.%s\n" ,$1,$3,$2,$4 }')${NORMAL}"
+				umount /mnt/${BOOT}2 1>/dev/null 2>&1
+				rm -rf "${DIB}"; fi
+				exit 0
+				;;
+			[nN])
+				return
+				;;
+		esac
+	else
+		echo "${RED}/mnt/${BOOT}2下没有QNAP的启动文件!${NORMAL}"
+		echo
+	fi
+	;;
+esac
+}
+
+clear_boot(){
+
+_mount_disk ${BOOT}2 ${BOOT}3
+if [ -d /mnt/${BOOT}2/boot ]; then
+	echo "检测到/mnt/${BOOT}2存在原有的引导。"
+	read -r -p "请选择: [y]备份后删除 [n]不备份删除 [i]跳过/覆盖 " p
+case $p in
+	[yY])
+		make_dir boot
+		mv -vf /mnt/${BOOT}2/boot/* boot/
+		[ -d /mnt/${BOOT}3/boot ] && rm -rf /mnt/${BOOT}3/boot
+		echo
+		return
+	;;
+	[nN])
+		if rm -rf /mnt/${BOOT}2/boot; then
+		echo "${RED}已经删除/mnt/${BOOT}2/boot下的引导。${NORMAL}"; fi
+		[ -d /mnt/${BOOT}3/boot ] && rm -rf /mnt/${BOOT}3/boot
+		echo
+		return
+	;;
+	[iI])
+		return 0
+	;;
+esac
+else
+	echo "${RED}/mnt/${BOOT}2下没有QNAP的引导!${NORMAL}"
+fi
+}
+
+recovery_boot(){
+[ -d /mnt/${BOOT}2/boot ] && echo "检测到/mnt/${BOOT}2存在原有的引导"
+	if [ -d boot ]; then
+		echo "是否把文件恢复在/mnt/${BOOT}2/boot下？"
+		read -r -p "请选择：[y]恢复 [n]忽略 " p
+		case $p in
+		[yY])
+			if [ -d /mnt/${BOOT}2/boot ] || {
+			_mount_disk ${BOOT}2 && make_dir "/mnt/${BOOT}2/boot"
+			cp -vrf boot/* /mnt/${BOOT}2/boot/ ;}; then
+				error_stop "${GREEN}启动文件成功恢复到/mnt/${BOOT}2/boot下。${NORMAL}"
+			else
+				error_stop "${RED}QNAP的引导恢复失败。${NORMAL}。"
+			fi
+			;;
+		[nN])
+			return
+			;;
+		esac
+	else
+		error_stop "${RED}${DIR}没有找到boot目录。${NORMAL}"
+	fi
+}
+
+patch_extract(){
+
+patch_ex(){
+	sed -i -e 's|$(/sbin/hal_app --get_boot_pd port_id=0)|$(/sbin/hal_app1 --get_boot_pd port_id=0)|g;s|if \[ -x /sbin/hal_app \]; then|if \[ -x /sbin/hal_app1 \]; then|g' "$b"/*
+	sed -i '{
+	s|$(/sbin/hal_app --get_boot_pd_part|$(/sbin/hal_app1 --get_boot_pd_part|g
+	/al-nand.ko/a#insmod KVM module\n[ ! -f /lib/modules/KVM/kvm.ko ] || /sbin/insmod /lib/modules/KVM/kvm.ko ignore_msrs=1\n[ ! -f /lib/modules/KVM/kvm-amd.ko ] || /sbin/insmod /lib/modules/KVM /kvm-amd.ko nested=0\n[ ! -f /lib/modules/KVM/macvlan.ko ] || /sbin/insmod /lib/modules/KVM/macvlan.ko\n[ ! -f /lib/modules/KVM/macvtap.ko ] || /sbin/insmod /lib/modules/KVM/macvtap.ko\n[ ! -f /lib/modules/KVM/tun.ko ] || /sbin/insmod /lib/modules/KVM/tun.ko\n[ ! -f /lib/modules/KVM/vhost.ko ] || /sbin/insmod /lib/modules/KVM/vhost.ko\n[ ! -f /lib/modules/KVM/vhost_net.ko ] || /sbin/insmod /lib/modules/KVM/vhost_net.ko\n[ ! -f /lib/modules/KVM/ipv6.ko ] || /sbin/insmod /lib/modules/KVM/ipv6.ko\n[ ! -f /lib/modules/KVM/llc.ko ] || /sbin/insmod /lib/modules/KVM/llc.ko\n[ ! -f /lib/modules/KVM/stp.ko ] || /sbin/insmod /lib/modules/KVM/stp.ko\n[ ! -f /lib/modules/KVM/bridge.ko ] || /sbin/insmod /lib/modules/KVM/bridge.ko\n[ ! -f /lib/modules/KVM/virtio.ko ] || /sbin/insmod /lib/modules/KVM/virtio.ko\n[ ! -f /lib/modules/KVM/virtio_ring.ko ] || /sbin/insmod /lib/modules/KVM/virtio_ring.ko\n[ ! -f /lib/modules/KVM/virtio_net.ko ] || /sbin/insmod /lib/modules/KVM/virtio_net.ko\n[ ! -f /lib/modules/KVM/virtio_blk.ko ] || /sbin/insmod /lib/modules/KVM/virtio_blk.ko\n[ ! -f /lib/modules/KVM/virtio-rng.ko ] || /sbin/insmod /lib/modules/KVM/virtio-rng.ko\n[ ! -f /lib/modules/KVM/virtio_balloon.ko ] || /sbin/insmod /lib/modules/KVM/virtio_balloon.ko\n[ ! -f /lib/modules/KVM/virtio_console.ko ] || /sbin/insmod /lib/modules/KVM/virtio_console.ko\n[ ! -f /lib/modules/KVM/virtio_mmio.ko ] || /sbin/insmod /lib/modules/KVM/virtio_mmio.ko\n[ ! -f /lib/modules/KVM/virtio_pci.ko ] || /sbin/insmod /lib/modules/KVM/virtio_pci.ko\n[ ! -f /lib/modules/KVM/virtio_scsi.ko ] || /sbin/insmod /lib/modules/KVM/virtio_scsi.ko\n[ ! -f /lib/modules/KVM/vringh.ko ] || /sbin/insmod /lib/modules/KVM/vringh.ko
+	/insmod LSI scsi module/a\[ ! -f /lib/modules/misc/mptbase.ko ] || /sbin/insmod /lib/modules/misc/mptbase.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/mptscsih.ko ] || /sbin/insmod /lib/modules/misc/mptscsih.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/mptsas.ko ] || /sbin/insmod /lib/modules/misc/mptsas.ko 2>>/dev/null
+	/if \[ ! -f \/etc\/IS_TAS ]; then/,+9d
+	/x53S_pins.ko/d
+	'$(($(grep "kernel/msgmnb" "$b"/init_check.sh -n | awk -F: '{print $1}') +1)),$(($(grep "kernel/msgmnb" "$b"/init_check.sh -n | awk -F: '{print $1}') +6))d'
+	/kernel\/msgmnb/a/bin/echo "extract rootfs2.gz from boot partition"\n/sbin/hal_app1 --boot
+	/i2c-algo-bit.ko/a[ ! -f /lib/modules/misc/r8168.ko ] || /sbin/insmod /lib/modules/misc/r8168.ko 2>>/dev/null \n[ ! -f /lib/modules/misc/e1000.ko ] || /sbin/insmod /lib/modules/misc/e1000.ko 2>>/dev/null \n[ ! -f /lib/modules/misc/mdio.ko ] || /sbin/insmod /lib/modules/misc/mdio.ko 2>>/dev/null \n[ ! -f /lib/modules/misc/mii.ko ] || /sbin/insmod /lib/modules/misc/mii.ko 2>>/dev/null \n[ ! -f /lib/modules/misc/pps_core.ko ] || /sbin/insmod /lib/modules/misc/pps_core.ko 2>>/dev/null \n[ ! -f /lib/modules/misc/ptp.ko ] || /sbin/insmod /lib/modules/misc/ptp.ko 2>>/dev/null \n[ ! -f /lib/modules/misc/libphy.ko ] || /sbin/insmod /lib/modules/misc/libphy.ko 2>>/dev/null \n[ ! -f /lib/modules/misc/e1000e.ko ] || /sbin/insmod /lib/modules/misc/e1000e.ko 2>>/dev/null \n[ ! -f /lib/modules/misc/i2c-algo-bit.ko ] || /sbin/insmod /lib/modules/misc/i2c-algo-bit.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/igb.ko ] || /sbin/insmod /lib/modules/misc/igb.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/vmxnet3.ko ] || /sbin/insmod /lib/modules/misc/vmxnet3.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/tg3.ko ] || /sbin/insmod /lib/modules/misc/tg3.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/bnx2.ko ] || /sbin/insmod /lib/modules/misc/bnx2.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/bnx2x.ko ] || /sbin/insmod /lib/modules/misc/bnx2x.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/usbnet.ko ] || /sbin/insmod /lib/modules/misc/usbnet.ko 2>>/dev/null\n[ ! -f /lib/modules/misc/ax88179_178a.ko ] || /sbin/insmod /lib/modules/misc/ax88179_178a.ko 2>>/dev/null\n/etc/init.d/load_lan_module.sh
+	/echo "======/a\\/usr\/bin/\chvt 1 2>/dev/null
+	}' "$b"/init_check.sh
+	sed -i -e 's|=$(/sbin/hal_app --get_boot_pd_part|=$(/sbin/hal_app1 --get_boot_pd_part|g; s|if \[ -x /sbin/hal_app \]; then|if \[ -x /sbin/hal_app1 \]; then|g' "$b"/functions
+	sed -i 's|$(/sbin/hal_app --get_boot_pd_part port_id=0,obj_index=|$(/sbin/hal_app1 --get_boot_pd_part port_id=0,obj_index=|g' "$b"/mountall
+	sed -i 's|HAL_APP=/sbin/hal_app|HAL_APP=/sbin/hal_app1|g' "$b"/killnas.sh
+	sed -i '/UPDATE_FOLDER\}\/update_img.sh/d' "$b"/update.sh #删除匹配的行
+	sed -i '/$UPDATE_FOLDER\/update_bios.sh/,+39d' "$b"/update_img.sh #删除匹配的行以及下面39行
+	# sed -i '/var\/.boot_done/acheck=`dmesg | grep "DMI: Insyde" 2>/dev/null`\nif [ "x${_check}" = "x" ]; then\n   reboot -f\nfi' "$b"/boot_done.sh
+	# sed -i 's/8086154d.*/8086154d #Ethernet 10G 2P X520 Adapter\n  80861521 #Ethernet 10G 2P X550 Adapter/g' "$b"/load_lan_module.sh
+	# sed -i 's|SSH Enable" -u -d FALSE|SSH Enable" -u -d TRUE|g' "$b"/login.sh
+}
+
+[ -d initrd ] || initrd_ && extract_initrd
+make_dir a b
+sh_fi="boot_done.sh chkcfgpart.sh functions init_check.sh init_disk.sh init_nas.sh init_final.sh login.sh killnas.sh load_lan_module.sh mountall shutdown_check.sh update.sh update_img.sh"
+for p in $sh_fi; do
+cp -r initrd/etc/init.d/$p ${DIR}/a
+cp -r initrd/etc/init.d/$p ${DIR}/b
+done
+
+# [ -d ./model_${TYPE} ] || mkdir -m 777   ./model_${TYPE} 1>/dev/null 2>&1
+# cp -f ./initrd/etc/model.conf            ./model_${TYPE} 1>/dev/null 2>&1
+# cp -f ./initrd/etc/hal_util_ext.conf     ./model_${TYPE} 1>/dev/null 2>&1
+# cp -f ./initrd/etc/model_${TYPE}.conf    ./model_${TYPE} 1>/dev/null 2>&1
+# cp -f ./initrd/etc/hal_util_${TYPE}.conf ./model_${TYPE} 1>/dev/null 2>&1
+# cp -f ./initrd/etc/model_${TYPE}.conf    .
+
+echo "可以自己修改$b目录或系统生成patch文件。"
+read -r -p "请选择：[y]固态引导 [u]U盘引导 [n]修改生成 [i]忽略退出 " p
+	case $p in
+		[yY])
+			patch_ex && diff -Nauri a b > "${PAT}".patch && chmod 777 "$PAT".patch
+			echo "固态引导的${GREEN}${PAT}.patch${NORMAL}文件已自动生成在TC目录下。"
+			;;
+		[uU])
+			patch_ex && diff -Nauri a b > "${PAT}".patch
+			sed -i 's^$.*p1.*^"/dev/`awk '"'/$blocks/{print \$4}' /proc/partitions | sed 's/[0-9]//g'"'`"^g' $PAT.patch
+			# sed -i 's!$.*pp1.*!"/dev/`grep '"$blocks /proc/partitions | sed -e 's/^.*$blocks//g;s/ //g;s/1//g'"'`"!g' "$PAT".patch
+			# sed -i 's#$.*pp1.*#"/dev/`awk '/sd.*/{print $4}' /proc/partitions | cut -c1-3 | uniq | sort -d | head -1`"#g' "${PAT}".patch
+			chmod 777 "${PAT}".patch
+			echo "U盘引导的${GREEN}${PAT}.patch${NORMAL}文件已自动生成在TC目录下。"
+			;;
+		[nN])
+			diff -Nauri b > "${PAT}".patch && chmod 777 "${PAT}".patch
+			echo "自己修改的${GREEN}${PAT}.patch${NORMAL}文件已生成在TC目录下。"
+			;;
+		[iI])
+			error_stop "退出"
+			;;
+	esac
+}
+
+information(){
+
+echo -e "\n${RED}本机信息：${NORMAL}"
+echo -e "${BLUE}==================================================================================${NORMAL}\n"
+echo "操作系统      : $(uname -snr)-$(getBuild)-$(version)"
+echo "CPU型号       :$(awk -F: '/model name/NR==1{print ($NF)}' /proc/cpuinfo)"
+echo "CPU工作频率   :$(awk -F: '/MHz/NR==1{printf ($NF)}' /proc/cpuinfo) MHz / \
+$(grep 'core id' /proc/cpuinfo | sort -u | wc -l)核"
+echo "内存总量      : $(awk '/^MemTotal/{print $2/1024}' /proc/meminfo)" MB
+c=0; for a in $(seq $(lspci | grep -c SATA)); do c=$((c+1))
+echo "SATA控制器($a) :`lspci | awk -F: '/SATA/{print $NF}' | sed -n "$c"p`";done
+
+
+c=0; for a in $(seq `lspci | grep -c Ethernet`); do c=$((c+1))
+echo "网卡控制器($a) :$(lspci | awk -F: '/Ethernet/{print $NF}' | sed -n "$c"p)";done
+
+c=0; for a in $(seq `lspci | grep -c USB`); do c=$((c+1))
+echo "USB控制器 ($a) :$(lspci | awk -F: '/USB/{print $NF}' | sed -n "$c"p)";done
+
+echo -e "\n${BLUE}==================================================================================${NORMAL}"
+echo -e "\n\\n${RED}设置信息：${NORMAL}"
+echo "${BLUE}==================================================================================${NORMAL}"
+echo -e "\n已设置的版本  ：${GREEN}${PAT}${NORMAL}\n已设置的model ：${GREEN}model_${TYPE}.conf${NORMAL}"
+
+c=0; for a in $(seq -w `ls *.conf  2> /dev/null | wc -l`); do c=$((c+1))
+echo "TC下的model($a)：${MAGENTA}`ls *.conf | sed -n "$c"p`${NORMAL}";done
+
+c=0; for a in $(seq $(ls *.patch 2> /dev/null | wc -l)); do c=$((c+1))
+echo "TC下的patch($a)：${MAGENTA}$(ls *.patch | sed -n "$c"p)${NORMAL}";done
+
+echo "固件下载的地址：${DOWNLOAD}"
+echo -e "\n${BLUE}==================================================================================${NORMAL}\n"
+
+model_(){
+	a=$(find $(pwd) -maxdepth 4 -type f -name "model*.conf" -print0 | xargs -0 grep -l "Memory" 2> /dev/null)
+	b=0; for c in $a; do b=$((b+1))
+	d=$(grep -A 9 'Boot Enclosure' "$c" | grep -E 'DISK_DRV_TYPE|DEV_PORT.*|DEV_BUS' | awk '{if(NR%3!=0)ORS=" ";else ORS="\n"}1' \
+	| sed 's/DISK_DRV_TYPE/启动方式/g' | awk '{printf "%s %s %-7s %-s %-s %-12s %-s %-s %-s\n" ,$1,$2,$3,$4,$5,$6,$7,$8,$9}')
+	e=$(grep -E 'Netw|V_BUS|V_PORT' "$c" | grep -A 2 'm Ne' | sed -e '/--/d;N;N;s/\n/ /g' \
+	| awk '{printf "%17s %s %s %s %s %-12s %s %s %s\n" ,$1,$2,$3,$4,$5,$6,$7,$8,$9}')
+	f=$(grep -E 'Port|V_BUS|V_PORT' "$c" | grep -A 2 'Usb' | sed '/--/d' | awk '{if(NR%3==0){printf $0 "\n"}else{printf "%s ",$0}}' \
+	| awk '{printf "%14s %s %-8s %s %s %-12s %s %s %s\n" ,$1,$2,$3,$4,$5,$6,$7,$8,$9}')
+	g=$(grep -E 'm Di|V_BUS|V_PORT' "$c" | grep -A 2 'm Di' | sed -e '/--/d;N;/\n.*Disk [1-2]-1/!P;D' \
+	| sed 'N;N;s/\n/ /g' | awk '{printf "%17s %s %-5s %s %s %-12s %s %s %s\n" ,$1,$2,$3,$4,$5,$6,$7,$8,$9}')
+	# sed 'N;N;s/\n/ /g' #三行并一行 # awk 'NR%3{printf $0" ";next}1' #三行并一行 # awk 'ORS=NR%3?" ":"\n"{print}' #三行并一行
+	# awk '{if(NR%3!=0)ORS=" ";else ORS="\n"}1' #三行并一行 # awk '{if(NR%3==0){printf $0 "\n"}else{printf "%s ",$0}}' #三行并一行
+	echo -e "\n\nNO.$b  ${RED}$c${NORMAL}"
+	echo "${BLUE}==================================================================================${NORMAL}"
+	echo "QNAP型号: $(grep -A 3 'tem Enclo' "$c" | awk '/^MODEL/{print $3}')"
+	echo "引导信息: $d"
+	echo "I2C     : $(grep -E 'I2C|V_B|V_POR' "$c" | grep -A 2 'stem I2' | awk 'NR%3{printf $0" ";next}1' \
+	| awk '{printf "%s %-10s %-s %-s %-12s %-s %-s %-s %-s\n" ,$1,$2,$3,$4,$5,$6,$7,$8,$9}')"
+	echo -e "EDID    : $(grep 'stem ED' "$c" -c) (个)\n$(grep -A 2 'stem ED' "$c" | awk 'ORS=NR%3?" ":"\n"{print}' \
+	| awk '{printf "%17s %s %-5s %s %s %-12s %s %s %s\n" ,$1,$2,$3,$4,$5,$6,$7,$8,$9}')"
+	echo -e "网卡信息: $(echo "$e" | wc -l) (个) \n$e"
+	echo -e "USb信息 : $(echo "$f" | awk 'END{print NR}') (个) \n$f"
+	echo -e "存储信息: $(grep -m1 "MAX_DISK_NUM" $c | cut -d' ' -f3) (个) \n$g"
+	echo "${BLUE}==================================================================================${NORMAL}"
+done
+	echo -e "所有目录下共有$b个conf文件\n"
+}
+
+echo "${RED}###本地配置文件的基本信息快速浏览###${NORMAL}"
+echo "是否要显示本所有的conf文件信息"
+read -r -p "请选择：[y]显示 [n]退出" p
+	case $p in
+		[yY])
+			model_
+			;;
+		[nN])
+			return 0
+			;;
+		*)
+			echo  "请正确输入"
+			information
+			;;
+	esac
+}
+DEV_BUS(){
+
+model_conf(){
+
+	model=$(ls ./*.conf); local IFS=$(echo -en "\n\b")
+	echo -e "\n========================="
+	read -p "输入设定磁盘数量(输入非数字键忽略)：" u
+	echo -e "=========================\n\n========================="
+
+	i=0; for x in USB ATA; do echo "$((i+1)). $x"; i=$((i+1)); done
+	read -p "选择启动盘的启动模式选项: " i; oo=`echo -e "USB\nATA" | sed -n "$i"p`
+	echo -e "=========================\n\n========================="
+
+	i=0; for x in `cat SATA`; do echo "$((i+1)). $x"; i=$((i+1)); done
+	read -p "选择启动盘的DEV_BUS : " i; pp=`cat SATA | sed -n "$i"p`
+	echo -e "=========================\n"
+
+	for model in $model; do
+		echo "$u" | [ -n "`sed -n '/^[0-9][0-9]*$/p'`" ] && sed -i '1,/DISK_NUM.*/{s/DISK_NUM.*/DISK_NUM = '"$u"'/}' $model
+		if [ $oo ]; then w=`grep -n "DISK_DRV_TYPE" $model | sed -n 2p | cut -d: -f1`
+		sed -i ''"$w"'s/DISK_DRV_TYPE.*/DISK_DRV_TYPE = '"$oo"'/' $model; fi
+
+		if [ $pp ]; then w=`grep -A 2 "Boot Disk" $model -n | grep "BUS" | cut -d- -f1`
+		sed -i ''"$w"'s/DEV_BUS.*/'"$pp"'/' $model; fi
+
+		[ -e Ethernet ] && { i=0; for q in `cat Ethernet`; do i=$((i+1))
+			w=`grep -A 5 "Network" $model -n | grep "BUS" | cut -d- -f1 | sed -n "$i"p`
+			t=`grep -A 5 "Network" $model -n | grep "POR" | cut -d- -f1 | sed -n "$i"p`
+			sed -i ''"$w"'s/DEV_BUS.*/'"$q"'/' $model; sed -i ''"$t"'s/DEV_PORT.*/DEV_PORT = 0/' $model; done; }
+
+		[ -e USB ] && { i=0; for q in `cat USB`; do i=$((i+1))
+			w=`grep -A 3 "Usb Port" $model -n | grep "BUS" | cut -d- -f1 | sed -n "$i"p`
+			t=`grep -A 4 "Usb Port" $model -n | grep "POR" | cut -d- -f1 | sed -n "$i"p`
+			sed -i ''"$w"'s/DEV_BUS.*/'"$q"'/' $model; sed -i ''"$t"'s/DEV_PORT.*/DEV_PORT = 0/' $model; done; }
+
+		[ -e SMBus ] && { q=`cat SMBus`; w=`grep -A 3 "tem I2C" $model -n | grep "DEV_BUS" | cut -d- -f1`
+			sed -i ''"$w"'s/DEV_BUS.*/'"$q"'/' $model; }
+
+		sed -i ''$(($(grep "System Disk 1\]" -n $model | cut -d: -f1)+1)),$(($(grep "System Network 1" -n  $model | cut -d: -f1)-1))d'' $model
+			for i in `seq $(grep -m1 "MAX_DISK_NUM" $model | cut -d' ' -f3) | sort -nr`; do
+				sed -i '/System Disk 1\]/a\\[System Disk '"$i"'\]\n111\nDEV_PORT = 222' $model
+			done
+
+			for i in `seq $(grep -m1 "MAX_DISK_NUM" $model | cut -d' ' -f3)`; do
+				for b in `cat SATA`; do
+					for c in `seq 0 3`; do
+						sed -i '1,/111/{s/111/'"$b"'/}' $model
+						sed -i '1,/222/{s/222/'"$c"'/}' $model
+					done
+				done
+			done
+
+		sed -i -e '1,/tem Disk 1\]/{/tem Disk 1\]/d};/^$/d;s/\[/\n\[/g' $model
+		sed -i '1d'  $model
+	done
+}
+
+	for i in SATA Ethernet USB SMBus Marvell; do p=$(lspci -PP | grep $i); [ -e $i ] && rm -rf $i
+	[ -n "$p" ] && echo -e "\n${RED}lspci -PP${NORMAL} 找到${GREEN}$i${NORMAL}的控制器有${RED}$(echo "$p" | wc -l)${NORMAL}条"
+	# [ "x$p" = "x" ] || echo -e "\n${RED}lspci -PP${NORMAL} 找到${GREEN}$i${NORMAL}的控制器有${RED}$(echo "$i" | wc -l)${NORMAL}条："
+		d=0; for a in $(echo "$p" | cut -d/ -f1 | cut -d' ' -f1); do
+			bb=$(echo "$a" | cut -d: -f2 | cut -d. -f1); d=$((d+1))
+			aa=$(echo "$a" | cut -d: -f1); cc=$(echo "$a" | cut -d. -f2)
+			DEV_BUS=$(printf "B%02d:D%02d:F%0d" "0x$aa" "0x$bb" "0x$cc")
+			echo "$p" | sed -n "$d"p | sed 's/^/\('"$d"'\)/g'
+			echo "16进制${GREEN}$a${NORMAL}的转换"
+			echo "===================="
+			echo "DEV_BUS = $DEV_BUS" | tee -a $i
+			echo "===================="
+		done
+	done
+
+	[ -e SATA ] && model_conf
+# setcfg=$(grep -E "$1|$2" "$4" | grep -A 3 "$1" | sed -n 2p | sed 's/'"$2"' = .*/'"$2"' = '"$3"'/g')
+}
+
+blocks=$(grep "$BOOT"$ /proc/partitions | awk '{print $3}')
+
+create_disk(){
+
+_partition(){
+	local IFS=$(echo -en "\n\b")
+	umount /dev/s* 1>/dev/null 2>&1
+	echo -e "\n${GREEN}========== 1.磁盘分区 ===========${NORMAL}"
+	[ -z ${TARGET:0:8} ] && { echo -e "${YELLOW}没有找到适合建立的磁盘${NORMAL}" && exit 0; } || echo -e "系统已找到的磁盘："
+	i=0; for x in $(detect_disk); do echo "$((i+1)). $x"; i=$((i+1)); done
+	read -p "输入序列号，选择你要安装的磁盘：" g
+	x=$(detect_disk | sed -n "$g"p | awk '{print $1}' | cut -d/ -f3)
+	[ $x ] || { echo -e "\n${RED}输入错误！只需要行首的数字。重新选择！${NORMAL}" && _partition; }
+	c=$(fdisk -s /dev/"$x" | awk '{print $0/1024}'); a=/dev/$x
+	# c=$(lsblk -b | grep -w "$x" | awk '{print $4/1024/1024}') # c=$(lsscsi -S | grep "$x" | awk '{print $8/2048}')
+	[ $(echo $c | awk -v bi=2000 '{print($1>bi)?"1":"0"}') -ne "1" ] && echo -e "\n你选择的磁盘${RED} $a ${NORMAL}小于2G，重新选择！" && _partition
+	df=$(lsblk -p | grep "$x[1-6]")
+	if [ ${#df} -eq 0 ]; then
+		echo "磁盘${GREEN}$a${NORMAL}没有找到逻辑分区，可以进行进行格式化并分区操作。"
+	else
+		echo -e "${RED}磁盘$a存在逻辑分区，是否继续格式化操作。${NORMAL}"
+	fi
+	read -p " [ｙ]继续 | 任意键退出 " q
+	case $q in
+	y) echo "您确认了继续格式化$a操作,脚本将继续执行。"
+	;;
+	*) echo "您否定了格式化操作，不会影响磁盘数据。"
+	exit 0
+	;;
+	esac
+	# parted -s $a mklabel msdos	# 格式化为gpt 动态分区
+	# msdos 其他类型
+	# parted -s $a mkpart primary 0 100%	# 分区 全部
+	# parted -s $a mkpart entended 3G 5G	# 第一个扩展分区:从3G 到5G
+	# parted -s $a mkpart logic 5G 100%	# 第二个扩展分区:从5G到100%
+	# logic [ˈlɒdʒɪk] #逻辑，分区
+	# 建立msdos分区，格式化所有分区 2g盘分256M+512M+512M+16M+16M+16M
+
+	time 10 分区
+
+	parted -s ${a} -- mklabel msdos			\
+	mkpart primary fat32   2048s 1988607s	\
+	set 1 boot on							\
+	mkpart primary ext2 1988608s 3012607s	\
+	mkpart primary ext2 3012608s 4036607s	\
+	mkpart extended     4036608s   -2048s	\
+	mkpart logical ext2 4038656s 4071423s	\
+	mkpart logical ext2 4073472s 4106239s	\
+	mkpart logical ext2 4108288s 4141055s	\
+	mkpart logical ext2 4141057s   -2048s
+	sync; sleep 2
+
+	mkdosfs -n QTS_BOOT1 ${a}1			#tinycore
+	# mkfs.vfat -L QTS_BOOT1 -F ${a}1	#tinycore
+	# mkfs.vfat -n QTS_BOOT1 -F ${a}1	#slitaz busybox
+	# mkfs.fat  -n QTS_BOOT1 -F ${a}1
+	mkfs.ext2 -L QTS_BOOT_PART2 -F ${a}2
+	mkfs.ext2 -L QTS_BOOT_PART3 -F ${a}3
+	mkfs.ext2 -L QTS_BOOT_PART5 -F ${a}5
+	mkfs.ext2 -L QTS_BOOT_PART6 -F ${a}6
+	mkfs.ext2 -L QTS_BOOT_PART7 -F ${a}7
+	mkfs.ext2 -L QTS_BOOT_PART8 -F ${a}8
+	sync; sleep 2
+	# 热插拔磁盘
+	op=`lsblk -S | grep $x | awk '{print $2}'`
+	ax=${op:0:1}; ay=${op:2:1}; az=${op:4:1}; au=${op:6:1}
+	echo "scsi remove-single-device $ax $ay $az $au" > /proc/scsi/scsi
+	echo "scsi add-single-device $ax $ay $az $au" > /proc/scsi/scsi
+	# for i in /sys/class/scsi_host/host*/scan; do echo "- - -" >$i; done
+}
+
+modify_laojifuli(){
+
+mylocale(){
+	tempdir=`mktemp -d`
+	rm -rf /usr/lib/locale/locale-archive/
+	make_dir /usr/lib/locale
+	for i in $1; do
+		dest=${i%%/*}
+		charset=${i##*/}
+		locale=${dest%%.*}
+		nice -n19 localedef -i $locale -c -f $charset $dest || echo -e "${RED}localedef失败。${NORMAL}"
+	done
+
+	cd $tempdir
+	make_dir usr/lib/locale
+	cp -a /usr/lib/locale/locale-archive usr/lib/locale
+	cd .. && chmod 755 $tempdir
+	rm -f mylocale.tcz
+	mksquashfs $tempdir mylocale.tcz > /dev/null 2>&1
+	cp -rv /tmp/mylocale.tcz ${DIR}/tcz
+	cd $tempdir
+	make_dir usr/share/fonts
+	[ -e usr/share/fonts/* ] || {
+	wget -t0 -T10 https://raw.githubusercontent.com/hong0980/diy/master/sh/wqy-microhei.ttc -P usr/share/fonts/; }
+	cd .. && chmod 755 $tempdir
+	rm -f fonts.tcz
+	mksquashfs $tempdir fonts.tcz > /dev/null 2>&1
+	cp -rv /tmp/fonts.tcz ${DIR}/tcz
+	rm -rf $tempdir
+}
+
+make_tcz(){
+	cd ${DIR}
+	[ -d tcz ] || su - tc -c "mkdir -p ${DIR}/tcz"
+	export C_INCLUDE_PATH=/usr/local/include/ncursesw:/usr/local/include:/usr/include
+	##pciutils
+	if [ -e pciutils/pciutils.tcz ]; then
+		cp -v pciutils/pciutils.tcz tcz/
+	elif [ -e laojifuli/tmp/tce/optional/pciutils.tcz ]; then
+		cp -v laojifuli/tmp/tce/optional/pciutils.tcz tcz/
+	else
+		if do_tcz compiletc git; then
+		if git clone https://github.com/pciutils/pciutils; then
+		cd pciutils
+		make install DESTDIR=/tmp/pciutils
+		deb2tcz.sh /tmp/pciutils
+			cp -vf pciutils.tcz ../tcz/
+		fi
+		cd ${DIR}; fi
+	fi
+
+	##lsscsi
+	if [ -e lsscsi-0.31/lsscsi.tcz ]; then
+		cp -v lsscsi-0.31/lsscsi.tcz tcz/
+	elif [ -e laojifuli/tmp/tce/optional/lsscsi.tcz ]; then
+		cp -v laojifuli/tmp/tce/optional/lsscsi.tcz tcz/
+	else
+		if do_tcz compiletc git; then
+		if wget http://sg.danny.cz/scsi/lsscsi-0.31.tgz; then
+		tar -xf lsscsi-0.31.tgz
+		cd lsscsi-0.31
+		./configure
+		make install DESTDIR=/tmp/lsscsi
+		deb2tcz.sh /tmp/lsscsi
+			cp -vf lsscsi.tcz ../tcz/
+		fi
+		cd ${DIR}; fi
+	fi
+	# [ "$(version)" = "11.1" ] && {
+	# if [ -e ${DIR}/progress/progress.tcz ]; then
+		# cp -vf ${DIR}/progress/progress.tcz tcz/
+	# elif [ -e laojifuli/tmp/tce/optional/progress.tcz ]; then
+		# cp -vf laojifuli/tmp/tce/optional/progress.tcz tcz/
+	# else
+		# do_tcz compiletc git ncursesw-dev
+		# if git clone https://github.com/Xfennec/progress; then
+		# cd progress
+		# sed -i 's/ncurses/ncursesw/g' Makefile
+		# make install DESTDIR=/tmp/progress
+		# deb2tcz.sh /tmp/progress
+		# cp -vf ${DIR}/progress/progress.tcz ${DIR}/tcz/; fi
+		# cd ${DIR}
+	# fi; }
+
+	##pv
+	if [ -e pv/pv.tcz ]; then
+		cp -v pv/pv.tcz tcz/
+	elif [ -e laojifuli/tmp/tce/optional/pv.tcz ]; then
+		cp -v laojifuli/tmp/tce/optional/pv.tcz tcz/
+	else
+		if do_tcz compiletc git; then
+		if git clone https://github.com/icetee/pv; then
+		cd pv
+		./configure
+		make
+		make install DESTDIR=/tmp/pv
+		deb2tcz.sh /tmp/pv
+		cp -vf pv.tcz ../tcz/
+		fi
+		cd ${DIR}; fi
+	fi
+
+	# do_tcz compiletc git
+	# if wget https://ftp.gnu.org/gnu/parted/parted-3.3.tar.xz
+	# xz -d parted-3.3.tar.xz
+	# tar -xf parted-3.3.tar
+	# cd parted-3.3
+	# ./configure --disable-device-mapper --without-readline --disable-nls
+	# make install DESTDIR=/tmp/parted
+	# deb2tcz.sh /tmp/parted; then
+	# cp -vf ${DIR}/parted-3.3/parted.tcz ${DIR}/tcz/; fi
+	# cd ${DIR}
+}
+
+	echo -e "\n${GREEN}==== 2.修改laojifuli =====${NORMAL}"
+	_mount_disk "${BOOT}1"
+	cp -vf /mnt/${BOOT}1/laojifuli.gz ./ && make_dir laojifuli && cd laojifuli
+		if zcat ../laojifuli.gz | cpio -i -H newc -d; then
+			for p in $(ls ${DIR}/laojifuli/home/tc/ | grep -Ev "DEVBUS|pc1|hal_app1|hal_app2|--README--"); do
+			rm -rf /home/tc/laojifuli/home/tc/$p; done
+			cat > "${DIR}/laojifuli/tmp/tce/boot-config.sh" <<-EOF
+				#!/bin/sh
+				#系统启动时执行的脚本(/opt/bootsync.sh)
+
+				cp /usr/local/etc/ssh/ssh_config.* /usr/local/etc/ssh/ssh_config
+				cp /usr/local/etc/ssh/sshd_config.* /usr/local/etc/ssh/sshd_config
+				/usr/local/etc/init.d/openssh start
+				echo tc:123456 | chpasswd -m
+
+				sed -i -r "s@^(G_FILENAME_ENCODING)=(.*)@\1='UTF-8'\nexport G_BROKEN_FILENAMES=1\nexport TZ='Asia/Shanghai'@" /etc/profile
+				echo -e "export LANG=zh_CN.UTF-8\nexport LC_ALL=zh_CN.UTF-8" >> /etc/profile
+				echo "http://mirrors.163.com/tinycorelinux/" > /opt/tcemirror
+
+				for k in /tmp/tce/sh/*; do
+				chmod +x "\$k"
+				chown root "\$k"
+				chgrp root "\$k"
+				mv -f "\$k" /usr/bin/
+				done
+			EOF
+			chmod +x ${DIR}/laojifuli/tmp/tce/boot-config.sh
+
+			if [ $x ]; then
+				sed -e 's|2".* ]|2" -a "$size" = " " ]|g; s|3".* ]|3" -a "$size" = " " ]|g' ${DIR}/laojifuli/home/tc/hal_app2 -i
+				r=$(grep -E "$x[1-7]" /proc/partitions | awk '{print $3}'); b=0
+				for	c in $r; do b=$((b+1))
+					sed -r 's/(.*ame\}'"$b"'.*= )(.*)"/\1"'"$c"'"/g' ${DIR}/laojifuli/home/tc/hal_app2 -i
+				done
+			fi
+
+			for i in askexec deb2tcz.sh dpkgstatus dpm finf fsnap mntiso untcz; do
+				make_dir ${DIR}/laojifuli/tmp/tce/sh
+				if [ -e ${DIR}/laojifuli/tmp/tce/sh/$i ] || wget -t0 -T10 https://raw.githubusercontent.com/hong0980/diy/master/sh/$i \
+				-P ${DIR}/laojifuli/tmp/tce/sh; then
+				[ -e /usr/bin/$i ] || { cp -f ${DIR}/laojifuli/tmp/tce/sh/$i /usr/bin/
+				chmod +x /usr/bin/$i; }; fi
+			done
+
+			[ -e /usr/bin/deb2tcz.sh ] && make_tcz
+
+			[ "$(version)" = "11.1" ] || sed -i 's|"\$MIRROR"|http://mirrors.163.com/tinycorelinux/11.x/x86/tcz/|g' /usr/bin/tce-load
+			if for p in aterm openssh fltk-1.3 flwm flwm_topside freetype tzdata wbar Xprogs Xvesa i2c-5.4.3-tinycore file \
+					getlocale rxvt pv util-linux squashfs-tools ; do
+					[ -e ${DIR}/tcz/$p.tcz ] || { echo -e "稍等，下载 ${GREEN}$p.tcz${NORMAL} 中...\c"
+					su - tc -c "tce-load -w ${DIR}/tcz/$p" 1>/dev/null 2>&1
+					status; }
+				done; then
+					cd ${DIR}/laojifuli/tmp/tce
+					rm -rf optional/* && cp -f ${DIR}/tcz/*.tcz optional/
+					ls optional/ | sort -f > onboot.lst
+					cat onboot.lst > copy2fs.lst && cat onboot.lst > xbase.lst
+					cd ${DIR}/laojifuli
+			fi
+
+			if [ -e /tmp/tce/optional/getlocale.tcz ] || do_tcz getlocale; then
+				mylocale "zh_CN.UTF-8/UTF-8"
+			fi
+
+			[ -e laojifuli/home/tc/model_QW371_QW340_20_12.conf ] || {
+			wget https://raw.githubusercontent.com/hong0980/diy/master/sh/model_QW371_QW340_20_12.conf -P ${DIR}/laojifuli/home/tc/;}
+
+			su - tc -c "cp -vf ${DIR}/${0##*/} ${DIR}/laojifuli/home/tc/ && chmod +x ${DIR}/laojifuli/home/tc/${0##*/}"
+			su - tc -c "cat ${DIR}/${0##*/} > ${DIR}/laojifuli/home/tc/create_qnap_boot && chmod +x ${DIR}/laojifuli/home/tc/create_qnap_boot"
+			cd ${DIR}/laojifuli && find .| cpio -o -H newc | gzip > ../laojifuli.gz
+		fi
+	cd  ${DIR}
+}
+
+modify_core(){
+
+	echo -e "\n${GREEN}======= 3.修改core ========${NORMAL}"
+	[ -f vmlinuz ] || wget http://mirrors.163.com/tinycorelinux/11.x/x86/release/distribution_files/vmlinuz
+	[ -f core.gz ] || wget http://mirrors.163.com/tinycorelinux/11.x/x86/release/distribution_files/core.gz
+	make_dir core && cd core
+	if zcat ../core.gz | cpio -i -H newc -d; then
+		echo "[ -x /etc/sysconfig/tcedir/boot-config.sh ] && /etc/sysconfig/tcedir/boot-config.sh" >> ${DIR}/core/etc/init.d/tc-config
+		find . | cpio -o -H newc | gzip > ../core.gz
+		cd ${DIR}
+	else
+		echo "解压core.gz失败"
+		exit 1
+	fi
+}
+
+install_grub(){
+	echo -e "\n${GREEN}====== 4.安装grub =======${NORMAL}"
+	if make_dir "/mnt/${x}1" && _mount_disk "${x}1"
+	[ -d /mnt/${x}1 ] && rm -rf /mnt/${x}1/* || { echo "检测不到/mnt/${x}1,退出安装grub" && exit 0; }
+	grub-install --boot-directory=/mnt/${x}1/boot --target=i386-pc $a	# grub2 loader(BIOS)
+	grub-install --boot-directory=/mnt/${x}1/boot --target=i386-efi --efi-directory=/mnt/${x}1 $a
+	cp -vrf /mnt/${BOOT}1/G2ldr /mnt/${x}1/
+	cd  /home/tc && mv -vf laojifuli.gz core.gz vmlinuz /mnt/${x}1/
+	cp -rf /mnt/${BOOT}1/boot/grub/Config	/mnt/${x}1/boot/grub/
+	cp -rf /mnt/${BOOT}1/boot/grub/fonts	/mnt/${x}1/boot/grub/
+	cp -rf /mnt/${BOOT}1/boot/grub/locale	/mnt/${x}1/boot/grub/
+	cp -rf /mnt/${BOOT}1/boot/grub/themes	/mnt/${x}1/boot/grub/
+	cp -rf /mnt/${BOOT}1/boot/grub/grub.cfg	/mnt/${x}1/boot/grub/ ;then
+		rm -rf ${DIR}/lao* core*
+	fi
+}
+
+detect_disk(){
+	lsscsi -s | grep -v "${BOOT}" | while read -r LINE; do
+	echo -e "$LINE" | awk '{printf "%-10s %-8s %-8s %-0s\n" ,$7,$8,$3,$4}'
+	done
+}
+
+	if [ "$(version)" != "11.1" ]; then
+		echo -e "${GREEN}1  建立新系统 \n2  升级本系统 ${NORMAL}\n输入序列号，选择你要的选项：\c"
+		read -r q
+		case $q in
+		1) :
+		;;
+		2)
+		do_tcz squashfs-tools
+		modify_laojifuli
+		modify_core
+		if cp -vf laojifuli.gz core.gz vmlinuz /mnt/${BOOT}1/; then
+		rm -rf laojifuli/ core/; fi
+		exit 0
+		;;
+		esac
+	fi
+
+	do_tcz parted dosfstools grub2-multi mkisofs-tools squashfs-tools usb-utils
+	TARGET=$(detect_disk); point=$(lsscsi -s | grep -w "${BOOT}" | awk '{printf "%-4s %-4s %-4s %-4s\n" ,$7,$8,$3,$4}')
+	echo -e "\n${GREEN}======对新磁盘建立 tinycore v11.1系统======${NORMAL}"
+	echo -e "${RED}新建立的磁盘或U盘容量不能小于2G${NORMAL}"
+	echo -e "系统盘：${BLUE}$point${NORMAL} "
+
+	_partition
+	modify_laojifuli
+	modify_core
+	install_grub
+	# [ $x ] && dd bs=512 count=15002048 if=/dev/$x | pv | gzip -9 > QNAP_BOOT.vmdk.gz
+}
+
+if [ "$(version)" != "11.1" ]; then
+	sed -i 's|http://mirrors.163.*tcz/|"\$MIRROR"|g' /usr/bin/tce-load
+	do_tcz pv lsscsi util-linux mkisofs-tools
+fi
+
+main_interface

@@ -1,0 +1,57 @@
+#!/bin/sh
+# This is developed by laojifuli to re-pack my option by using tinycore
+
+# This tool will re-pack the linux filesystem cpio into archived gzip or lzma format
+
+getLast() {
+    FILE_TYPE=$(echo $1 | cut -d'.' -f 2-)    
+    if [ "$FILE_TYPE" != "$1" ]; then
+        getLast "$FILE_TYPE"
+    fi
+}
+
+if [ $(whoami) != "root" ] && [ $(whoami) != "admin" ]; then
+    echo "Switch to root and please try again"
+    sudo su
+    exit 1
+fi
+
+#help screen
+if  [ $# != 1 ]; then
+echo "
+Usage: repacking archived_image(.gz or .lzma)
+
+example:
+    ./repacking laojifuli.gz
+"
+exit 1
+fi
+
+FILE_NAME=$(echo $1 | cut -d'.' -f1)
+getLast $1
+if [ "$FILE_TYPE" != "gz" ] && [ "$FILE_TYPE" != "lzma" ]; then
+    echo "Could not repacking the image of $FILE_NAME.$FILE_TYPE"
+    exit 1
+fi
+if [ "$FILE_TYPE" == "gz" ]; then
+    ARCHIVE="gzip"
+else
+    ARCHIVE="lzma"
+fi
+
+if [ ! -d ./$FILE_NAME ]; then
+    echo "The $FILE_NAME directory did not exist, you could not do re-packing the $FILE_NAME.$FILE_TYPE."
+    exit 1
+fi
+
+WORKING_DIR=$(pwd)
+
+echo "Re-packing the $1. Please wait a while."
+rm -f ./$1
+cd $FILE_NAME
+find | cpio -o -H newc | $ARCHIVE > ../$1
+cd ${WORKING_DIR}
+
+echo "Re-packing the $1 successful."
+echo
+exit 0

@@ -1,0 +1,32 @@
+#!/bin/sh
+
+USER=`cat /etc/sysconfig/tcuser`
+[ "$USER" ] || USER=tc
+sudo su "$USER" -c "tce-load -i findutils || dpm -wi findutils"
+
+dir=".";  fn="";  c="";
+#若用$*则不能内含空格等
+for x in "$1" "$2" "$3"; do
+    case "$x" in
+        c=*)  c="`expr substr "$x" 3 100`" ;;
+        #c=*)  c="${x:2:100}" ;;
+        "")  continue ;;
+        *)  if [ -d "$x" -a "$dir"=="." ]; then dir="`expr substr "$x" 1 100`"; else fn="`expr substr "$x" 1 100`"; fi;  ;;
+        #*)  if [ -d "$x" -a "$dir"=="." ]; then dir="${x:0:100}"; else fn="${x:0:100}"; fi;  ;;
+    esac
+done
+if [ ! "$fn" ]; then
+    [ ! "$c" ] && echo "usage: finf dir fn [c=xxx]" && exit
+    fn="*"
+fi;
+
+if [ "$c" ]; then
+    echo "***finding: files $fn in path: $dir include chars $c ";
+    { realpath `which grep`|grep 'busybox' 1>/dev/null; }  && GREP="grep"  || GREP="grep --color"
+    find "$dir" ! -type d -name "$fn" -exec $GREP -iHn "$c" {} \;  2>/dev/null
+else
+    echo "***finding: files $fn in path: $dir ";
+    find "$dir" ! -type d -name "$fn" 2>/dev/null;
+fi;
+
+
