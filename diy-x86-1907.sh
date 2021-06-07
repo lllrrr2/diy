@@ -412,8 +412,8 @@ rm -rf package/diy/parted
 rm -rf package/diy/OpenAppFilter
 rm -rf diy/hong0980/autocore
 # rm -rf package/diy/luci-app-dockerman && sed -i 's/docker-ce/dockerd/' package/ipk/luci-app-dockerman/Makefile
-rm -rf feeds/packages/utils/dockerd && rm -rf package/diy/luci-app-dockerman && \
-svn co https://github.com/coolsnowwolf/packages/trunk/utils/docker-ce feeds/packages/utils/docker-ce
+rm -rf package/ipk/luci-app-dockerman && rm -rf package/diy/luci-app-dockerman && \
+git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
 # rm -rf package/diy/luci-lib-docker
 rm -rf package/ipk/luci-lib-docker
 rm -rf feeds/packages/utils/ttyd && \
