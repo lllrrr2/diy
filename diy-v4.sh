@@ -33,6 +33,7 @@ log() {
 }
 
 # docker exec -it jd /bin/bash
+
 cd $ShellDir
 [[ -d $panelDir ]] || git clone https://ghproxy.com/https://github.com/hong0980/panel
 [[ -s $ConfigDir/auth.json ]] || echo '{"user":"admin","password":"admin"}' > $ConfigDir/auth.json
@@ -95,15 +96,7 @@ fi
 sed -i 's/\.log/\.txt/g' *.sh
 # sed -i -e 's/\*.txt/\*/g' jlog.sh
 # sed -i 's|url_scripts=.*|url_scripts=https://gitee.com/highdimen/clone_scripts|' $ShellDir/jup.sh
-if [ "`grep -c 城城领现金 jshare.sh`" -eq "0" ]; then
-	sed '
-	s/JDHEALTH_SHARECODES/JDHEALTH_SHARECODES\n    CITY_SHARECODES/
-	s/ForOtherHealth/ForOtherHealth\n    ForOtherCity/
-	s/jd_health/jd_health\n    jd_city/
-	s/Health/Health\n    City/
-	s/东东健康社区/东东健康社区\n    城城领现金/
-	' $ShellDir/jshare.sh -i
-fi
+
 # [ "`grep server $ListCron`" ] || sed -i '/互助码清单/i*\/10 * * * * [[ $(pgrep server) ]] || bash /jd/config/diy.sh' $ListCron
 [ "`grep diy $ShellDir/s6-overlay/etc/cont-init.d/20-jup`" ] || echo -e "\nbash /jd/config/diy.sh" >> $ShellDir/s6-overlay/etc/cont-init.d/20-jup
 sed -i '/防止被贩卖等/d' $ScriptsDir/sendNotify.js
@@ -158,7 +151,7 @@ fi
 
 if [[ $Cookie1 ]] && [[ $(ls $LogDir/jcode 2>/dev/null | wc -l) -ne "0" ]]; then
 	[[ -d $LogDir/config_sh_bak ]] || mkdir -p $LogDir/config_sh_bak
-	[[ "$(diff -u $ConfigDir/config.sh $LogDir/config_sh_bak/$(ls -r $LogDir/config_sh_bak | sed -n 1p))" ]] && cp $FileConf $LogDir/config_sh_bak/$(date "+%Y-%m-%d-%H-%M-%S").txt
+	[[ "$(diff $ConfigDir/config.sh $LogDir/config_sh_bak/$(ls -r $LogDir/config_sh_bak | sed -n 1p))" ]] && cp $FileConf $LogDir/config_sh_bak/$(date "+%Y-%m-%d-%H-%M-%S").txt
 	jcode >/dev/null 2>&1
 	for p in $(awk -F"[0-9]" '/^My/{print $1}' $LogDir/jcode/$(ls -r $LogDir/jcode | sed -n 1p) | uniq | cut -b 3-); do
 		Name=$(grep -B 1 "My${p}1=" $LogDir/jcode/$(ls -r $LogDir/jcode | sed -n 1p) | sed -n 1p)

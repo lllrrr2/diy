@@ -411,11 +411,11 @@ rm -rf package/diy/luci-app-diskman
 rm -rf package/diy/parted
 rm -rf package/diy/OpenAppFilter
 rm -rf diy/hong0980/autocore
- rm -rf package/diy/luci-app-dockerman && sed -i 's/docker-ce/dockerd/' package/ipk/luci-app-dockerman/Makefile
+# rm -rf package/diy/luci-app-dockerman && sed -i 's/docker-ce/dockerd/' package/ipk/luci-app-dockerman/Makefile
+rm -rf feeds/packages/utils/dockerd && rm -rf package/diy/luci-app-dockerman && \
+svn co https://github.com/coolsnowwolf/packages/trunk/utils/docker-ce feeds/packages/utils/docker-ce
 # rm -rf package/diy/luci-lib-docker
-#rm -rf package/ipk/luci-app-dockerman
 rm -rf package/ipk/luci-lib-docker
-# svn co https://github.com/hong0980/packages/trunk/utils/docker-ce package/ipk/docker-ce && sed -i 's|include ../../lang|include $(TOPDIR)/feeds/packages/lang|g' package/ipk/docker-ce/Makefile
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
 rm -rf package/network/services/ppp && \
