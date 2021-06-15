@@ -417,7 +417,7 @@ svn co https://github.com/openwrt/packages/trunk/utils/dockerd feeds/packages/ut
 svn co https://github.com/openwrt/packages/trunk/utils/docker feeds/packages/utils/docker
 rm -rf package/ipk/luci-app-dockerman && rm -rf package/diy/luci-app-dockerman && \
 git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
-# rm -rf package/diy/luci-lib-docker
+rm -rf package/diy/luci-lib-docker && git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 rm -rf package/ipk/luci-lib-docker
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
