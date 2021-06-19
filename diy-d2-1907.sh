@@ -90,7 +90,7 @@ svn co https://github.com/hong0980/packages/trunk/net/transmission-web-control p
 rm -rf feeds/packages/net/ariang && \
 svn co https://github.com/hong0980/packages/trunk/net/ariang package/ariang
 
-po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusicGo luci-app-adbyby-plus autosamba ntfs3-mount"
+po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusicGo luci-app-adbyby-plus autosamba ntfs3-mount ntfs3"
 for p in $po; do
 [ -e package/lean/$p ] && rm -rf package/lean/$p
 [ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/$p
