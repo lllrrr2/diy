@@ -83,14 +83,13 @@ aa=`grep DISTRIB_DESCRIPTION package/base-files/files/etc/openwrt_release | awk 
 sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/files/etc/openwrt_release
 
 echo 'qBittorrent'
-rm -rf package/lean/qt5 #5.1.3
-sed -i 's/+qbittorrent/+qBittorrent/g' package/ipk/luci-app-qbittorrent/Makefile
-rm -rf package/lean/qBittorrent #4.3.1
-# rm -rf package/ipk/qbittorrent #4.3.1
-# rm -rf diy/hong0980/qt5 #5.98
+# rm -rf package/lean/qt5 #5.1.3
+rm -rf package/lean/luci-app-qbittorrent
+# rm -rf package/lean/qBittorrent #4.3.5
+rm -rf package/ipk/qbittorrent #4.3.1
+rm -rf diy/hong0980/qt5 #5.98
 #sed -i 's/+qbittorrent/+qBittorrent-Enhanced-Edition/g' package/ipk/luci-app-qbittorrent/Makefile #qBittorrent-Enhanced-Edition 4.2.3.10
 #sed -i '33,36d' package/ipk/luci-app-qbittorrent/luasrc/model/cbi/qbittorrent/config.lua
-sed -i 's/ +python3//g' diy/hong0980/qBittorrent-Enhanced-Edition/Makefile
 sed -i 's/+mdadm//g' package/ipk/luci-app-diskman/Makefile
 sed -i "s/option enable '0'/option enable '1'/g" package/lean/luci-app-adbyby-plus/root/etc/config/adbyby
 
