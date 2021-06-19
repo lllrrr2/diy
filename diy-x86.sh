@@ -28,7 +28,7 @@ git clone https://github.com/vernesong/OpenClash package/lean/luci-app-openclash
 svn co https://github.com/Lienol/openwrt/trunk/package/diy/luci-app-adguardhome package/lean/luci-app-adguardhome
 #svn co https://github.com/Lienol/openwrt/trunk/package/lean/libtorrent-rasterbar package/lean/libtorrent-rasterbar
 svn co https://github.com/py14551/openwrt/trunk/adguardhome package/lean/adguardhome
-git clone https://github.com/destan19/OpenAppFilter package/lean/OpenAppFilter
+#git clone https://github.com/destan19/OpenAppFilter package/lean/OpenAppFilter
 git clone https://github.com/AlexZhuo/luci-app-bandwidthd package/lean/luci-app-bandwidthd
 git clone https://github.com/tty228/luci-app-serverchan package/lean/luci-app-serverchan
 # rm -rf package/lean/luci-app-baidupcs-web && \

@@ -65,7 +65,7 @@ aa=`grep DISTRIB_DESCRIPTION package/ipk/base-files/files/etc/openwrt_release | 
 sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/ipk/base-files/files/etc/openwrt_release
 sed -i 's/enabled		0/enabled		1/g' feeds/packages/net/miniupnpd/files/upnpd.config
 
-po="adbyby tcpping redsocks2 rclone-webui-react amule luci-app-amule wxbase rblibtorrent \
+po="adbyby tcpping redsocks2 rclone-webui-react wxbase rblibtorrent \
 luci-app-ttyd luci-app-unblockmusic UnblockNeteaseMusic UnblockNeteaseMusicGo luci-app-adbyby-plus"
 for p in $po; do
 [ -e package/lean/$p ] && rm -rf package/lean/$p
@@ -101,13 +101,13 @@ rm -rf feeds/packages/net/transmission-web-control && \
 svn co https://github.com/hong0980/packages/trunk/net/transmission-web-control package/ipk/transmission-web-control
 rm -rf feeds/packages/net/ariang && \
 svn co https://github.com/hong0980/packages/trunk/net/ariang package/ipk/ariang
-git clone https://github.com/MatteoRagni/AmuleWebUI-Reloaded files/usr/share/amule/webserver/AmuleWebUI-Reloaded
-sed -i 's/runasuser "$config_dir"/runasuser "$config_dir"\nwget -P "$config_dir" -O "$config_dir\/nodes.dat" http:\/\/upd.emule-security.org\/nodes.dat/g' \
-package/ipk/luci-app-amule/root/etc/init.d/amule
-#sed -i 's/getElementById("cbid.amule.main/getElementById("widget.cbid.amule.main/g' package/ipk/lean/luci-app-amule/luasrc/view/amule/overview_status.htm
-sed -i "s/tb.innerHTML = '<em>/tb.innerHTML = '<em><b><font color=red>/g" package/ipk/luci-app-amule/luasrc/view/amule/overview_status.htm
-sed -i "s/var links = '<em>/var links = '<em><b><font color=green>/g" package/ipk/luci-app-amule/luasrc/view/amule/overview_status.htm
-git clone https://github.com/persmule/amule-dlp.antiLeech package/ipk/antileech/src
+#git clone https://github.com/MatteoRagni/AmuleWebUI-Reloaded files/usr/share/amule/webserver/AmuleWebUI-Reloaded
+#sed -i 's/runasuser "$config_dir"/runasuser "$config_dir"\nwget -P "$config_dir" -O "$config_dir\/nodes.dat" http:\/\/upd.emule-security.org\/nodes.dat/g' \
+#package/ipk/luci-app-amule/root/etc/init.d/amule
+##sed -i 's/getElementById("cbid.amule.main/getElementById("widget.cbid.amule.main/g' package/ipk/lean/luci-app-amule/luasrc/view/amule/overview_status.htm
+#sed -i "s/tb.innerHTML = '<em>/tb.innerHTML = '<em><b><font color=red>/g" package/ipk/luci-app-amule/luasrc/view/amule/overview_status.htm
+#sed -i "s/var links = '<em>/var links = '<em><b><font color=green>/g" package/ipk/luci-app-amule/luasrc/view/amule/overview_status.htm
+#git clone https://github.com/persmule/amule-dlp.antiLeech package/ipk/antileech/src
 
 sed -i "s/option enable '0'/option enable '1'/g" package/ipk/luci-app-adbyby-plus/root/etc/config/adbyby
 rm -rf feeds/luci/applications/luci-app-samba && \
