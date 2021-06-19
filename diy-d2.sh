@@ -73,8 +73,6 @@ rm -rf feeds/packages/net/transmission-web-control && \
 svn co https://github.com/hong0980/packages/trunk/net/transmission-web-control package/lean/transmission-web-control
 rm -rf feeds/packages/net/ariang && \
 svn co https://github.com/hong0980/packages/trunk/net/ariang package/lean/ariang
-
-ln -s ../diy package/openwrt-packages
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
 sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
 sed -i "/devidx}.mode=ap/a\			set wireless.default_radio\${devidx}.ssid=OpenWrt-\$(cat /sys/class/ieee80211/\${dev}/macaddress | awk -F \":\" '{print \$5\"\"\$6}' | tr a-z A-Z\)" package/kernel/mac80211/files/lib/wifi/mac80211.sh
@@ -94,5 +92,7 @@ sed -i 's/+mdadm//g' package/ipk/luci-app-diskman/Makefile
 sed -i "s/option enable '0'/option enable '1'/g" package/lean/luci-app-adbyby-plus/root/etc/config/adbyby
 
 rm -rf feeds/packages/lang/node && svn co https://github.com/Lienol/openwrt-packages/trunk/lang/node feeds/packages/lang/node
+
+ln -s ../diy package/openwrt-packages
 
 echo '当前路径'

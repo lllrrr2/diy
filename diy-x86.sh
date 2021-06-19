@@ -90,8 +90,8 @@ git clone https://github.com/persmule/amule-dlp.antiLeech package/lean/antileech
 echo 'qBittorrent'
 cat package/lean/luci-app-qbittorrent/Makefile > package/ipk/luci-app-qbittorrent/Makefile
 rm -rf package/lean/luci-app-qbittorrent
-#sed -i 's/=+qBittorrent/=+qBittorrent +axel/' package/ipk/luci-app-qbittorrent/Makefile
-#rm -rf package/lean/qt5 #5.1.3
+#rm -rf package/lean/qtbase #5.1.5
+#rm -rf package/lean/qttools #5.1.5
 #rm -rf package/lean/qBittorrent #4.2.3
 rm -rf package/ipk/qbittorrent #4.1.9
 rm -rf diy/hong0980/qbittorrent #4.2.5
