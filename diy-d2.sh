@@ -74,8 +74,8 @@ svn co https://github.com/hong0980/packages/trunk/net/transmission-web-control p
 rm -rf feeds/packages/net/ariang && \
 svn co https://github.com/hong0980/packages/trunk/net/ariang package/lean/ariang
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
-sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
-sed -i "/devidx}.mode=ap/a\			set wireless.default_radio\${devidx}.ssid=OpenWrt-\$(cat /sys/class/ieee80211/\${dev}/macaddress | awk -F \":\" '{print \$5\"\"\$6}' | tr a-z A-Z\)" package/kernel/mac80211/files/lib/wifi/mac80211.sh
+# sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
+# sed -i "/devidx}.mode=ap/a\			set wireless.default_radio\${devidx}.ssid=OpenWrt-\$(cat /sys/class/ieee80211/\${dev}/macaddress | awk -F \":\" '{print \$5\"\"\$6}' | tr a-z A-Z\)" package/kernel/mac80211/files/lib/wifi/mac80211.sh
 cp -vRf diy/hong0980/zzz-default-settings package/lean/default-settings/files/
 aa=`grep DISTRIB_DESCRIPTION package/base-files/files/etc/openwrt_release | awk -F"'" '{print $2}'`
 sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/files/etc/openwrt_release
@@ -84,10 +84,10 @@ echo 'qBittorrent'
 cat package/lean/luci-app-qbittorrent/Makefile > package/ipk/luci-app-qbittorrent/Makefile
 rm -rf package/lean/luci-app-qbittorrent
 rm -rf package/lean/qBittorrent #4.3.5
+rm -rf package/lean/qtbase #5.1.5
+rm -rf package/lean/qttools #5.1.5
 # rm -rf package/ipk/qbittorrent #4.3.1
 # rm -rf diy/hong0980/qt5 #5.98
-#sed -i 's/+qbittorrent/+qBittorrent-Enhanced-Edition/g' package/ipk/luci-app-qbittorrent/Makefile #qBittorrent-Enhanced-Edition 4.2.3.10
-#sed -i '33,36d' package/ipk/luci-app-qbittorrent/luasrc/model/cbi/qbittorrent/config.lua
 sed -i 's/+mdadm//g' package/ipk/luci-app-diskman/Makefile
 sed -i "s/option enable '0'/option enable '1'/g" package/lean/luci-app-adbyby-plus/root/etc/config/adbyby
 
