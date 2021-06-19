@@ -84,7 +84,7 @@ sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/fi
 
 echo 'qBittorrent'
 rm -rf package/lean/qt5 #5.1.3
-rm -rf package/lean/luci-app-qbittorrent && sed -i 's/+qbittorrent/+qBittorrent/g' package/ipk/luci-app-qbittorrent/Makefile
+sed -i 's/+qbittorrent/+qBittorrent/g' package/ipk/luci-app-qbittorrent/Makefile
 rm -rf package/lean/qBittorrent #4.3.1
 # rm -rf package/ipk/qbittorrent #4.3.1
 # rm -rf diy/hong0980/qt5 #5.98
