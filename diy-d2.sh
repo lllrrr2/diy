@@ -90,7 +90,7 @@ rm -rf package/lean/qttools #5.1.5
 # rm -rf diy/hong0980/qt5 #5.98
 sed -i 's/+mdadm//g' package/ipk/luci-app-diskman/Makefile
 sed -i "s/option enable '0'/option enable '1'/g" package/lean/luci-app-adbyby-plus/root/etc/config/adbyby
-
+rm -rf package/ipk/Parted
 rm -rf feeds/packages/lang/node && svn co https://github.com/Lienol/openwrt-packages/trunk/lang/node feeds/packages/lang/node
 
 ln -s ../diy package/openwrt-packages

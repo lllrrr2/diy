@@ -79,5 +79,6 @@ rm -rf package/lean/luci-app-verysync
 rm -rf package/lean/luci-app-pptp-server
 rm -rf package/lean/luci-app-v2ray-server
 rm -rf package/lean/luci-app-guest-wifi
+rm -rf package/ipk/Parted
 echo '当前路径'
 pwd

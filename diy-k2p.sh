@@ -75,5 +75,6 @@ rm -rf diy/xiaorouji/others/luci-app-verysync
 rm -rf diy/xiaorouji/lienol/luci-app-pptp-server
 rm -rf diy/xiaorouji/lienol/luci-app-v2ray-server
 rm -rf diy/xiaorouji/lienol/luci-app-guest-wifi
+rm -rf package/ipk/Parted
 echo '当前路径'
 pwd

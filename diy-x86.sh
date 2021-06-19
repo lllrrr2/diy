@@ -114,12 +114,11 @@ rm -rf package/lean/autocore
 rm -rf package/lean/luci-app-docker
 #svn co https://github.com/openwrt/packages/trunk/utils/docker package/lean/docker && sed -i 's/include ..\/..\/lang/include \$(TOPDIR)\/feeds\/packages\/lang/g' package/lean/docker/Makefile
 rm -rf package/lean/luci-app-diskman
-rm -rf package/lean/parted
 rm -rf package/lean/xiaorouji/luci-app-kodexplorer
 rm -rf package/lean/xiaorouji/luci-app-pppoe-relay
 rm -rf package/lean/xiaorouji/others/luci-app-verysync
 rm -rf package/lean/xiaorouji/luci-app-pptp-server
 rm -rf package/lean/xiaorouji/luci-app-v2ray-server
 rm -rf package/lean/xiaorouji/luci-app-guest-wifi
-
+rm -rf package/ipk/Parted
 ln -s ../diy package/openwrt-packages
