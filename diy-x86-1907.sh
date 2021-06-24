@@ -80,7 +80,7 @@ rm -rf package/lean/qBittorrent #4.1.9
 rm -rf diy/hong0980/qt5 #5.98
 #sed -i 's/+qbittorrent/+qBittorrent-Enhanced-Edition/g' package/ipk/luci-app-qbittorrent/Makefile #qBittorrent-Enhanced-Edition 4.2.3.10
 #sed -i '33,36d' package/ipk/luci-app-qbittorrent/luasrc/model/cbi/qbittorrent/config.lua
-sed -i 's/+qbittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
+sed -i 's/+qBittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
 
 echo '替换aria2'
 rm -rf feeds/luci/applications/luci-app-aria2 && \

@@ -60,7 +60,9 @@ echo 'hsts=0' > /root/.wgetrc
 
 sed -i 's/ Lienol//g' /usr/lib/lua/luci/version.lua
 sed -i '/lienol/d' /etc/opkg/distfeeds.conf
+sed -i 's/Lienol//g' /etc/openwrt_release
 sed -i 's/option enabled.*/option enabled 1/g' /etc/config/upnpd
+sed -i '/listen_https/d' /etc/config/uhttpd
 
 #禁用某些可能会自启动且用不上的依赖包服务
 /etc/init.d/php7-fastcgi disable 2>/dev/null

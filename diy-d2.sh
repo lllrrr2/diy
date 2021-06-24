@@ -81,7 +81,7 @@ aa=`grep DISTRIB_DESCRIPTION package/base-files/files/etc/openwrt_release | awk 
 sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/files/etc/openwrt_release
 
 echo 'qBittorrent'
-cat package/lean/luci-app-qbittorrent/Makefile > package/ipk/luci-app-qbittorrent/Makefile
+#cat package/lean/luci-app-qbittorrent/Makefile > package/ipk/luci-app-qbittorrent/Makefile
 rm -rf package/lean/luci-app-qbittorrent
 rm -rf package/lean/qBittorrent #4.3.5
 rm -rf package/lean/qtbase #5.1.5

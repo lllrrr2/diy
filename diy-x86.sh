@@ -88,7 +88,8 @@ rm -rf package/lean/antileech/src/* && \
 git clone https://github.com/persmule/amule-dlp.antiLeech package/lean/antileech/src
 
 echo 'qBittorrent'
-cat package/lean/luci-app-qbittorrent/Makefile > package/ipk/luci-app-qbittorrent/Makefile
+# cat package/lean/luci-app-qbittorrent/Makefile > package/ipk/luci-app-qbittorrent/Makefile
+sed -i 's/+qBittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
 rm -rf package/lean/luci-app-qbittorrent
 #rm -rf package/lean/qtbase #5.1.5
 #rm -rf package/lean/qttools #5.1.5
