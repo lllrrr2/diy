@@ -60,9 +60,9 @@ package/kernel/mac80211/files/lib/wifi/mac80211.sh
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
 sed -i '/https/d' package/network/services/uhttpd/files/uhttpd.config
 sed -i '9,35d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定9—35行
-cp -vRf diy/hong0980/zzz-default-settings package/ipk/default-settings/files/
-aa=`grep DISTRIB_DESCRIPTION package/ipk/base-files/files/etc/openwrt_release | awk -F"'" '{print $2}'`
-sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/ipk/base-files/files/etc/openwrt_release
+cp -vRf diy/hong0980/zzz-default-settings package/default-settings/files/
+aa=`grep DISTRIB_DESCRIPTION package/base-files/files/etc/openwrt_release | awk -F"'" '{print $2}'`
+sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/files/etc/openwrt_release
 sed -i 's/enabled		0/enabled		1/g' feeds/packages/net/miniupnpd/files/upnpd.config
 
 po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusicGo luci-app-adbyby-plus autosamba automount ntfs3-mount ntfs3"
@@ -410,12 +410,12 @@ rm -rf package/diy/luci-app-diskman
 rm -rf package/diy/parted
 rm -rf package/diy/OpenAppFilter
 rm -rf diy/hong0980/autocore
-# rm -rf package/diy/luci-app-dockerman && sed -i 's/docker-ce/dockerd/' package/ipk/luci-app-dockerman/Makefile
+rm -rf package/diy/luci-app-dockerman #&& sed -i 's/docker-ce/dockerd/' package/ipk/luci-app-dockerman/Makefile
 rm -rf feeds/packages/utils/dockerd && rm -rf feeds/packages/utils/docker && \
 svn co https://github.com/openwrt/packages/trunk/utils/dockerd feeds/packages/utils/dockerd && \
 svn co https://github.com/openwrt/packages/trunk/utils/docker feeds/packages/utils/docker
-rm -rf package/ipk/luci-app-dockerman && rm -rf package/diy/luci-app-dockerman && \
-git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
+# rm -rf package/ipk/luci-app-dockerman && rm -rf package/diy/luci-app-dockerman && \
+# git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
 rm -rf package/diy/luci-lib-docker && git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 rm -rf package/ipk/luci-lib-docker
 rm -rf feeds/packages/utils/ttyd && \
