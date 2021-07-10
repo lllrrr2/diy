@@ -5,6 +5,7 @@ CONFIG_KERNEL_BUILD_USER="win3gp"
 CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 CONFIG_PACKAGE_automount=y
 CONFIG_PACKAGE_autosamba=y
+CONFIG_PACKAGE_luci-app-bridge=y
 CONFIG_PACKAGE_luci-app-aria2=y
 CONFIG_PACKAGE_luci-app-axel=y
 CONFIG_PACKAGE_luci-app-transmission=y
