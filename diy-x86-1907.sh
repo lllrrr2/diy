@@ -425,8 +425,8 @@ rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
 rm -rf package/network/services/ppp && \
 svn co https://github.com/openwrt/openwrt/trunk/package/network/services/ppp package/network/services/ppp
-rm -rf feeds/packages/admin/netdata && \
-svn co https://github.com/hong0980/packages/trunk/admin/netdata feeds/packages/admin/netdata
+#rm -rf feeds/packages/admin/netdata && \
+#svn co https://github.com/hong0980/packages/trunk/admin/netdata feeds/packages/admin/netdata
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile
 #sed -i '/_redirect2ssl/d' package/lean/nginx/Makefile

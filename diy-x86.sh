@@ -51,7 +51,6 @@ sed -i '/"action_reboot"/a\    entry({"admin","system","PowerOff"},template("adm
 feeds/luci/modules/luci-mod-admin-full/luasrc/controller/admin/system.lua
 echo -e 'function PowerOff()\n  luci.util.exec("poweroff")\nend' >> \
 feeds/luci/modules/luci-mod-admin-full/luasrc/controller/admin/system.lua
-rm -rf feeds/packages/admin/netdata && mv package/ipk/netdata feeds/packages/admin/netdata
 
 echo '替换aria2'
 rm -rf feeds/luci/applications/luci-app-aria2 && \
