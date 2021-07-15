@@ -22,8 +22,8 @@ git clone https://github.com/xiaorouji/openwrt-passwall package/passwall
 #svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/luci-app-ddnsto
 #sed -i 's/ddnsto.\$(PKG_ARCH_DDNSTO)/ddnsto.mipsel/g' package/luci-app-ddnsto/Makefile
 sed -i 's/ddnsto.\$(PKG_ARCH_DDNSTO)/ddnsto.mipsel/g' package/ipk/luci-app-ddnsto/Makefile
-sed -i '296,315d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定296-315行
-sed -i '9,35d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定9—35行
+#sed -i '296,315d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定296-315行
+#sed -i '9,35d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定9—35行
 sed -i '$a\chdbits.co\n\www.cnscg.club\n\pt.btschool.club\n\et8.org\n\www.nicept.net\n\pthome.net\n\ourbits.club\n\pt.m-team.cc\n\hdsky.me\n\ccfbits.org' package/passwall/luci-app-passwall/root/usr/share/passwall/rules/proxy_host
 sed -i '$a\docker.com\n\docker.io' package/passwall/luci-app-passwall/root/usr/share/passwall/rules/proxy_host
 sed -i '/global_rules/a	option auto_update 1\n	option week_update 0\n	option time_update 5' package/passwall/luci-app-passwall/root/etc/config/passwall
