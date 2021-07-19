@@ -73,6 +73,12 @@ svn co https://github.com/hong0980/packages/trunk/net/transmission-web-control p
 rm -rf feeds/packages/net/ariang && \
 svn co https://github.com/hong0980/packages/trunk/net/ariang package/lean/ariang
 
+rm -rf package/lean/luci-app-adbyby-plus && \
+git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-app-adblock-plus
+
+rm -rf package/lean/luci-app-netdata && \
+git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
+
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
 sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
 sed -i "/devidx}.mode=ap/a\			set wireless.default_radio\${devidx}.ssid=OpenWrt-\$(cat /sys/class/ieee80211/\${dev}/macaddress | awk -F \":\" '{print \$5\"\"\$6}' | tr a-z A-Z\)" package/kernel/mac80211/files/lib/wifi/mac80211.sh

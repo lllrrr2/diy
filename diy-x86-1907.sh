@@ -68,9 +68,15 @@ sed -i 's/enabled		0/enabled		1/g' feeds/packages/net/miniupnpd/files/upnpd.conf
 po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusicGo luci-app-adbyby-plus autosamba automount ntfs3-mount ntfs3"
 for p in $po; do
 [ -e package/lean/$p ] && rm -rf package/lean/$p
-[ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/$p
+[ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/lean/$p
 done
 # sed -i 's| packages.*| packages https://github.com/coolsnowwolf/packages|' feeds.conf.default
+
+rm -rf package/lean/luci-app-adbyby-plus && \
+git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-app-adblock-plus
+
+rm -rf package/lean/luci-app-netdata && \
+git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
 
 echo 'qBittorrent'
 #rm -rf package/lean/qt5 #5.9.8
