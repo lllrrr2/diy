@@ -759,11 +759,7 @@ function renderMyNetdataMenu(machinesArray) {
     if (!isSignedIn()) {
         if (!NETDATA.registry.isRegistryEnabled()) {
             html += (
-                `<div class="info-item" style="white-space: nowrap">
-                    <span>请<a href="#" onclick="signInDidClick(event); return false">登录netdata.cloud</a>查看您的节点！</span>
-                    <div></div>
-                </div>
-                <hr />`
+                ``
             );
         }
     }

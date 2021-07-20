@@ -77,7 +77,7 @@ done
 
 #rm -rf package/lean/luci-app-netdata && \
 #git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-cp -Rf diy/hong0980/files/web  package/lean/luci-app-netdata/web
+cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
 
 echo 'qBittorrent'
 #rm -rf package/lean/qt5 #5.9.8

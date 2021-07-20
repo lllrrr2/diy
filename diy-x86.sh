@@ -78,7 +78,7 @@ git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-ap
 
 #rm -rf package/lean/luci-app-netdata && \
 #git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-cp -Rf diy/hong0980/files/web  package/lean/luci-app-netdata/web
+cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
 
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
 sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
