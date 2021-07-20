@@ -65,7 +65,7 @@ aa=`grep DISTRIB_DESCRIPTION package/base-files/files/etc/openwrt_release | awk 
 sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/files/etc/openwrt_release
 sed -i 's/enabled		0/enabled		1/g' feeds/packages/net/miniupnpd/files/upnpd.config
 
-po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusicGo luci-app-adbyby-plus autosamba automount ntfs3-mount ntfs3"
+po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusic-Go luci-app-adbyby-plus autosamba automount ntfs3-mount ntfs3"
 for p in $po; do
 [ -e package/lean/$p ] && rm -rf package/lean/$p
 [ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/lean/$p
