@@ -72,11 +72,12 @@ for p in $po; do
 done
 # sed -i 's| packages.*| packages https://github.com/coolsnowwolf/packages|' feeds.conf.default
 
-rm -rf package/lean/luci-app-adbyby-plus && \
-git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-app-adblock-plus
+#rm -rf package/lean/luci-app-adbyby-plus && \
+#git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-app-adblock-plus
 
-rm -rf package/lean/luci-app-netdata && \
-git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
+#rm -rf package/lean/luci-app-netdata && \
+#git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
+cp -Rf diy/hong0980/files/web  package/lean/luci-app-netdata/web
 
 echo 'qBittorrent'
 #rm -rf package/lean/qt5 #5.9.8
