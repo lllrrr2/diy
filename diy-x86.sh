@@ -15,7 +15,6 @@ cp -f diy/hong0980/banner package/base-files/files/etc/
 echo '添加软件包'
 git clone https://github.com/hong0980/build package/ipk
 
-#svn co https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/lean/ddnsto
 #svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/lean/luci-app-ddnsto
 git clone https://github.com/xiaorouji/openwrt-passwall package/lean/xiaorouji
 #sed -i '9,35d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定9—35行
@@ -26,9 +25,8 @@ sed -i '/global_subscribe/a	option subscribe_proxy 0\noption auto_update_subscri
 
 git clone https://github.com/vernesong/OpenClash package/lean/luci-app-openclash
 svn co https://github.com/Lienol/openwrt/trunk/package/diy/luci-app-adguardhome package/lean/luci-app-adguardhome
-#svn co https://github.com/Lienol/openwrt/trunk/package/lean/libtorrent-rasterbar package/lean/libtorrent-rasterbar
 svn co https://github.com/py14551/openwrt/trunk/adguardhome package/lean/adguardhome
-#git clone https://github.com/destan19/OpenAppFilter package/lean/OpenAppFilter
+git clone https://github.com/destan19/OpenAppFilter package/lean/OpenAppFilter
 git clone https://github.com/AlexZhuo/luci-app-bandwidthd package/lean/luci-app-bandwidthd
 git clone https://github.com/tty228/luci-app-serverchan package/lean/luci-app-serverchan
 # rm -rf package/lean/luci-app-baidupcs-web && \
@@ -78,7 +76,7 @@ git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-ap
 
 #rm -rf package/lean/luci-app-netdata && \
 #git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
+#cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
 
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
 sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh

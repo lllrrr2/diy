@@ -18,7 +18,6 @@ git clone https://github.com/hong0980/build package/ipk
 [ "`grep "^CONFIG_PACKAGE_deluge=y" .config`" ] && rm -rf feeds/packages/libs/boost && svn co https://github.com/openwrt/packages/trunk/libs/boost feeds/packages/libs/boost
 sed -i 's?../../devel?$(TOPDIR)/feeds/packages/devel?g' feeds/packages/devel/ninja/ninja-cmake.mk
 git clone https://github.com/xiaorouji/openwrt-passwall package/ipk/passwall
-#svn co https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/ipk/ddnsto
 #svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/ipk/luci-app-ddnsto
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/ipk/luci-app-jd-dailybonus
 sed -i '$a\chdbits.co\n\www.cnscg.club\n\pt.btschool.club\n\et8.org\n\www.nicept.net\n\pthome.net\n\ourbits.club\n\pt.m-team.cc\n\hdsky.me\n\ccfbits.org' package/ipk/passwall/luci-app-passwall/root/usr/share/passwall/rules/direct_host
@@ -77,7 +76,7 @@ done
 
 #rm -rf package/lean/luci-app-netdata && \
 #git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
+#cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
 
 echo 'qBittorrent'
 #rm -rf package/lean/qt5 #5.9.8
@@ -417,21 +416,19 @@ rm -rf package/diy/luci-app-diskman
 rm -rf package/diy/parted
 rm -rf package/diy/OpenAppFilter
 rm -rf diy/hong0980/autocore
-rm -rf package/diy/luci-app-dockerman
-rm -rf feeds/packages/utils/dockerd && rm -rf feeds/packages/utils/docker && \
-svn co https://github.com/openwrt/packages/trunk/utils/dockerd feeds/packages/utils/dockerd && \
-svn co https://github.com/openwrt/packages/trunk/utils/docker feeds/packages/utils/docker
- rm -rf package/ipk/luci-app-dockerman && rm -rf package/diy/luci-app-dockerman && \
- git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
- for i in `find package/diy/luci-app-dockerman/applications/luci-app-dockerman/`; do
-[ `grep -c "admin" $i 2>/dev/null` -gt "0" ] && sed -e 's|admin/docker|admin/services/docker|g; s|admin", "docker|admin", "services", "docker|g; s|admin","docker|admin", "services", "docker|g; s|admin\\/docker|admin\\/services\\/docker|g' $i -i
+
+rm -rf feeds/packages/utils/dockerd && svn co https://github.com/openwrt/packages/trunk/utils/dockerd feeds/packages/utils/dockerd
+rm -rf feeds/packages/utils/docker && svn co https://github.com/openwrt/packages/trunk/utils/docker feeds/packages/utils/docker
+rm -rf package/ipk/luci-app-dockerman && rm -rf package/diy/luci-app-dockerman && \
+git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
+for i in `find package/diy/luci-app-dockerman/applications/luci-app-dockerman/`; do
+	[ `grep -c "admin" $i 2>/dev/null` -gt "0" ] && sed -e 's|admin/docker|admin/services/docker|g; s|admin", "docker|admin", "services", "docker|g; s|admin","docker|admin", "services", "docker|g; s|admin\\/docker|admin\\/services\\/docker|g' $i -i
 done
-rm -rf package/ipk/luci-lib-docker
-rm -rf package/diy/luci-lib-docker && git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
+rm -rf package/ipk/luci-lib-docker && rm -rf package/diy/luci-lib-docker
+git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
+
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
-rm -rf package/network/services/ppp && \
-svn co https://github.com/openwrt/openwrt/trunk/package/network/services/ppp package/network/services/ppp
 #rm -rf feeds/packages/admin/netdata && \
 #svn co https://github.com/hong0980/packages/trunk/admin/netdata feeds/packages/admin/netdata
 
