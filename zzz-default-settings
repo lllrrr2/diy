@@ -60,6 +60,10 @@ echo 'hsts=0' > /root/.wgetrc
 #uci set network.lan.netmask='255.255.255.0'
 #uci commit network
 
+uci set turboacc.config.sfe_flow='0'
+uci set turboacc.config.fullcone_nat='0'
+uci commit turboacc
+
 sed -i 's/ Lienol//g' /usr/lib/lua/luci/version.lua
 sed -i '/lienol/d' /etc/opkg/distfeeds.conf
 sed -i 's/Lienol//g' /etc/openwrt_release
@@ -76,7 +80,6 @@ sed -i '/listen_https/d' /etc/config/uhttpd
 /etc/init.d/kcptun disable 2>/dev/null
 
 for p in `ls -l /etc/init.d | awk '/--/{print $NF}'`; do chmod +x /etc/init.d/$p; done
-rm -rf /tmp/luci-modulecache/
-rm -f /tmp/luci-indexcache
+rm -rf /tmp/luci-*
 
 exit 0
