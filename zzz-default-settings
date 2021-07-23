@@ -60,6 +60,9 @@ echo 'hsts=0' > /root/.wgetrc
 #uci set network.lan.netmask='255.255.255.0'
 #uci commit network
 
+uci set network.wan.ipv6='.0'
+uci commit network
+
 uci set turboacc.config.sfe_flow='0'
 uci set turboacc.config.fullcone_nat='0'
 uci commit turboacc
