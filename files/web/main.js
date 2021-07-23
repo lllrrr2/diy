@@ -1658,7 +1658,7 @@ function headMain(os, charts, duration) {
     if (typeof charts['system.ram'] !== 'undefined') {
         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.ram"'
             + ' data-dimensions="used|buffers|active|wired"' // active and wired are FreeBSD stats
-            + ' data-append-options="百分比"'
+            + ' data-append-options="percentage"'
             + ' data-chart-library="easypiechart"'
             + ' data-title="已用内存"'
             + ' data-units="%"'

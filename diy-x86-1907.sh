@@ -429,8 +429,10 @@ git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
-#rm -rf feeds/packages/admin/netdata && \
-#svn co https://github.com/hong0980/packages/trunk/admin/netdata feeds/packages/admin/netdata
+
+rm -rf package/lean/luci-app-netdata && \
+git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
+cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile
 #sed -i '/_redirect2ssl/d' package/lean/nginx/Makefile
