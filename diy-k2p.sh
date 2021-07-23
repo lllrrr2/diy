@@ -36,7 +36,7 @@ sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/fi
 
 echo '删除重复包'
 rm -rf package/lean/luci-app-diskman
-rm -rf package/lean/parted
+rm -rf package/ipk/parted
 rm -rf diy/hong0980/qt5
 rm -rf package/ipk/luci-app-qbittorrent
 sed -i "s/option enable '0'/option enable '1'/g" package/lean/luci-app-adbyby-plus/root/etc/config/adbyby
