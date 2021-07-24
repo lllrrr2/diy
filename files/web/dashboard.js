@@ -7753,7 +7753,7 @@ let chartState = function (element) {
         let viewed = (this.data) ? this.data.view_update_every : collected;
 
         if (collected === viewed) {
-            return "resolution " + NETDATA.seconds4human(collected);
+            return "刷新间隔 " + NETDATA.seconds4human(collected);
         }
 
         return "resolution " + NETDATA.seconds4human(viewed) + ", collected every " + NETDATA.seconds4human(collected);

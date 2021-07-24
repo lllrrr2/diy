@@ -20,6 +20,8 @@ sed -i 's?../../devel?$(TOPDIR)/feeds/packages/devel?g' feeds/packages/devel/nin
 git clone https://github.com/xiaorouji/openwrt-passwall package/ipk/passwall
 git clone https://github.com/jerrykuku/luci-app-vssr package/ipk/luci-app-vssr
 git clone https://github.com/jerrykuku/lua-maxminddb package/ipk/lua-maxminddb
+git clone https://github.com/pymumu/openwrt-smartdns package/ipk/smartdns
+git clone https://github.com/pymumu/luci-app-smartdns package/ipk/luci-app-smartdns
 #svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/ipk/luci-app-ddnsto
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/ipk/luci-app-jd-dailybonus
 #sed -i '$a\chdbits.co\n\www.cnscg.club\n\pt.btschool.club\n\et8.org\n\www.nicept.net\n\pthome.net\n\ourbits.club\n\pt.m-team.cc\n\hdsky.me\n\ccfbits.org' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/direct_host

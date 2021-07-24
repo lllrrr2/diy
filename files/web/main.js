@@ -926,9 +926,9 @@ function gotoServerValidateUrl(id, guid, url) {
                     if (gotoServerMiddleClick) {
                         window.open(verifyURL(finalURL), '_blank');
                         gotoServerMiddleClick = false;
-                        document.getElementById('gotoServerResponse').innerHTML = '<b>Opening new window to ' + NETDATA.registry.machines[guid].name + '<br/><a href="' + verifyURL(finalURL) + '">' + escapeUserInputHTML(url) + '</a></b><br/>(check your pop-up blocker if it fails)';
+                        document.getElementById('gotoServerResponse').innerHTML = '<b>打开新窗口到 ' + NETDATA.registry.machines[guid].name + '<br/><a href="' + verifyURL(finalURL) + '">' + escapeUserInputHTML(url) + '</ a></b><br/>（如果失败，请检查您的弹出窗口阻止程序）';
                     } else {
-                        document.getElementById('gotoServerResponse').innerHTML += 'found it! It is at:<br/><small>' + escapeUserInputHTML(url) + '</small>';
+                        document.getElementById('gotoServerResponse').innerHTML += '找到了！它位于：<br/><small>' + escapeUserInputHTML(url) + '</small>';
                         document.location = verifyURL(finalURL);
                         $('#gotoServerModal').modal('hide');
                     }
@@ -974,7 +974,7 @@ function gotoServerModalHandler(guid) {
         // we consult the registry to get additional URLs.
         setTimeout(function () {
             if (gotoServerStop === false) {
-                document.getElementById('gotoServerResponse').innerHTML = '<b>Added all the known URLs for this machine.</b>';
+                document.getElementById('gotoServerResponse').innerHTML = '<b>添加了这台机器的所有已知 URL。</b>';
                 NETDATA.registry.search(guid, function (data) {
                     // console.log(data);
                     len = data.urls.length;
@@ -1487,7 +1487,7 @@ function headMain(os, charts, duration) {
     if (typeof charts['system.swap'] !== 'undefined') {
         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.swap"'
             + ' data-dimensions="used"'
-            + ' data-append-options="百分比"'
+            + ' data-append-options="percentage"'
             + ' data-chart-library="easypiechart"'
             + ' data-title="Used Swap"'
             + ' data-units="%"'

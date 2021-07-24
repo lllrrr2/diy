@@ -12,7 +12,7 @@ var netdataDashboard = window.netdataDashboard || {};
 
 netdataDashboard.menu = {
     'system': {
-        title: '系统概观',
+        title: '系统概述',
         icon: '<i class="fas fa-bookmark"></i>',
         info: '一眼掌握系统效能关键指标。'
     },
@@ -81,7 +81,7 @@ netdataDashboard.menu = {
     'ipv6': {
         title: 'IPv6网络',
         icon: '<i class="fas fa-cloud"></i>',
-        info: 'IPv6效能指标。 <a href="https://en.wikipedia.org/wiki/IPv6" target="_blank">Internet Protocol version 6 (IPv6)</a> is the most recent version of the Internet Protocol (IP), the communications protocol that provides an identification and location system for computers on networks and routes traffic across the Internet. IPv6 was developed by the Internet Engineering Task Force (IETF) to deal with the long-anticipated problem of IPv4 address exhaustion. IPv6 is intended to replace IPv4.'
+        info: 'IPv6 性能指标。 <a href="https://en.wikipedia.org/wiki/IPv6" target="_blank">Internet 协议版本 6 (IPv6)</a> 是 Internet 协议的最新版本（ IP），一种通信协议，为网络上的计算机提供识别和定位系统，并通过 Internet 路由流量。 IPv6 是由 Internet 工程任务组 (IETF) 开发的，用于解决期待已久的 IPv4 地址耗尽问题。 IPv6 旨在取代 IPv4。'
     },
 
     'sctp': {
@@ -97,7 +97,7 @@ netdataDashboard.menu = {
     },
 
     'netfilter': {
-        title: '防火墙 (netfilter)',
+        title: '防火墙 (filter)',
         icon: '<i class="fas fa-shield-alt"></i>',
         info: 'netfilter组件的性能指标。'
     },
@@ -111,7 +111,7 @@ netdataDashboard.menu = {
     'cpu': {
         title: 'CPUs',
         icon: '<i class="fas fa-bolt"></i>',
-        info: '系统中每一个 CPU 的详细信息。全部 CPU 的总量可以到 <a href="#menu_system">系统概观</a> 区段查看。'
+        info: '系统中每一个 CPU 的详细信息。全部 CPU 的总量可以到 <a href="#menu_system">系统概述</a> 区段查看。'
     },
 
     'mem': {
@@ -856,7 +856,7 @@ netdataDashboard.context = {
     },
 
     'system.softirqs': {
-        info: 'CPU softirqs 的细节。在 <a href="#menu_cpu">CPU</a> 区段中，依据每个 CPU 核心分析 softirqs。'
+        info: 'CPU 中断的细节。在 <a href="#menu_cpu">CPU</a> 区段中，依据每个 CPU 核心分析中断。'
     },
 
     'system.processes': {
@@ -1330,7 +1330,7 @@ netdataDashboard.context = {
                     } catch (e) {
                         iface = '';
                     }
-                    return netdataDashboard.gaugeChart('Received' + iface, '12%', 'received');
+                    return netdataDashboard.gaugeChart('接受' + iface, '15%', 'received');
                 } else
                     return '';
             },
@@ -1343,7 +1343,7 @@ netdataDashboard.context = {
                     } catch (e) {
                         iface = '';
                     }
-                    return netdataDashboard.gaugeChart('Sent' + iface, '12%', 'sent');
+                    return netdataDashboard.gaugeChart('发送' + iface, '15%', 'sent');
                 } else
                     return '';
             }
@@ -1352,14 +1352,14 @@ netdataDashboard.context = {
             function (os, id) {
                 void (os);
                 if (!id.match(/^cgroup_.*/))
-                    return netdataDashboard.gaugeChart('Received', '12%', 'received');
+                    return netdataDashboard.gaugeChart('接受', '15%', 'received');
                 else
                     return '';
             },
             function (os, id) {
                 void (os);
                 if (!id.match(/^cgroup_.*/))
-                    return netdataDashboard.gaugeChart('Sent', '12%', 'sent');
+                    return netdataDashboard.gaugeChart('发送', '15%', 'sent');
                 else
                     return '';
             }
@@ -1372,13 +1372,13 @@ netdataDashboard.context = {
     'netfilter.sockets': {
         colors: '#88AA00',
         heads: [
-            netdataDashboard.gaugeChart('Active Connections', '12%', '', '#88AA00')
+            netdataDashboard.gaugeChart('活动连接', '12%', '', '#88AA00')
         ]
     },
 
     'netfilter.new': {
         heads: [
-            netdataDashboard.gaugeChart('New Connections', '12%', 'new', '#5555AA')
+            netdataDashboard.gaugeChart('新连接', '12%', 'new', '#5555AA')
         ]
     },
 
@@ -1388,7 +1388,7 @@ netdataDashboard.context = {
     'disk.util': {
         colors: '#FF5588',
         heads: [
-            netdataDashboard.gaugeChart('使用率', '12%', '', '#FF5588')
+            netdataDashboard.gaugeChart('使用率', '18%', '', '#FF5588')
         ],
         info: '磁盘利用率衡量磁盘忙于某事的时间。 这与其性能无关。 100% 表示系统始终在磁盘上有未完成的操作。 请记住，根据磁盘的底层技术，这里的 100% 可能是也可能不是拥塞的指示。'
     },
@@ -1405,10 +1405,10 @@ netdataDashboard.context = {
 
     'disk.io': {
         heads: [
-            netdataDashboard.gaugeChart('读取', '12%', 'reads'),
-            netdataDashboard.gaugeChart('写入', '12%', 'writes')
+            netdataDashboard.gaugeChart('读取', '18%', 'reads'),
+            netdataDashboard.gaugeChart('写入', '18%', 'writes')
         ],
-        info: '磁盘传输资料的总计。'
+        info: '磁盘传输信息的总计。'
     },
 
     'disk.ops': {
@@ -1416,7 +1416,7 @@ netdataDashboard.context = {
     },
 
     'disk.qops': {
-        info: '当前正在进行 I/O 操作。 这个指标是一个快照——它不是上一个时间间隔的平均值。'
+        info: '当前正在进行 I/O 操作。 这个指标是一个快照—,它不是上一个时间间隔的平均值。'
     },
 
     'disk.iotime': {
@@ -1765,8 +1765,8 @@ netdataDashboard.context = {
     'retroshare.bandwidth': {
         info: 'RetroShare inbound and outbound traffic.',
         mainheads: [
-            netdataDashboard.gaugeChart('Received', '12%', 'bandwidth_down_kb'),
-            netdataDashboard.gaugeChart('Sent', '12%', 'bandwidth_up_kb')
+            netdataDashboard.gaugeChart('接受', '12%', 'bandwidth_down_kb'),
+            netdataDashboard.gaugeChart('发送', '12%', 'bandwidth_up_kb')
         ]
     },
 

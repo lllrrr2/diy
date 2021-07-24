@@ -89,9 +89,9 @@
                 </button>
                 <!-- <a href="/" class="navbar-brand" id="1hostname" title="server hostname<br/>click it to reload the dashboard" data-toggle="tooltip" data-placement="bottom">netdata</a> -->
                 <ul class="nav navbar-nav" style="display: inline-block">
-                    <li data-placement="right" class="hidden-xs hidden-sm" style="line-height: 50px; margin-right: 15px" title="Netdata Agent">
-                       <img src="images/netdata-logomark.svg" height="32"/>
-                    </li>
+                    <!-- <li data-placement="right" class="hidden-xs hidden-sm" style="line-height: 50px; margin-right: 15px" title="Netdata Agent"> -->
+                       <!-- <img src="images/netdata-logomark.svg" height="32"/> -->
+                    <!-- </li> -->
                     <li class="dropdown" id="myNetdataDropdownParent" title="您的其他netdata服务器" data-toggle="tooltip" data-placement="right">
                         <a href="#" id="hostname" class="dropdown-toggle" data-toggle="dropdown">
 						我的 netdata
@@ -109,15 +109,15 @@
             <nav class="collapse navbar-collapse navbar-right" role="navigation">
                 <ul class="nav navbar-nav">
                     <li id="alarmsButton"  title="检查健康状况监控警告与记录" data-toggle="tooltip" data-placement="bottom"><a href="#" class="btn" data-toggle="modal" data-target="#alarmsModal"><i class="fas fa-bell"></i>&nbsp;<span class="hidden-sm hidden-md">警告&nbsp;</span><span id="alarms_count_badge" class="badge"></span></a></li>
-                    <li title="变更仪表板设定" data-toggle="tooltip" data-placement="bottom"><a href="#" class="btn" data-toggle="modal" data-target="#optionsModal"><i class="fas fa-cog"></i>&nbsp;<span class="hidden-sm hidden-md">设定</span></a></li>
-                    <li title="检查 netdata 更新<br/>您应随时保持 netdata 为最新版本" data-toggle="tooltip" data-placement="bottom" class="hidden-sm" id="updateButton"><a href="#" class="btn" data-toggle="modal" data-target="#updateModal"><i class="fas fa-cloud-download-alt"></i> <span class="hidden-sm hidden-md">更新 </span><span id="update_badge" class="badge"></span></a></li>
+                    <li title="修改控制面板设定" data-toggle="tooltip" data-placement="bottom"><a href="#" class="btn" data-toggle="modal" data-target="#optionsModal"><i class="fas fa-cog"></i>&nbsp;<span class="hidden-sm hidden-md">设定</span></a></li>
+                    <!-- <li title="检查 netdata 更新<br/>您应随时保持 netdata 为最新版本" data-toggle="tooltip" data-placement="bottom" class="hidden-sm" id="updateButton"><a href="#" class="btn" data-toggle="modal" data-target="#updateModal"><i class="fas fa-cloud-download-alt"></i> <span class="hidden-sm hidden-md">更新 </span><span id="update_badge" class="badge"></span></a></li> -->
                     <li title="到 netdata 在 github 上的 wiki<br/>记得 <b>给 netdata 一个 <i class=&quot;fas fa-star&quot;></i></b> !" data-toggle="tooltip" data-placement="bottom" class="hidden-xs hidden-sm hidden-md"><a href="https://github.com/netdata/netdata" class="btn" target="_blank"><i class="fab fa-github"></i></a></li>
                     <li title="在 twitter 上跟随 netdata" data-toggle="tooltip" data-placement="bottom" class="hidden-xs hidden-sm hidden-md"><a href="https://twitter.com/linuxnetdata" class="btn" target="_blank"><i class="fab fa-twitter"></i></a></li>
                     <li title="到 facebook 上给 netdata 按赞" data-toggle="tooltip" data-placement="bottom" class="hidden-xs hidden-sm hidden-md"><a href="https://www.facebook.com/linuxnetdata/" class="btn" target="_blank"><i class="fab fa-facebook"></i></a></li>
-                    <li title="汇入 / 载入 netdata 快照" data-toggle="tooltip" data-placement="bottom" id="loadButton"><a href="#" class="btn" data-toggle="modal" data-target="#loadSnapshotModal"><i class="fas fa-download"></i>&nbsp;<span class="hidden-sm hidden-md hidden-lg">汇入</span></a></li>
-                    <li title="汇出 / 储存 netdata 快照" data-toggle="tooltip" data-placement="bottom" id="saveButton"><a href="#" class="btn" data-toggle="modal" data-target="#saveSnapshotModal"><i class="fas fa-upload"></i>&nbsp;<span class="hidden-sm hidden-md hidden-lg">汇出</span></a></li>
-                    <li title="将仪表板列印为 PDF" data-toggle="tooltip" data-placement="bottom" id="printButton"><a href="#" class="btn" data-toggle="modal" data-target="#printPreflightModal"><i class="fas fa-print"></i>&nbsp;<span class="hidden-sm hidden-md hidden-lg">列印</span></a></li>
-                    <li title="取得图表使用上的说明信息" data-toggle="tooltip" data-placement="bottom" class="hidden-sm"><a href="#" class="btn" data-toggle="modal" data-target="#helpModal"><i class="fas fa-question-circle"></i>&nbsp;<span class="hidden-sm hidden-md">说明</span></a></li>
+                    <li title="导入 netdata 快照" data-toggle="tooltip" data-placement="bottom" id="loadButton"><a href="#" class="btn" data-toggle="modal" data-target="#loadSnapshotModal"><i class="fas fa-download"></i>&nbsp;<span class="hidden-sm hidden-md hidden-lg">导入</span></a></li>
+                    <li title="导出 netdata 快照" data-toggle="tooltip" data-placement="bottom" id="saveButton"><a href="#" class="btn" data-toggle="modal" data-target="#saveSnapshotModal"><i class="fas fa-upload"></i>&nbsp;<span class="hidden-sm hidden-md hidden-lg">导出</span></a></li>
+                    <li title="将控制面板信息导出为 PDF" data-toggle="tooltip" data-placement="bottom" id="printButton"><a href="#" class="btn" data-toggle="modal" data-target="#printPreflightModal"><i class="fas fa-print"></i>&nbsp;<span class="hidden-sm hidden-md hidden-lg">导出</span></a></li>
+                    <li title="帮助" data-toggle="tooltip" data-placement="bottom" class="hidden-sm"><a href="#" class="btn" data-toggle="modal" data-target="#helpModal"><i class="fas fa-question-circle"></i>&nbsp;<span class="hidden-sm hidden-md">说明</span></a></li>
                     <li id="account-menu-container" class="dropdown" data-toggle="tooltip"></li>
                 </ul>
             </nav>
@@ -462,7 +462,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="helpModalLabel">仪表板说明</h4>
+                    <h4 class="modal-title" id="helpModalLabel">控制面板说明</h4>
                 </div>
                 <div class="modal-body">
 
@@ -478,7 +478,7 @@
                     <div class="tab-content">
                         <div role="tabpanel" class="tab-pane active" id="help_mouse">
                             <div class="p">
-                                <h4>鼠标移至 / 暂留</h4>
+                                <h4>鼠标移至 / 悬停</h4>
                                 将鼠标悬停在图表上以在其图例中显示鼠标下方时间戳的值（图表还将突出显示图表上的点）。
                                 <br/>
                                 所有其他可见图表也将显示并突出显示相同时间戳的值。
@@ -494,7 +494,7 @@
                             </div>
                             <hr/>
                             <div class="p">
-                                <h4>连点两下</h4>
+                                <h4>鼠标双击</h4>
                                 双击图表可将所有图表重置为其默认的自动刷新状态。
                             </div>
                             <hr/>
@@ -521,7 +521,7 @@
                             </div>
                             <hr/>
                             <div class="p">
-                                <h4>单击</h4>
+                                <h4>鼠标单击</h4>
                                 单击维度的标签或值，将选择/取消选择该维度。
                                 <br/>
                                 您可以按任意 SHIFT 或 CONTROL 键，然后单击图例标签或值，以选择/取消选择多个维度。
@@ -529,7 +529,7 @@
                         </div>
                         <div role="tabpanel" class="tab-pane" id="help_touch">
                             <div class="p">
-                                <h4>单击</h4>
+                                <h4>鼠标单击</h4>
                                 单击图表的内容以在其图例中显示点击的时间戳的值（图表还将突出显示图表上的点）。
                                 <br/>
                                 所有其他可见图表也将显示并突出显示相同时间戳的值。
@@ -545,19 +545,19 @@
                             </div>
                             <hr/>
                             <div class="p">
-                                <h4>双击</h4>
+                                <h4>鼠标双击</h4>
                                 双击图表可将所有图表重置为其默认的自动刷新状态。
                             </div>
                             <hr/>
                             <div class="p">
-                                <h4>触屏 <small>（不适用于 firefox 和 IE/Edge）</small></h4>
+                                <h4>触屏<small>（不适用于 firefox 和 IE/Edge）</small></h4>
                                  用两根手指放大或缩小。
                                 <br/>
                                  图表放大后，所有图表的自动刷新都会停止。 要再次启用它，请<b>双击</b>放大的图表。
                             </div>
                             <hr/>
                             <div class="p">
-                                 <h4>传奇操作</h4>
+                                 <h4>其他操作</h4>
                                  点击维度的标签或值，将选择/取消选择该维度。
                             </div>
                         </div>
@@ -580,7 +580,7 @@
                 <div class="modal-body">
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs" role="tablist">
-                        <li role="presentation" class="active"><a href="#alarms_active" aria-controls="alarms_active" role="tab" data-toggle="tab">作用中</a></li>
+                        <li role="presentation" class="active"><a href="#alarms_active" aria-controls="alarms_active" role="tab" data-toggle="tab">当前</a></li>
                         <li role="presentation"><a href="#alarms_all" aria-controls="alarms_all" role="tab" data-toggle="tab">所有</a></li>
                         <li role="presentation"><a href="#alarms_log" aria-controls="alarms_log" role="tab" data-toggle="tab">记录</a></li>
                     </ul>
