@@ -18,6 +18,8 @@ git clone https://github.com/hong0980/build package/ipk
 [ "`grep "^CONFIG_PACKAGE_deluge=y" .config`" ] && rm -rf feeds/packages/libs/boost && svn co https://github.com/openwrt/packages/trunk/libs/boost feeds/packages/libs/boost
 sed -i 's?../../devel?$(TOPDIR)/feeds/packages/devel?g' feeds/packages/devel/ninja/ninja-cmake.mk
 git clone https://github.com/xiaorouji/openwrt-passwall package/ipk/passwall
+git clone https://github.com/jerrykuku/luci-app-vssr package/ipk/luci-app-vssr
+git clone https://github.com/jerrykuku/lua-maxminddb package/ipk/lua-maxminddb
 #svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/ipk/luci-app-ddnsto
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/ipk/luci-app-jd-dailybonus
 #sed -i '$a\chdbits.co\n\www.cnscg.club\n\pt.btschool.club\n\et8.org\n\www.nicept.net\n\pthome.net\n\ourbits.club\n\pt.m-team.cc\n\hdsky.me\n\ccfbits.org' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/direct_host

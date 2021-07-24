@@ -24,6 +24,8 @@ git clone https://github.com/xiaorouji/openwrt-passwall package/lean/xiaorouji
 #sed -i '/global_subscribe/a	option subscribe_proxy 0\noption auto_update_subscribe 1\noption week_update_subscribe 7\noption time_update_subscribe 5\noption filter_keyword_discarded 1\noption allowInsecure 1' package/lean/xiaorouji/luci-app-passwall/root/etc/config/passwall
 
 git clone https://github.com/vernesong/OpenClash package/lean/luci-app-openclash
+git clone https://github.com/jerrykuku/luci-app-vssr package/lean/luci-app-vssr
+git clone https://github.com/jerrykuku/lua-maxminddb package/lean/lua-maxminddb
 svn co https://github.com/Lienol/openwrt/trunk/package/diy/luci-app-adguardhome package/lean/luci-app-adguardhome
 svn co https://github.com/py14551/openwrt/trunk/adguardhome package/lean/adguardhome
 git clone https://github.com/destan19/OpenAppFilter package/lean/OpenAppFilter
