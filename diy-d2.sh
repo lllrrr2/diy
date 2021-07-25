@@ -27,8 +27,8 @@ rm -rf package/lean/luci-app-guest-wifi
 echo '添加软件包'
 #git clone https://github.com/hong0980/diy package/lean/hong0980
 git clone https://github.com/hong0980/build package/ipk
-git clone https://github.com/jerrykuku/lua-maxminddb package/lean/lua-maxminddb
-git clone https://github.com/pymumu/openwrt-smartdns package/lean/smartdns
+git clone https://github.com/jerrykuku/lua-maxminddb feeds/packages/net/lua-maxminddb
+git clone https://github.com/pymumu/openwrt-smartdns feeds/packages/net/smartdns
 git clone https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
 sed -i 's/ddnsto.\$(PKG_ARCH_DDNSTO)/ddnsto.mipsel/g' package/ipk/luci-app-ddnsto/Makefile
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/lean/luci-app-jd-dailybonus
@@ -39,6 +39,9 @@ git clone https://github.com/tty228/luci-app-serverchan package/lean/luci-app-se
 cp -f diy/hong0980/serverchan package/lean/luci-app-serverchan/root/etc/config/
 git clone https://github.com/jefferymvp/luci-app-koolproxyR package/lean/luci-app-koolproxyR
 git clone https://github.com/rufengsuixing/luci-app-autoipsetadder package/lean/luci-app-autoipsetadder
+
+rm -rf package/lean/luci-app-adbyby-plus && \
+git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-app-adblock-plus
 
 git clone https://github.com/fw876/helloworld package/lean/luci-app-ssr-plus
 if [ -e package/lean/luci-app-openclash/luci-app-openclash/luasrc/view/openclash/myip.htm ]; then
