@@ -21,7 +21,7 @@ git clone https://github.com/xiaorouji/openwrt-passwall package/ipk/passwall
 git clone https://github.com/jerrykuku/luci-app-vssr package/ipk/luci-app-vssr
 git clone https://github.com/jerrykuku/lua-maxminddb package/ipk/lua-maxminddb
 git clone https://github.com/pymumu/openwrt-smartdns package/ipk/smartdns
-git clone https://github.com/pymumu/luci-app-smartdns package/ipk/luci-app-smartdns
+git clone https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
 #svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/ipk/luci-app-ddnsto
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/ipk/luci-app-jd-dailybonus
 #sed -i '$a\chdbits.co\n\www.cnscg.club\n\pt.btschool.club\n\et8.org\n\www.nicept.net\n\pthome.net\n\ourbits.club\n\pt.m-team.cc\n\hdsky.me\n\ccfbits.org' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/direct_host
@@ -85,12 +85,11 @@ done
 echo 'qBittorrent'
 #rm -rf package/lean/qt5 #5.9.8
 rm -rf package/lean/luci-app-qbittorrent
-rm -rf package/lean/qBittorrent #4.1.9
-#rm -rf diy/hong0980/qbittorrent #4.2.5
+#rm -rf package/lean/qBittorrent #4.3.4.1
+rm -rf diy/hong0980/qbittorrent #4.2.5
 rm -rf diy/hong0980/qt5 #5.98
 #sed -i 's/+qbittorrent/+qBittorrent-Enhanced-Edition/g' package/ipk/luci-app-qbittorrent/Makefile #qBittorrent-Enhanced-Edition 4.2.3.10
-#sed -i '33,36d' package/ipk/luci-app-qbittorrent/luasrc/model/cbi/qbittorrent/config.lua
-sed -i 's/+qBittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
+#sed -i 's/+qBittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
 
 echo '替换aria2'
 rm -rf feeds/luci/applications/luci-app-aria2 && \
@@ -436,7 +435,7 @@ svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/tty
 
 rm -rf package/lean/luci-app-netdata && \
 git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
+mv -vf diy/hong0980/files/web/*  package/lean/luci-app-netdata/web/
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile
 #sed -i '/_redirect2ssl/d' package/lean/nginx/Makefile

@@ -15,30 +15,22 @@ cp -f diy/hong0980/banner package/base-files/files/etc/
 echo '添加软件包'
 git clone https://github.com/hong0980/build package/ipk
 
-#svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/lean/luci-app-ddnsto
 git clone https://github.com/xiaorouji/openwrt-passwall package/lean/xiaorouji
-#sed -i '9,35d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定9—35行
-#sed -i '$a\chdbits.co\n\www.cnscg.club\n\pt.btschool.club\n\et8.org\n\www.nicept.net\n\pthome.net\n\ourbits.club\n\pt.m-team.cc\n\hdsky.me\n\ccfbits.org' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/direct_host
-#sed -i '$a\docker.com\n\docker.io' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/proxy_host
-#sed -i 's/.*auto_update.*/	option auto_update 1\n	option week_update 0\n	option time_update 5/g' package/lean/xiaorouji/luci-app-passwall/root/etc/config/passwall
-#sed -i '/global_subscribe/a	option subscribe_proxy 0\noption auto_update_subscribe 1\noption week_update_subscribe 7\noption time_update_subscribe 5\noption filter_keyword_discarded 1\noption allowInsecure 1' package/lean/xiaorouji/luci-app-passwall/root/etc/config/passwall
-
 git clone https://github.com/vernesong/OpenClash package/lean/luci-app-openclash
 git clone https://github.com/jerrykuku/luci-app-vssr package/lean/luci-app-vssr
 git clone https://github.com/jerrykuku/lua-maxminddb package/lean/lua-maxminddb
 git clone https://github.com/pymumu/openwrt-smartdns package/lean/smartdns
-git clone https://github.com/pymumu/luci-app-smartdns package/lean/luci-app-smartdns
+git clone https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
 svn co https://github.com/Lienol/openwrt/trunk/package/diy/luci-app-adguardhome package/lean/luci-app-adguardhome
 svn co https://github.com/py14551/openwrt/trunk/adguardhome package/lean/adguardhome
 git clone https://github.com/destan19/OpenAppFilter package/lean/OpenAppFilter
 git clone https://github.com/AlexZhuo/luci-app-bandwidthd package/lean/luci-app-bandwidthd
 git clone https://github.com/tty228/luci-app-serverchan package/lean/luci-app-serverchan
-# rm -rf package/lean/luci-app-baidupcs-web && \
-# git clone https://github.com/garypang13/luci-app-baidupcs-web package/lean/luci-app-baidupcs-web
 cp -f diy/hong0980/serverchan package/lean/luci-app-serverchan/root/etc/config/
 git clone https://github.com/jefferymvp/luci-app-koolproxyR package/lean/luci-app-koolproxyR
 # sed -i 's?../../lang?$(TOPDIR)/feeds/packages/lang?g' feeds/packages/lang/*/Makefile
 git clone https://github.com/fw876/helloworld package/lean/luci-app-ssr-plus
+
 if [ -e package/lean/luci-app-openclash/luci-app-openclash/luasrc/view/openclash/myip.htm ]; then
 	sed -i '/status/am:section(SimpleSection).template = "openclash/myip"' package/lean/luci-app-ssr-plus/luci-app-ssr-plus/luasrc/model/cbi/shadowsocksr/client.lua
 	sed -i '/get("@global_other/i\m:section(SimpleSection).template = "openclash/myip"' package/lean/xiaorouji/luci-app-passwall/luasrc/model/cbi/passwall/client/global.lua
@@ -80,7 +72,7 @@ git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-ap
 
 rm -rf package/lean/luci-app-netdata && \
 git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
+mv -vf diy/hong0980/files/web/*  package/lean/luci-app-netdata/web/
 
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
 sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
@@ -98,7 +90,7 @@ git clone https://github.com/persmule/amule-dlp.antiLeech package/lean/antileech
 
 echo 'qBittorrent'
 # cat package/lean/luci-app-qbittorrent/Makefile > package/ipk/luci-app-qbittorrent/Makefile
-sed -i 's/+qBittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
+#sed -i 's/+qBittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
 rm -rf package/lean/luci-app-qbittorrent
 #rm -rf package/lean/qtbase #5.1.5
 #rm -rf package/lean/qttools #5.1.5

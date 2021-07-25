@@ -27,20 +27,13 @@ rm -rf package/lean/luci-app-guest-wifi
 echo '添加软件包'
 #git clone https://github.com/hong0980/diy package/lean/hong0980
 git clone https://github.com/hong0980/build package/ipk
-#svn co https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/lean/ddnsto
-#svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/lean/luci-app-ddnsto
-#sed -i 's/ddnsto.\$(PKG_ARCH_DDNSTO)/ddnsto.mipsel/g' package/lean/luci-app-ddnsto/Makefile
+git clone https://github.com/jerrykuku/lua-maxminddb package/lean/lua-maxminddb
+git clone https://github.com/pymumu/openwrt-smartdns package/lean/smartdns
+git clone https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
 sed -i 's/ddnsto.\$(PKG_ARCH_DDNSTO)/ddnsto.mipsel/g' package/ipk/luci-app-ddnsto/Makefile
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/lean/luci-app-jd-dailybonus
 svn co https://github.com/Lienol/openwrt/trunk/package/lean/libtorrent-rasterbar package/lean/libtorrent-rasterbar
 git clone https://github.com/xiaorouji/openwrt-passwall package/lean/xiaorouji
-#sed -i '296,315d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定296-315行
-#sed -i '9,35d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定9—35行
-#sed -i '$a\chdbits.co\n\www.cnscg.club\n\pt.btschool.club\n\et8.org\n\www.nicept.net\n\pthome.net\n\ourbits.club\n\pt.m-team.cc\n\hdsky.me\n\ccfbits.org' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/direct_host
-#sed -i '$a\docker.com\n\docker.io' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/proxy_host
-#sed -i 's/.*auto_update.*/	option auto_update 1\n	option week_update 0\n	option time_update 5/g' package/lean/xiaorouji/luci-app-passwall/root/etc/config/passwall
-#sed -i '/global_subscribe/a	option subscribe_proxy 0\noption auto_update_subscribe 1\noption week_update_subscribe 7\noption time_update_subscribe 5\noption filter_keyword_discarded 1\noption allowInsecure 1' package/lean/xiaorouji/luci-app-passwall/root/etc/config/passwall
-
 git clone https://github.com/destan19/OpenAppFilter package/lean/OpenAppFilter
 git clone https://github.com/tty228/luci-app-serverchan package/lean/luci-app-serverchan && \
 cp -f diy/hong0980/serverchan package/lean/luci-app-serverchan/root/etc/config/
@@ -74,8 +67,6 @@ svn co https://github.com/hong0980/packages/trunk/net/transmission-web-control p
 rm -rf feeds/packages/net/ariang && \
 svn co https://github.com/hong0980/packages/trunk/net/ariang package/lean/ariang
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
-# sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
-# sed -i "/devidx}.mode=ap/a\			set wireless.default_radio\${devidx}.ssid=OpenWrt-\$(cat /sys/class/ieee80211/\${dev}/macaddress | awk -F \":\" '{print \$5\"\"\$6}' | tr a-z A-Z\)" package/kernel/mac80211/files/lib/wifi/mac80211.sh
 cp -vRf diy/hong0980/zzz-default-settings package/lean/default-settings/files/
 aa=`grep DISTRIB_DESCRIPTION package/base-files/files/etc/openwrt_release | awk -F"'" '{print $2}'`
 sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/files/etc/openwrt_release
