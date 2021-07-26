@@ -62,7 +62,7 @@ sed -i 's/enabled		0/enabled		1/g' feeds/packages/net/miniupnpd/files/upnpd.conf
 po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusic-Go luci-app-adbyby-plus autosamba automount ntfs3-mount ntfs3"
 for p in $po; do
 	[ -e package/lean/$p ] && rm -rf package/lean/$p
-	[ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/lean/$p
+	[ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/lean/$p  1>/dev/null 2>&1
 done
 
 #rm -rf package/lean/luci-app-adbyby-plus && \
@@ -417,10 +417,16 @@ git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
 
-rm -rf package/lean/luci-app-netdata && \
-git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-rm package/lean/luci-app-netdata/web/{dashboard.js,dashboard_info.js,index.html,main.js}
-cp -vf diy/hong0980/files/web/{dashboard.js,dashboard_info.js,index.html,main.js}  package/lean/luci-app-netdata/web/
+mkdir -p feeds/package/lean/luci-app-netdata/root/etc/uci-defaults
+cat >> "feeds/package/lean/luci-app-netdata/root/etc/uci-defaults/40_luci-app-netdata" <<-\EOF
+#!/bin/sh
+for x in ls /usr/share/netdata/webcn; do
+	[ -f /usr/share/netdata/webcn/$x ] && mv -f /usr/share/netdata/webcn/$x /usr/share/netdata/web/$x
+done
+rm -rf /usr/share/netdata/webcn
+rm -rf /tmp/luci-*
+exit 0
+EOF
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile
 #sed -i '/_redirect2ssl/d' package/lean/nginx/Makefile
