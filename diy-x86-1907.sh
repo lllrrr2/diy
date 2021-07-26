@@ -19,6 +19,7 @@ git clone https://github.com/hong0980/build package/ipk
 sed -i 's?../../devel?$(TOPDIR)/feeds/packages/devel?g' feeds/packages/devel/ninja/ninja-cmake.mk
 git clone https://github.com/xiaorouji/openwrt-passwall package/ipk/passwall
 git clone https://github.com/jerrykuku/luci-app-vssr package/ipk/luci-app-vssr
+git clone https://github.com/jerrykuku/lua-maxminddb package/ipk/lua-maxminddb
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/ipk/luci-app-jd-dailybonus
 git clone https://github.com/vernesong/OpenClash package/ipk/luci-app-openclash
 git clone https://github.com/destan19/OpenAppFilter package/ipk/OpenAppFilter
