@@ -19,7 +19,6 @@ git clone https://github.com/xiaorouji/openwrt-passwall package/lean/xiaorouji
 git clone https://github.com/vernesong/OpenClash package/lean/luci-app-openclash
 git clone https://github.com/jerrykuku/luci-app-vssr package/lean/luci-app-vssr
 git clone https://github.com/jerrykuku/lua-maxminddb package/lean/lua-maxminddb
-git clone https://github.com/pymumu/openwrt-smartdns package/lean/smartdns
 git clone https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
 svn co https://github.com/Lienol/openwrt/trunk/package/diy/luci-app-adguardhome package/lean/luci-app-adguardhome
 svn co https://github.com/py14551/openwrt/trunk/adguardhome package/lean/adguardhome

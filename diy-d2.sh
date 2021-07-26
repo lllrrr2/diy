@@ -28,7 +28,6 @@ echo '添加软件包'
 #git clone https://github.com/hong0980/diy package/lean/hong0980
 git clone https://github.com/hong0980/build package/ipk
 git clone https://github.com/jerrykuku/lua-maxminddb feeds/packages/net/lua-maxminddb
-git clone https://github.com/pymumu/openwrt-smartdns feeds/packages/net/smartdns
 git clone https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
 sed -i 's/ddnsto.\$(PKG_ARCH_DDNSTO)/ddnsto.mipsel/g' package/ipk/luci-app-ddnsto/Makefile
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/lean/luci-app-jd-dailybonus
