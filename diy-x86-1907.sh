@@ -19,16 +19,7 @@ git clone https://github.com/hong0980/build package/ipk
 sed -i 's?../../devel?$(TOPDIR)/feeds/packages/devel?g' feeds/packages/devel/ninja/ninja-cmake.mk
 git clone https://github.com/xiaorouji/openwrt-passwall package/ipk/passwall
 git clone https://github.com/jerrykuku/luci-app-vssr package/ipk/luci-app-vssr
-#git clone https://github.com/jerrykuku/lua-maxminddb package/ipk/lua-maxminddb
-#git clone https://github.com/pymumu/openwrt-smartdns package/ipk/smartdns
-#git clone https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
-#svn co https://github.com/linkease/nas-packages/trunk/luci/luci-app-ddnsto package/ipk/luci-app-ddnsto
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/ipk/luci-app-jd-dailybonus
-#sed -i '$a\chdbits.co\n\www.cnscg.club\n\pt.btschool.club\n\et8.org\n\www.nicept.net\n\pthome.net\n\ourbits.club\n\pt.m-team.cc\n\hdsky.me\n\ccfbits.org' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/direct_host
-#sed -i '$a\docker.com\n\docker.io' package/lean/xiaorouji/luci-app-passwall/root/usr/share/passwall/rules/proxy_host
-#sed -i 's/.*auto_update.*/	option auto_update 1\n	option week_update 0\n	option time_update 5/g' package/lean/xiaorouji/luci-app-passwall/root/etc/config/passwall
-#sed -i '/global_subscribe/a	option subscribe_proxy 0\noption auto_update_subscribe 1\noption week_update_subscribe 7\noption time_update_subscribe 5\noption filter_keyword_discarded 1\noption allowInsecure 1' package/lean/xiaorouji/luci-app-passwall/root/etc/config/passwall
-
 git clone https://github.com/vernesong/OpenClash package/ipk/luci-app-openclash
 git clone https://github.com/destan19/OpenAppFilter package/ipk/OpenAppFilter
 git clone https://github.com/ElonH/Rclone-OpenWrt package/ipk/Rclone-OpenWrt
@@ -62,7 +53,6 @@ sed -i "/devidx}.mode=ap/a\			set wireless.default_radio\${devidx}.ssid=OpenWrt-
 package/kernel/mac80211/files/lib/wifi/mac80211.sh
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
 sed -i '/https/d' package/network/services/uhttpd/files/uhttpd.config
-#sed -i '9,35d' package/ipk/luci-app-Network-settings/luasrc/model/cbi/advanced.lua  #删除指定9—35行
 cp -vRf diy/hong0980/zzz-default-settings package/default-settings/files/
 aa=`grep DISTRIB_DESCRIPTION package/base-files/files/etc/openwrt_release | awk -F"'" '{print $2}'`
 sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/files/etc/openwrt_release
@@ -70,17 +60,12 @@ sed -i 's/enabled		0/enabled		1/g' feeds/packages/net/miniupnpd/files/upnpd.conf
 
 po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusic-Go luci-app-adbyby-plus autosamba automount ntfs3-mount ntfs3"
 for p in $po; do
-[ -e package/lean/$p ] && rm -rf package/lean/$p
-[ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/lean/$p
+	[ -e package/lean/$p ] && rm -rf package/lean/$p
+	[ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/lean/$p
 done
-# sed -i 's| packages.*| packages https://github.com/coolsnowwolf/packages|' feeds.conf.default
 
 #rm -rf package/lean/luci-app-adbyby-plus && \
 #git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-app-adblock-plus
-
-#rm -rf package/lean/luci-app-netdata && \
-#git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-#cp -vRf diy/hong0980/files/web  package/lean/luci-app-netdata/web
 
 echo 'qBittorrent'
 #rm -rf package/lean/qt5 #5.9.8
@@ -415,9 +400,7 @@ end
 EOF
 
 echo '删除重复包'
-rm -rf package/diy/luci-app-diskman
-rm -rf package/diy/parted
-rm -rf package/diy/OpenAppFilter
+rm -rf package/diy/{luci-app-diskman,parted,OpenAppFilter}
 rm -rf diy/hong0980/autocore
 
 rm -rf feeds/packages/utils/dockerd && svn co https://github.com/openwrt/packages/trunk/utils/dockerd feeds/packages/utils/dockerd
@@ -435,7 +418,8 @@ svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/tty
 
 rm -rf package/lean/luci-app-netdata && \
 git clone https://github.com/sirpdboy/luci-app-netdata  package/lean/luci-app-netdata
-mv -vf diy/hong0980/files/web/*  package/lean/luci-app-netdata/web/
+rm package/lean/luci-app-netdata/web/{dashboard.js,dashboard_info.js,index.html,main.js}
+cp -vf diy/hong0980/files/web/{dashboard.js,dashboard_info.js,index.html,main.js}  package/lean/luci-app-netdata/web/
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile
 #sed -i '/_redirect2ssl/d' package/lean/nginx/Makefile
