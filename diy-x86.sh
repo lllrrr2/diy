@@ -69,17 +69,6 @@ svn co https://github.com/hong0980/packages/trunk/net/ariang package/lean/ariang
 rm -rf package/lean/luci-app-adbyby-plus && \
 git clone https://github.com/small-5/luci-app-adblock-plus  package/lean/luci-app-adblock-plus
 
-mkdir -p feeds/package/lean/luci-app-netdata/root/etc/uci-defaults
-cat >> "feeds/package/lean/luci-app-netdata/root/etc/uci-defaults/40_luci-app-netdata" <<-\EOF
-#!/bin/sh
-for x in ls /usr/share/netdata/webcn; do
-	[ -f /usr/share/netdata/webcn/$x ] && mv -f /usr/share/netdata/webcn/$x /usr/share/netdata/web/$x
-done
-rm -rf /usr/share/netdata/webcn
-rm -rf /tmp/luci-*
-exit 0
-EOF
-
 sed -i 's/IMG_PREFIX:=\$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=\$(shell date +%Y-%m%d-%H%M -d +8hour)-\$(VERSION_DIST_SANITIZED)/g' include/image.mk
 sed -i '/ssid=OpenWrt/d' package/kernel/mac80211/files/lib/wifi/mac80211.sh
 sed -i "/devidx}.mode=ap/a\			set wireless.default_radio\${devidx}.ssid=OpenWrt-\$(cat /sys/class/ieee80211/\${dev}/macaddress | awk -F \":\" '{print \$5\"\"\$6}' | tr a-z A-Z\)" package/kernel/mac80211/files/lib/wifi/mac80211.sh
@@ -121,6 +110,8 @@ echo '删除重复包'
 rm -rf package/lean/autocore
 rm -rf package/lean/luci-app-docker
 #svn co https://github.com/openwrt/packages/trunk/utils/docker package/lean/docker && sed -i 's/include ..\/..\/lang/include \$(TOPDIR)\/feeds\/packages\/lang/g' package/lean/docker/Makefile
+
+rm -rf package/lean/luci-app-netdata
 rm -rf package/lean/luci-app-diskman
 rm -rf package/lean/xiaorouji/luci-app-kodexplorer
 rm -rf package/lean/xiaorouji/luci-app-pppoe-relay

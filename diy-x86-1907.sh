@@ -417,16 +417,7 @@ git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
 
-mkdir -p feeds/package/lean/luci-app-netdata/root/etc/uci-defaults
-cat >> "feeds/package/lean/luci-app-netdata/root/etc/uci-defaults/40_luci-app-netdata" <<-\EOF
-#!/bin/sh
-for x in ls /usr/share/netdata/webcn; do
-	[ -f /usr/share/netdata/webcn/$x ] && mv -f /usr/share/netdata/webcn/$x /usr/share/netdata/web/$x
-done
-rm -rf /usr/share/netdata/webcn
-rm -rf /tmp/luci-*
-exit 0
-EOF
+rm -rf package/lean/luci-app-netdata
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile
 #sed -i '/_redirect2ssl/d' package/lean/nginx/Makefile
