@@ -416,7 +416,8 @@ git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
-[ `awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/admin/netdata/Makefile` = "1.30.1" ] && \
+
+#[ `awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/admin/netdata/Makefile` = "1.30.1" ] && \
 cp -vf diy/hong0980/files/99-netdata-webcn.patch feeds/packages/admin/netdata/patches
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile

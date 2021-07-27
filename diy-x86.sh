@@ -111,7 +111,7 @@ rm -rf package/lean/autocore
 rm -rf package/lean/luci-app-docker
 #svn co https://github.com/openwrt/packages/trunk/utils/docker package/lean/docker && sed -i 's/include ..\/..\/lang/include \$(TOPDIR)\/feeds\/packages\/lang/g' package/lean/docker/Makefile
 
-[ `awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/admin/netdata/Makefile` -eq "1.30.1" ] && \
+#[ `awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/admin/netdata/Makefile` - "1.30.1" ] && \
 cp -vf diy/hong0980/files/99-netdata-webcn.patch feeds/packages/admin/netdata/patches
 
 rm -rf package/lean/luci-app-diskman
