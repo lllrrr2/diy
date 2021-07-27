@@ -111,7 +111,7 @@ rm -rf package/lean/autocore
 rm -rf package/lean/luci-app-docker
 #svn co https://github.com/openwrt/packages/trunk/utils/docker package/lean/docker && sed -i 's/include ..\/..\/lang/include \$(TOPDIR)\/feeds\/packages\/lang/g' package/lean/docker/Makefile
 
-cp -vf package/ipk/99-netdata-webcn.patch feeds/packages/admin/netdata/patches/
+cp -vf diy/hong0980/99-netdata-webcn.patch feeds/packages/admin/netdata/patches/
 
 rm -rf package/lean/luci-app-diskman
 rm -rf package/lean/xiaorouji/luci-app-kodexplorer
