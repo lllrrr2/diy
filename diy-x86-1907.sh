@@ -417,7 +417,7 @@ git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
 
-cp -f diy/hong0980/99-netdata-webcn.patch feeds/packages/admin/netdata/patches
+cp -vf package/ipk/99-netdata-webcn.patch feeds/packages/admin/netdata/patches
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile
 #sed -i '/_redirect2ssl/d' package/lean/nginx/Makefile
