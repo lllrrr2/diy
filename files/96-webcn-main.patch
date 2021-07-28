@@ -1,0 +1,672 @@
+--- a/web/gui/main.js
++++ b/web/gui/main.js
+@@ -148,7 +148,7 @@
+                     urlOptions[numeric[len]] = parseInt(urlOptions[numeric[len]]);
+                 }
+                 catch (e) {
+-                    console.log('failed to parse URL hash parameter ' + numeric[len]);
++                    console.log('解析 URL 哈希参数失败 ' + numeric[len]);
+                     urlOptions[numeric[len]] = 0;
+                 }
+             }
+@@ -263,13 +263,13 @@
+                 d2 = '';
+             }
+             document.getElementById('navbar-highlight-content').innerHTML =
+-                ((show_eye === true) ? '<span class="navbar-highlight-bar highlight-tooltip" onclick="urlOptions.showHighlight();" title="restore the highlighted view" data-toggle="tooltip" data-placement="bottom">' : '<span>').toString()
++                ((show_eye === true) ? '<span class="navbar-highlight-bar highlight-tooltip" onclick="urlOptions.showHighlight();" title="恢复突出显示的视图" data-toggle="tooltip" data-placement="bottom">' : '<span>').toString()
+                 + 'highlighted time-frame'
+                 + ' <b>' + d1 + ' <code>' + NETDATA.dateTime.localeTimeString(after) + '</code></b> to '
+                 + ' <b>' + d2 + ' <code>' + NETDATA.dateTime.localeTimeString(before) + '</code></b>, '
+                 + 'duration <b>' + NETDATA.seconds4human(Math.round((before - after) / 1000)) + '</b>'
+                 + '</span>'
+-                + '<span class="navbar-highlight-button-right highlight-tooltip" onclick="urlOptions.clearHighlight();" title="clear the highlighted time-frame" data-toggle="tooltip" data-placement="bottom"><i class="fas fa-times"></i></span>';
++                + '<span class="navbar-highlight-button-right highlight-tooltip" onclick="urlOptions.clearHighlight();" title="清除突出显示的时间范围" data-toggle="tooltip" data-placement="bottom"><i class="fas fa-times"></i></span>';
+ 
+             $('.navbar-highlight').show();
+ 
+@@ -333,7 +333,7 @@
+         if (localStorageTest() === true) {
+             ret = localStorage.getItem(name);
+         } else {
+-            console.log('localStorage is not available');
++            console.log('本地存储不可用');
+         }
+     }
+     catch (error) {
+@@ -576,7 +576,7 @@
+         html += (
+             `<div class="info-item">
+                 <i class="fas fa-filter"></i>
+-                <span style="margin-left: 8px">no databases match the filter criteria.<span>
++                <span style="margin-left: 8px">没有数据库符合过滤条件。<span>
+             </div>`
+         )
+     }
+@@ -591,7 +591,7 @@
+         let ret = loadLocalStorage("registryCallback");
+         if (ret) {
+             machinesArray = JSON.parse(ret);
+-            console.log("failed to contact the registry - loaded registry data from browser local storage");
++            console.log("无法联系注册表 - 从浏览器本地存储加载的注册表数据");
+         }
+     }
+ 
+@@ -658,7 +658,7 @@
+             html += (
+                 `<div class="info-item">
+                     <i class="fas fa-filter"></i>
+-                    <span style="margin-left: 8px">zero nodes are matching the filter value.<span>
++                    <span style="margin-left: 8px">零节点与过滤器值匹配。<span>
+                 </div>`
+             )
+         }
+@@ -668,13 +668,13 @@
+         if (machines) {
+             html += (
+                 `<div class="info-item">
+-                    <a href="https://github.com/netdata/netdata/tree/master/registry#registry" target="_blank">Your nodes list is empty</a>
++                    <a href="https://github.com/netdata/netdata/tree/master/registry#registry" target="_blank">您的节点列表为空</a>
+                 </div>`
+             )
+         } else {
+             html += (
+                 `<div class="info-item">
+-                    <a href="https://github.com/netdata/netdata/tree/master/registry#registry" target="_blank">Failed to contact the registry</a>
++                    <a href="https://github.com/netdata/netdata/tree/master/registry#registry" target="_blank">无法联系注册表</a>
+                 </div>`
+             )
+         }
+@@ -683,14 +683,14 @@
+         html += `<div class="info-item">Demo netdata nodes</div>`;
+ 
+         const demoServers = [
+-            { url: "//london.netdata.rocks/default.html", title: "UK - London (DigitalOcean.com)" },
+-            { url: "//newyork.netdata.rocks/default.html", title: "US - New York (DigitalOcean.com)" },
+-            { url: "//sanfrancisco.netdata.rocks/default.html", title: "US - San Francisco (DigitalOcean.com)" },
+-            { url: "//atlanta.netdata.rocks/default.html", title: "US - Atlanta (CDN77.com)" },
+-            { url: "//frankfurt.netdata.rocks/default.html", title: "Germany - Frankfurt (DigitalOcean.com)" },
+-            { url: "//toronto.netdata.rocks/default.html", title: "Canada - Toronto (DigitalOcean.com)" },
+-            { url: "//singapore.netdata.rocks/default.html", title: "Japan - Singapore (DigitalOcean.com)" },
+-            { url: "//bangalore.netdata.rocks/default.html", title: "India - Bangalore (DigitalOcean.com)" },
++            { url: "//london.netdata.rocks/default.html", title: "英国 - 伦敦 (DigitalOcean.com)" },
++            { url: "//newyork.netdata.rocks/default.html", title: "美洲 - 纽约 (DigitalOcean.com)" },
++            { url: "//sanfrancisco.netdata.rocks/default.html", title: "美洲 - 旧金山 (DigitalOcean.com)" },
++            { url: "//atlanta.netdata.rocks/default.html", title: "美洲 - 亚特兰大 (CDN77.com)" },
++            { url: "//frankfurt.netdata.rocks/default.html", title: "德国 - 法兰克福 (DigitalOcean.com)" },
++            { url: "//toronto.netdata.rocks/default.html", title: "加拿大 - 多伦多 (DigitalOcean.com)" },
++            { url: "//singapore.netdata.rocks/default.html", title: "日本 - 新加坡 (DigitalOcean.com)" },
++            { url: "//bangalore.netdata.rocks/default.html", title: "印度 - 班加罗尔 (DigitalOcean.com)" },
+ 
+         ]
+ 
+@@ -725,13 +725,13 @@
+ function errorMyNetdataMenu() {
+     setMyNetdataMenu(`<div class="agent-item" style="padding: 0 8px">
+         <i class="fas fa-exclamation-triangle" style="color: red"></i>
+-        Cannot load known Netdata agents from Netdata Cloud! Please make sure you have the latest version of Netdata.
++        无法从 Netdata Cloud 加载已知的 Netdata 代理！ 请确保您拥有最新版本的 Netdata。
+     </div>`);
+ }
+ 
+ function restrictMyNetdataMenu() {
+     setMyNetdataMenu(`<div class="info-item" style="white-space: nowrap">
+-        <span>Please <a href="#" onclick="signInDidClick(event); return false">sign in to netdata.cloud</a> to view your nodes!</span>
++        <span>请<a href="#" onclick="signInDidClick(event); return false">登录netdata.cloud</a>查看您的节点！</span>
+         <div></div>
+     </div>`);
+ }
+@@ -749,9 +749,9 @@
+     el.classList.add(`theme-${netdataTheme}`);
+ 
+     if (machinesArray == registryAgents) {
+-        console.log("Rendering my-netdata menu from registry");
++        console.log("从注册表呈现 my-netdata 菜单");
+     } else {
+-        console.log("Rendering my-netdata menu from netdata.cloud", machinesArray);
++        console.log("从 netdata.cloud 渲染 my-netdata 菜单", machinesArray);
+     }
+ 
+     let html = '';
+@@ -803,12 +803,12 @@
+         html += (
+             `<div class="agent-item">
+                 <i class="fas fa-cog""></i>
+-                <a href="#" onclick="switchRegistryModalHandler(); return false;">Switch Identity</a>
+-                <div></div>
+-            </div>
+-            <div class="agent-item">
+-                <i class="fas fa-question-circle""></i>
+-                <a href="https://github.com/netdata/netdata/tree/master/registry#registry" target="_blank">What is this?</a>
++                <a href="#" onclick="switchRegistryModalHandler(); return false;">切换身份</a>
++                 <div></div>
++             </div>
++             <div class="agent-item">
++                 <i class="fas fa-question-circle""></i>
++                 <a href="https://github.com/netdata/netdata/tree/master/registry#registry" target="_blank">这是什么？</a>
+                 <div></div>
+             </div>`
+         )
+@@ -816,17 +816,17 @@
+         html += (
+             `<div class="agent-item">
+                 <i class="fas fa-tv"></i>
+-                <a onclick="openAuthenticatedUrl('console.html');" target="_blank">Nodes<sup class="beta"> beta</sup></a>
+-                <div></div>
+-            </div>
+-            <div class="agent-item">
+-                <i class="fas fa-sync"></i>
+-                <a href="#" onclick="showSyncModal(); return false">Synchronize with netdata.cloud</a>
+-                <div></div>
+-            </div>
+-            <div class="agent-item">
+-                <i class="fas fa-question-circle""></i>
+-                <a href="https://netdata.cloud/about" target="_blank">What is this?</a>
++                <a onclick="openAuthenticatedUrl('console.html');" target="_blank">节点<sup class="beta"> beta</sup></a>
++                 <div></div>
++             </div>
++             <div class="agent-item">
++                 <i class="fas fa-sync"></i>
++                 <a href="#" onclick="showSyncModal(); return false">与netdata.cloud同步</a>
++                 <div></div>
++             </div>
++             <div class="agent-item">
++                 <i class="fas fa-question-circle""></i>
++                 <a href="https://netdata.cloud/about" target="_blank">这是什么？</a>
+                 <div></div>
+             </div>`
+         )
+@@ -926,9 +926,9 @@
+                     if (gotoServerMiddleClick) {
+                         window.open(verifyURL(finalURL), '_blank');
+                         gotoServerMiddleClick = false;
+-                        document.getElementById('gotoServerResponse').innerHTML = '<b>Opening new window to ' + NETDATA.registry.machines[guid].name + '<br/><a href="' + verifyURL(finalURL) + '">' + escapeUserInputHTML(url) + '</a></b><br/>(check your pop-up blocker if it fails)';
++                        document.getElementById('gotoServerResponse').innerHTML = '<b>打开新窗口到 ' + NETDATA.registry.machines[guid].name + '<br/><a href="' + verifyURL(finalURL) + '">' + escapeUserInputHTML(url) + '</ a></b><br/>（如果失败，请检查您的弹出窗口阻止程序）';
+                     } else {
+-                        document.getElementById('gotoServerResponse').innerHTML += 'found it! It is at:<br/><small>' + escapeUserInputHTML(url) + '</small>';
++                        document.getElementById('gotoServerResponse').innerHTML += '找到了！它位于：<br/><small>' + escapeUserInputHTML(url) + '</small>';
+                         document.location = verifyURL(finalURL);
+                         $('#gotoServerModal').modal('hide');
+                     }
+@@ -974,7 +974,7 @@
+         // we consult the registry to get additional URLs.
+         setTimeout(function () {
+             if (gotoServerStop === false) {
+-                document.getElementById('gotoServerResponse').innerHTML = '<b>Added all the known URLs for this machine.</b>';
++                document.getElementById('gotoServerResponse').innerHTML = '<b>添加了这台机器的所有已知 URL。</b>';
+                 NETDATA.registry.search(guid, function (data) {
+                     // console.log(data);
+                     len = data.urls.length;
+@@ -1504,7 +1504,7 @@
+         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.io"'
+             + ' data-dimensions="in"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="Disk Read"'
++            + ' data-title="磁盘读取"'
+             + ' data-width="11%"'
+             + ' data-before="0"'
+             + ' data-after="-' + duration.toString() + '"'
+@@ -1515,7 +1515,7 @@
+         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.io"'
+             + ' data-dimensions="out"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="Disk Write"'
++            + ' data-title="磁盘写入"'
+             + ' data-width="11%"'
+             + ' data-before="0"'
+             + ' data-after="-' + duration.toString() + '"'
+@@ -1527,7 +1527,7 @@
+         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.pgpgio"'
+             + ' data-dimensions="in"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="Disk Read"'
++            + ' data-title="磁盘读取"'
+             + ' data-width="11%"'
+             + ' data-before="0"'
+             + ' data-after="-' + duration.toString() + '"'
+@@ -1538,7 +1538,7 @@
+         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.pgpgio"'
+             + ' data-dimensions="out"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="Disk Write"'
++            + ' data-title="磁盘写入"'
+             + ' data-width="11%"'
+             + ' data-before="0"'
+             + ' data-after="-' + duration.toString() + '"'
+@@ -1564,7 +1564,7 @@
+         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.net"'
+             + ' data-dimensions="received"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="Net Inbound"'
++            + ' data-title="下行速度"'
+             + ' data-width="11%"'
+             + ' data-before="0"'
+             + ' data-after="-' + duration.toString() + '"'
+@@ -1575,7 +1575,7 @@
+         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.net"'
+             + ' data-dimensions="sent"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="Net Outbound"'
++            + ' data-title="上行速度"'
+             + ' data-width="11%"'
+             + ' data-before="0"'
+             + ' data-after="-' + duration.toString() + '"'
+@@ -1587,7 +1587,7 @@
+         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.ip"'
+             + ' data-dimensions="received"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="IP Inbound"'
++            + ' data-title="IP 入站"'
+             + ' data-width="11%"'
+             + ' data-before="0"'
+             + ' data-after="-' + duration.toString() + '"'
+@@ -1598,7 +1598,7 @@
+         head += '<div class="netdata-container" style="margin-right: 10px;" data-netdata="system.ip"'
+             + ' data-dimensions="sent"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="IP Outbound"'
++            + ' data-title="IP 出站"'
+             + ' data-width="11%"'
+             + ' data-before="0"'
+             + ' data-after="-' + duration.toString() + '"'
+@@ -1660,7 +1660,7 @@
+             + ' data-dimensions="used|buffers|active|wired"' // active and wired are FreeBSD stats
+             + ' data-append-options="percentage"'
+             + ' data-chart-library="easypiechart"'
+-            + ' data-title="Used RAM"'
++            + ' data-title="已用内存"'
+             + ' data-units="%"'
+             + ' data-easypiechart-max-value="100"'
+             + ' data-width="9%"'
+@@ -1811,23 +1811,23 @@
+ 
+     const isMemoryModeDbEngine = data.memory_mode === "dbengine";
+ 
+-    sidebar += '<li class="" style="padding-top:15px;"><a href="https://learn.netdata.cloud/docs/agent/collectors/quickstart/" target="_blank"><i class="fas fa-plus"></i> Add more charts</a></li>';
+-    sidebar += '<li class=""><a href="https://learn.netdata.cloud/docs/agent/health/quickstart/" target="_blank"><i class="fas fa-plus"></i> Add more alarms</a></li>';
+-    sidebar += '<li class="" style="margin:20px;color:#666;"><small>Every ' +
+-      ((data.update_every === 1) ? 'second' : data.update_every.toString() + ' seconds') + ', ' +
+-      'Netdata collects <strong>' + data.dimensions_count.toLocaleString() + '</strong> metrics on ' +
+-      data.hostname.toString() + ', presents them in <strong>' +
+-      data.charts_count.toLocaleString() + '</strong> charts' +
++    sidebar += '<li class="" style="padding-top:15px;"><a href="https://learn.netdata.cloud/docs/agent/collectors/quickstart/" target="_blank"><i class="fas fa-plus"></i> 添加更多的图标</a></li>';
++    sidebar += '<li class=""><a href="https://learn.netdata.cloud/docs/agent/health/quickstart/" target="_blank"><i class="fas fa-plus"></i> 添加更多的警告</a></li>';
++    sidebar += '<li class="" style="margin:20px;color:#666;"><small>以每 ' +
++      ((data.update_every === 1) ? 'second' : data.update_every.toString() + ' 秒') + ', ' +
++      'Netdata 在 <strong>' + data.hostname.toString() + '</strong> 上收集 ' +
++      data.dimensions_count.toLocaleString() + '个指标, 将它们呈现在 <strong>' +
++      data.charts_count.toLocaleString() + '</strong> 个图表中' +
+       (isMemoryModeDbEngine ? '' : ',') + // oxford comma
+-      ' and monitors them with <strong>' +
+-      data.alarms_count.toLocaleString() + '</strong> alarms.';
++      ' 并以 <strong>' +
++      data.alarms_count.toLocaleString() + '</strong> 个警告监控它们。';
+ 
+     if (!isMemoryModeDbEngine) {
+-        sidebar += '<br />&nbsp;<br />Get more history by ' +
+-          '<a href="https://learn.netdata.cloud/guides/longer-metrics-storage#using-the-round-robin-database" target=_blank>configuring Netdata\'s <strong>history</strong></a> or using the <a href="https://learn.netdata.cloud/docs/agent/database/engine/" target=_blank>DB engine.</a>';
++        sidebar += '<br />&nbsp;<br />通过 ' +
++           '<a href="https://learn.netdata.cloud/guides/longer-metrics-storage#using-the-round-robin-database" target=_blank>配置 Netdata\ 的<strong>历史</strong ></a> 或使用<a href="https://learn.netdata.cloud/docs/agent/database/engine/" target=_blank>数据库引擎。</a>';
+     }
+ 
+-    sidebar += '<br/>&nbsp;<br/><strong>netdata</strong><br/>' + data.version.toString() + '</small></li>';
++    sidebar += '<br/>&nbsp;<br/><strong>netdata</strong><br/>当前版本：' + data.version.toString() + '</small></li>';
+ 
+     sidebar += '</ul>';
+     div.innerHTML = html;
+@@ -2029,9 +2029,9 @@
+ // ----------------------------------------------------------------------------
+ 
+ function alarmsUpdateModal() {
+-    var active = '<h3>Raised Alarms</h3><table class="table">';
+-    var all = '<h3>All Running Alarms</h3><div class="panel-group" id="alarms_all_accordion" role="tablist" aria-multiselectable="true">';
+-    var footer = '<hr/><a href="https://github.com/netdata/netdata/tree/master/web/api/badges#netdata-badges" target="_blank">netdata badges</a> refresh automatically. Their color indicates the state of the alarm: <span style="color: #e05d44"><b>&nbsp;red&nbsp;</b></span> is critical, <span style="color:#fe7d37"><b>&nbsp;orange&nbsp;</b></span> is warning, <span style="color: #4c1"><b>&nbsp;bright green&nbsp;</b></span> is ok, <span style="color: #9f9f9f"><b>&nbsp;light grey&nbsp;</b></span> is undefined (i.e. no data or no status), <span style="color: #000"><b>&nbsp;black&nbsp;</b></span> is not initialized. You can copy and paste their URLs to embed them in any web page.<br/>netdata can send notifications for these alarms. Check <a href="https://github.com/netdata/netdata/blob/master/health/notifications/health_alarm_notify.conf" target="_blank">this configuration file</a> for more information.';
++    var active = '<h3>引发的警告</h3><table class="table">';
++    var all = '<h3>所有运行警告</h3><div class="panel-group" id="alarms_all_accordion" role="tablist" aria-multiselectable="true">';
++    var footer = '<hr/><a href="https://github.com/netdata/netdata/tree/master/web/api/badges#netdata-badges" target="_blank">netdata徽章</a> 自动刷新。 它们的颜色表示警告的状态：<span style="color: #e05d44"><b>&nbsp;red&nbsp;</b></span> 很重要，<span style="color:#fe7d37">< b>&nbsp;orange&nbsp;</b></span> 是警告，<span style="color: #4c1"><b>&nbsp;亮绿色&nbsp;</b></span> 没问题，<span style ="color: #9f9f9f"><b>&nbsp;浅灰色&nbsp;</b></span> 未定义（即无数据或无状态），<span style="color: #000"><b>&nbsp ;black</b></span> 未初始化。 您可以复制并粘贴它们的 URL 以将它们嵌入到任何网页中。<br/>netdata 可以发送这些警告的通知。 查看<a href="https://github.com/netdata/netdata/blob/master/health/notifications/health_alarm_notify.conf" target="_blank">此配置文件</a>了解更多信息。';
+ 
+     loadClipboard(function () {
+     });
+@@ -2308,13 +2308,13 @@
+         all += "</div>";
+ 
+         if (!count_active) {
+-            active += '<div style="width:100%; height: 100px; text-align: center;"><span style="font-size: 50px;"><i class="fas fa-thumbs-up"></i></span><br/>Everything is normal. No raised alarms.</div>';
++            active += '<div style="width:100%; height: 100px; text-align: center;"><span style="font-size: 50px;"><i class="fas fa-thumbs-up"></i></span><br/>一切正常。没有发出警告。</div>';
+         } else {
+             active += footer;
+         }
+ 
+         if (!count_all) {
+-            all += "<h4>No alarms are running in this system.</h4>";
++            all += "<h4>该系统中没有运行警告。</h4>";
+         } else {
+             all += footer;
+         }
+@@ -2340,7 +2340,7 @@
+             $('#alarm_all_' + id.toString()).html('');
+         });
+ 
+-        document.getElementById('alarms_log').innerHTML = '<h3>Alarm Log</h3><table id="alarms_log_table"></table>';
++        document.getElementById('alarms_log').innerHTML = '<h3>警告日志</h3><table id="alarms_log_table"></table>';
+ 
+         loadBootstrapTable(function () {
+             $('#alarms_log_table').bootstrapTable({
+@@ -2398,9 +2398,9 @@
+                 columns: [
+                     {
+                         field: 'when',
+-                        title: 'Event Date',
++                        title: '事件日期',
+                         valign: 'middle',
+-                        titleTooltip: 'The date and time the even took place',
++                        titleTooltip: '事件发生的日期和时间',
+                         formatter: function (value, row, index) {
+                             void (row);
+                             void (index);
+@@ -2414,7 +2414,7 @@
+                         field: 'hostname',
+                         title: 'Host',
+                         valign: 'middle',
+-                        titleTooltip: 'The host that generated this event',
++                        titleTooltip: '产生此事件的主机',
+                         align: 'center',
+                         visible: false,
+                         sortable: true
+@@ -2463,8 +2463,8 @@
+                     },
+                     {
+                         field: 'chart',
+-                        title: 'Chart',
+-                        titleTooltip: 'The chart the alarm is attached to',
++                        title: '图表',
++                        titleTooltip: '警告所附的图表',
+                         align: 'center',
+                         valign: 'middle',
+                         switchable: false,
+@@ -2473,7 +2473,7 @@
+                     {
+                         field: 'family',
+                         title: 'Family',
+-                        titleTooltip: 'The family of the chart the alarm is attached to',
++                        titleTooltip: '警告所附加的图表系列',
+                         align: 'center',
+                         valign: 'middle',
+                         visible: false,
+@@ -2481,8 +2481,8 @@
+                     },
+                     {
+                         field: 'name',
+-                        title: 'Alarm',
+-                        titleTooltip: 'The alarm name that generated this event',
++                        title: '报警',
++                        titleTooltip: '生成此事件的报警名称',
+                         formatter: function (value, row, index) {
+                             void (row);
+                             void (index);
+@@ -2496,7 +2496,7 @@
+                     {
+                         field: 'value_string',
+                         title: 'Friendly Value',
+-                        titleTooltip: 'The value of the alarm, that triggered this event',
++                        titleTooltip: '触发此事件的警告值',
+                         align: 'right',
+                         valign: 'middle',
+                         sortable: true
+@@ -2504,7 +2504,7 @@
+                     {
+                         field: 'old_value_string',
+                         title: 'Friendly Old Value',
+-                        titleTooltip: 'The value of the alarm, just before this event',
++                        titleTooltip: '警告的值，就在此事件之前',
+                         align: 'right',
+                         valign: 'middle',
+                         visible: false,
+@@ -2513,7 +2513,7 @@
+                     {
+                         field: 'old_value',
+                         title: 'Old Value',
+-                        titleTooltip: 'The value of the alarm, just before this event',
++                        titleTooltip: '警告的值，就在此事件之前',
+                         formatter: function (value, row, index) {
+                             void (row);
+                             void (index);
+@@ -2527,7 +2527,7 @@
+                     {
+                         field: 'value',
+                         title: 'Value',
+-                        titleTooltip: 'The value of the alarm, that triggered this event',
++                        titleTooltip: '触发此事件的警告的值',
+                         formatter: function (value, row, index) {
+                             void (row);
+                             void (index);
+@@ -2540,8 +2540,8 @@
+                     },
+                     {
+                         field: 'units',
+-                        title: 'Units',
+-                        titleTooltip: 'The units of the value of the alarm',
++                        title: '单位',
++                        titleTooltip: '报警值的单位',
+                         align: 'left',
+                         valign: 'middle',
+                         visible: false,
+@@ -2549,8 +2549,8 @@
+                     },
+                     {
+                         field: 'old_status',
+-                        title: 'Old Status',
+-                        titleTooltip: 'The status of the alarm, just before this event',
++                        title: '旧状态',
++                        titleTooltip: '警告的状态，就在此事件之前',
+                         align: 'center',
+                         valign: 'middle',
+                         visible: false,
+@@ -2558,8 +2558,8 @@
+                     },
+                     {
+                         field: 'status',
+-                        title: 'Status',
+-                        titleTooltip: 'The status of the alarm, that was set due to this event',
++                        title: '状态',
++                        titleTooltip: '由于此事件而设置的警告状态',
+                         align: 'center',
+                         valign: 'middle',
+                         switchable: false,
+@@ -2568,7 +2568,7 @@
+                     {
+                         field: 'duration',
+                         title: 'Last Duration',
+-                        titleTooltip: 'The duration the alarm was at its previous state, just before this event',
++                        titleTooltip: '警告处于其先前状态的持续时间，就在此事件之前',
+                         formatter: function (value, row, index) {
+                             void (row);
+                             void (index);
+@@ -2582,7 +2582,7 @@
+                     {
+                         field: 'non_clear_duration',
+                         title: 'Raised Duration',
+-                        titleTooltip: 'The duration the alarm was raised, just before this event',
++                        titleTooltip: '发出警告的持续时间，就在此事件之前',
+                         formatter: function (value, row, index) {
+                             void (row);
+                             void (index);
+@@ -2596,7 +2596,7 @@
+                     {
+                         field: 'recipient',
+                         title: 'Recipient',
+-                        titleTooltip: 'The recipient of this event',
++                        titleTooltip: '本次活动的接受者',
+                         align: 'center',
+                         valign: 'middle',
+                         visible: false,
+@@ -2727,8 +2727,8 @@
+                     },
+                     {
+                         field: 'delay_up_to_timestamp',
+-                        title: 'Script Delay Run At',
+-                        titleTooltip: 'The date and time the script should be run, after hysteresis',
++                        title: '脚本延迟运行',
++                        titleTooltip: '滞后后运行脚本的日期和时间',
+                         formatter: function (value, row, index) {
+                             void (row);
+                             void (index);
+@@ -2750,8 +2750,8 @@
+                     },
+                     {
+                         field: 'source',
+-                        title: 'Alarm Source',
+-                        titleTooltip: 'The source of configuration of the alarm',
++                        title: '警告源',
++                        titleTooltip: '警告配置来源',
+                         align: 'center',
+                         valign: 'middle',
+                         visible: false,
+@@ -3039,17 +3039,17 @@
+ 
+         if (sha1 === null) {
+             save = false;
+-            versionLog('<p><big>Failed to get your netdata version!</big></p><p>You can always get the latest netdata from <a href="https://github.com/netdata/netdata" target="_blank">its github page</a>.</p>');
++            versionLog('<p><big>无法获取您的netdata版本！</big></p><p>您始终可以从 <a href="https://github.com/netdata/ netdata" target="_blank">它的 github 页面</a>。</p>');
+         } else if (sha2 === null) {
+             save = false;
+-            versionLog('<p><big>Failed to get the latest netdata version.</big></p><p>You can always get the latest netdata from <a href="https://github.com/netdata/netdata" target="_blank">its github page</a>.</p>');
++            versionLog('<p><big>获取最新的netdata版本失败。</big></p><p>你可以随时从<a href="https://github.com/netdata获取最新的netdata /netdata" target="_blank">它的 github 页面</a>。</p>');
+         } else if (versionsMatch(sha1, sha2)) {
+             save = true;
+-            versionLog('<p><big>You already have the latest netdata!</big></p><p>No update yet?<br/>We probably need some motivation to keep going on!</p><p>If you haven\'t already, <a href="https://github.com/netdata/netdata" target="_blank">give netdata a <b><i class="fas fa-star"></i></b> at its github page</a>.</p>');
++            versionLog('<p><big>您已经拥有最新的netdata！</big></p><p>还没有更新吗？<br/>我们可能需要一些支持来继续前进！</p>< p>如果你还没有，<a href="https://github.com/netdata/netdata" target="_blank">给netdata一个<b><i class="fas fa-star"> </i></b> 在其 github 页面</a>。</p>');
+         } else {
+             save = true;
+             var compare = 'https://learn.netdata.cloud/docs/agent/changelog/';
+-            versionLog('<p><big><strong>New version of netdata available!</strong></big></p><p>Latest version: <b><code>' + sha2 + '</code></b></p><p><a href="' + compare + '" target="_blank">Click here for the changes log</a> and<br/><a href="https://github.com/netdata/netdata/tree/master/packaging/installer/UPDATE.md" target="_blank">click here for directions on updating</a> your netdata installation.</p><p>We suggest to review the changes log for new features you may be interested, or important bug fixes you may need.<br/>Keeping your netdata updated is generally a good idea.</p>');
++            versionLog('<p><big><strong>新版本netdata可用！</strong></big></p><p>最新版本：<b><code>' + sha2 + '</code ></b></p><p><a href="' + compare + '" target="_blank">单击此处查看更改日志</a> 和<br/><a href="https ://github.com/netdata/netdata/tree/master/packaging/installer/UPDATE.md" target="_blank">单击此处获取有关更新 netdata 安装的说明</a>。</p><p> 我们建议您查看更改日志，了解您可能感兴趣的新功能或您可能需要的重要错误修复。<br/>保持netdata更新通常是个好主意。</p>');
+ 
+             document.getElementById('update_badge').innerHTML = '!';
+         }
+@@ -3401,13 +3401,13 @@
+             }
+ 
+             document.getElementById('loadSnapshotFilename').innerHTML = '<code>' + filename + '</code>';
+-            document.getElementById('loadSnapshotHostname').innerHTML = '<b>' + result.hostname + '</b>, netdata version: <b>' + result.netdata_version.toString() + '</b>';
++            document.getElementById('loadSnapshotHostname').innerHTML = '<b>' + result.hostname + '</b>, netdata 版本: <b>' + result.netdata_version.toString() + '</b>';
+             document.getElementById('loadSnapshotURL').innerHTML = result.url;
+             document.getElementById('loadSnapshotCharts').innerHTML = result.charts.charts_count.toString() + ' charts, ' + result.charts.dimensions_count.toString() + ' dimensions, ' + result.data_points.toString() + ' points per dimension, ' + Math.round(result.duration_ms / result.data_points).toString() + ' ms per point';
+-            document.getElementById('loadSnapshotInfo').innerHTML = 'version: <b>' + result.snapshot_version.toString() + '</b>, includes <b>' + result.charts_ok.toString() + '</b> unique chart data queries ' + ((result.charts_failed > 0) ? ('<b>' + result.charts_failed.toString() + '</b> failed') : '').toString() + ', compressed with <code>' + result.compression.toString() + '</code>, data size ' + (Math.round(result.data_size * 100 / 1024 / 1024) / 100).toString() + ' MB';
++            document.getElementById('loadSnapshotInfo').innerHTML = '版本: <b>' + result.snapshot_version.toString() + '</b>, includes <b>' + result.charts_ok.toString() + '</b> 独特的图表数据查询 ' + ((result.charts_failed > 0) ? ('<b>' + result.charts_failed.toString() + '</b> failed') : '').toString() + ', compressed with <code>' + result.compression.toString() + '</code>, data size ' + (Math.round(result.data_size * 100 / 1024 / 1024) / 100).toString() + ' MB';
+             document.getElementById('loadSnapshotTimeRange').innerHTML = '<b>' + NETDATA.dateTime.localeDateString(date_after) + ' ' + NETDATA.dateTime.localeTimeString(date_after) + '</b> to <b>' + NETDATA.dateTime.localeDateString(date_before) + ' ' + NETDATA.dateTime.localeTimeString(date_before) + '</b>';
+             document.getElementById('loadSnapshotComments').innerHTML = ((result.comments) ? result.comments : '').toString();
+-            loadSnapshotModalLog('success', 'File loaded, click <b>Import</b> to render it!');
++            loadSnapshotModalLog('success', '文件已加载，点击<b>导入</b>进行渲染！');
+             $('#loadSnapshotImport').removeClass('disabled');
+ 
+             tmpSnapshotData = result;
+@@ -3415,7 +3415,7 @@
+         catch (e) {
+             console.log(e);
+             document.getElementById('loadSnapshotStatus').className = "alert alert-danger";
+-            document.getElementById('loadSnapshotStatus').innerHTML = "Failed to parse this file!";
++            document.getElementById('loadSnapshotStatus').innerHTML = "无法解析此文件！";
+             $('#loadSnapshotImport').addClass('disabled');
+         }
+     }
+@@ -3432,7 +3432,7 @@
+     document.getElementById('loadSnapshotInfo').innerHTML = '';
+     document.getElementById('loadSnapshotTimeRange').innerHTML = '';
+     document.getElementById('loadSnapshotComments').innerHTML = '';
+-    loadSnapshotModalLog('success', 'Browse for a snapshot file (or drag it and drop it here), then click <b>Import</b> to render it.');
++    loadSnapshotModalLog('success', '浏览快照文件（或将其拖放到此处），然后单击<b>导入</b> 进行渲染。');
+     $('#loadSnapshotImport').addClass('disabled');
+ };
+ 
+@@ -3451,7 +3451,7 @@
+                     loadSnapshotPreflightFile(e.originalEvent.dataTransfer.files.item(0));
+                 } else {
+                     loadSnapshotPreflightEmpty();
+-                    loadSnapshotModalLog('danger', 'No file selected');
++                    loadSnapshotModalLog('danger', '未选择文件');
+                 }
+             });
+     }
+@@ -3461,11 +3461,11 @@
+     var files = document.getElementById('loadSnapshotSelectFiles').files;
+     if (files.length <= 0) {
+         loadSnapshotPreflightEmpty();
+-        loadSnapshotModalLog('danger', 'No file selected');
++        loadSnapshotModalLog('danger', '未选择文件');
+         return;
+     }
+ 
+-    loadSnapshotModalLog('info', 'Loading file...');
++    loadSnapshotModalLog('info', '正在加载文件...');
+ 
+     loadSnapshotPreflightFile(files.item(0));
+ }
+@@ -3502,7 +3502,7 @@
+ function saveSnapshotModalShowExpectedSize() {
+     var points = Math.round(saveSnapshotViewDuration / saveSnapshotSelectedSecondsPerPoint);
+     var priority = 'info';
+-    var msg = 'A moderate snapshot.';
++    var msg = '适度的快照。';
+ 
+     var sizemb = Math.round(
+         (options.data.charts_count * snapshotOptions.bytes_per_chart
+@@ -3516,18 +3516,18 @@
+ 
+     if (sizemb < 10) {
+         priority = 'success';
+-        msg = 'A nice small snapshot!';
++        msg = '一个不错的小快照！';
+     }
+     if (sizemb > 50) {
+         priority = 'warning';
+-        msg = 'Will stress your browser...';
++        msg = '会给你的浏览器带来压力...';
+     }
+     if (sizemb > 100) {
+         priority = 'danger';
+-        msg = 'Hm... good luck...';
++        msg = '嗯……祝你好运……';
+     }
+ 
+-    saveSnapshotModalLog(priority, 'The snapshot will have ' + points.toString() + ' points per dimension. Expected size on disk ' + sizemb + ' MB, at browser memory ' + memmb + ' MB.<br/>' + msg);
++    saveSnapshotModalLog(priority, '快照将有 ' + points.toString() + ' 每个维度的点数。磁盘上的预期大小 ' + sizemb + ' MB，在浏览器内存中 ' + memmb + ' MB。<br/>' + msg );
+ }
+ 
+ var saveSnapshotCompression = snapshotOptions.compressionDefault;
+@@ -3545,7 +3545,7 @@
+ function saveSnapshotModalInit() {
+     $('#saveSnapshotModalProgressSection').hide();
+     $('#saveSnapshotResolutionRadio').show();
+-    saveSnapshotModalLog('info', 'Select resolution and click <b>Save</b>');
++    saveSnapshotModalLog('info', '选择分辨率并点击<b>保存</b>');
+     $('#saveSnapshotExport').removeClass('disabled');
+ 
+     loadBootstrapSlider(function () {
+@@ -3632,7 +3632,7 @@
+ 
+             var filename = document.getElementById('saveSnapshotFilename').value;
+             // console.log(filename);
+-            saveSnapshotModalLog('info', 'Generating snapshot as <code>' + filename.toString() + '</code>');
++            saveSnapshotModalLog('info', '生成快照为 <code>' + filename.toString() + '</code>');
+ 
+             var save_options = {
+                 stop_updates_when_focus_is_lost: false,
+@@ -3725,7 +3725,7 @@
+             saveData.before_ms = NETDATA.globalPanAndZoom.force_before_ms;
+             saveData.duration_ms = saveData.before_ms - saveData.after_ms;
+             saveData.data_points = Math.round((saveData.before_ms - saveData.after_ms) / (saveSnapshotSelectedSecondsPerPoint * 1000));
+-            saveSnapshotModalLog('info', 'Generating snapshot with ' + saveData.data_points.toString() + ' data points per dimension...');
++            saveSnapshotModalLog('info', '用' + saveData.data_points.toString() + '每个维度的数据点生成快照...');
+ 
+             var charts_count = 0;
+             var charts_ok = 0;
+@@ -3799,7 +3799,7 @@
+                             state.log('failed to be updated: ' + reason);
+                         }
+ 
+-                        saveSnapshotModalLog((charts_failed) ? 'danger' : 'info', 'Generated snapshot data size <b>' + (Math.round(size * 100 / 1024 / 1024) / 100).toString() + ' MB</b>. ' + ((charts_failed) ? (charts_failed.toString() + ' charts have failed to be downloaded') : '').toString() + info);
++                        saveSnapshotModalLog((charts_failed) ? 'danger' : 'info', '生成的快照数据大小 <b>' + (Math.round(size * 100 / 1024 / 1024) / 100).toString() + ' MB</b >. ' + ((charts_failed) ? (charts_failed.toString() + '图表下载失败') : '').toString() + info);
+ 
+                         if (idx > 0) {
+                             update_chart(idx);
