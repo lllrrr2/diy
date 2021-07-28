@@ -418,7 +418,8 @@ rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
 
 #[ `awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/admin/netdata/Makefile` = "1.30.1" ] && \
-cp -vf diy/hong0980/files/*.patch feeds/packages/admin/netdata/patches
+rm feeds/packages/admin/netdata/patches/{*html.patch,*.js.patch}
+cp -vf diy/hong0980/files/999-webcn.patch feeds/packages/admin/netdata/patches
 
 #sed -i 's/+uhttpd //g' package/lean/luci/Makefile
 #sed -i '/_redirect2ssl/d' package/lean/nginx/Makefile
