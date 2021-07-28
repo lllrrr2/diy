@@ -1,6 +1,5 @@
-diff -ruN a/web/gui/dashboard.js b/web/gui/dashboard.js
---- a/web/gui/dashboard.js	2021-04-12 20:40:27.000000000 +0800
-+++ b/web/gui/dashboard.js	2021-07-28 17:14:49.000000000 +0800
+--- a/web/gui/dashboard.js
++++ b/web/gui/dashboard.js
 @@ -142,18 +142,18 @@
  
  NETDATA.seconds4human = function (seconds, options) {
@@ -191,9 +190,8 @@ diff -ruN a/web/gui/dashboard.js b/web/gui/dashboard.js
                  });
              }
          } else {
-diff -ruN a/dashboard_info.js b/dashboard_info.js
---- a/web/gui/dashboard_info.js	2021-04-12 20:40:27.000000000 +0800
-+++ b/web/gui/dashboard_info.js	2021-07-23 20:54:40.000000000 +0800
+--- a/web/gui/dashboard_info.js
++++ b/web/gui/dashboard_info.js
 @@ -12,16 +12,15 @@
  
  netdataDashboard.menu = {
@@ -911,9 +909,8 @@ diff -ruN a/dashboard_info.js b/dashboard_info.js
          ]
      },
  
-diff -ruN a/index.html b/index.html
---- a/web/gui/index.html	2021-04-12 20:40:27.000000000 +0800
-+++ b/web/gui/index.html	2021-07-23 20:54:40.000000000 +0800
+--- a/web/gui/index.html
++++ b/web/gui/index.html
 @@ -39,8 +39,8 @@
  <body data-spy="scroll" data-target="#sidebar" data-offset="100">
      <div id="loadOverlay" class="loadOverlay" style="background-color: #fff; color: #888;">
@@ -2605,9 +2602,8 @@ diff -ruN a/index.html b/index.html
                  </div>
              </div>
          </div>
-diff -ruN a/main.js b/main.js
---- a/web/gui/main.js	2021-04-12 20:40:27.000000000 +0800
-+++ b/web/gui/main.js	2021-07-23 20:54:40.000000000 +0800
+--- a/web/gui/main.js
++++ b/web/gui/main.js
 @@ -148,7 +148,7 @@
                      urlOptions[numeric[len]] = parseInt(urlOptions[numeric[len]]);
                  }
