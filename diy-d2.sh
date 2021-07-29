@@ -32,6 +32,7 @@ git clone https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/lu
 sed -i 's/ddnsto.\$(PKG_ARCH_DDNSTO)/ddnsto.mipsel/g' package/ipk/luci-app-ddnsto/Makefile
 git clone https://github.com/vernesong/OpenClash package/lean/luci-app-openclash
 git clone https://github.com/zzsj0928/luci-app-pushbot package/ipk/luci-app-pushbot
+rm -rf package/lean/luci-app-jd-dailybonus && \
 git clone https://github.com/jerrykuku/luci-app-jd-dailybonus package/lean/luci-app-jd-dailybonus
 svn co https://github.com/Lienol/openwrt/trunk/package/lean/libtorrent-rasterbar package/lean/libtorrent-rasterbar
 git clone https://github.com/xiaorouji/openwrt-passwall package/lean/xiaorouji
