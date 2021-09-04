@@ -407,11 +407,11 @@ rm -rf diy/hong0980/autocore
 # rm -rf feeds/packages/utils/dockerd && svn co https://github.com/openwrt/packages/trunk/utils/dockerd feeds/packages/utils/dockerd
 # rm -rf feeds/packages/utils/docker && svn co https://github.com/openwrt/packages/trunk/utils/docker feeds/packages/utils/docker
 rm -rf package/ipk/luci-app-dockerman
-# rm -rf package/diy/luci-app-dockerman && \
+# rm -rf package/diy/luci-app-dockerman
 # git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
-# for i in `find package/diy/luci-app-dockerman/applications/luci-app-dockerman/`; do
-	# [ `grep -c "admin" $i 2>/dev/null` -gt "0" ] && sed -e 's|admin/docker|admin/services/docker|g; s|admin", "docker|admin", "services", "docker|g; s|admin","docker|admin", "services", "docker|g; s|admin\\/docker|admin\\/services\\/docker|g' $i -i
-# done
+ for i in `find package/*/luci-app-dockerman/applications/luci-app-dockerman/`; do
+	 [ `grep -c "admin" $i 2>/dev/null` -gt "0" ] && sed -e 's|admin/docker|admin/services/docker|g; s|admin", "docker|admin", "services", "docker|g; s|admin","docker|admin", "services", "docker|g; s|admin\\/docker|admin\\/services\\/docker|g' $i -i
+ done
 rm -rf package/ipk/luci-lib-docker && rm -rf package/diy/luci-lib-docker
 git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 

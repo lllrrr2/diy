@@ -3,6 +3,7 @@ CONFIG_TARGET_ramips_mt7621=y
 CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 CONFIG_KERNEL_BUILD_USER="win3gp"
 CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
+CONFIG_PACKAGE_luci-app-tcpdump=y
 CONFIG_PACKAGE_luci-app-bridge=y
 CONFIG_PACKAGE_luci-app-ddnsto=y
 CONFIG_PACKAGE_luci-app-guest-wifi=y
