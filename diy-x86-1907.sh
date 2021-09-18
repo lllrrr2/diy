@@ -404,13 +404,13 @@ echo '删除重复包'
 rm -rf package/diy/{luci-app-diskman,parted,OpenAppFilter}
 rm -rf diy/hong0980/autocore
 
-rm -rf package/*/luci-lib-docker
-rm -rf package/*/luci-app-dockerman
-git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
-for i in `find package/*/luci-app-dockerman/applications/luci-app-dockerman/`; do
-	[ `grep -c "admin" $i 2>/dev/null` -gt "0" ] && sed -e 's|admin/docker|admin/services/docker|g; s|admin", "docker|admin", "services", "docker|g; s|admin","docker|admin", "services", "docker|g; s|admin\\/docker|admin\\/services\\/docker|g' $i -i
-done
-git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
+rm -rf package/diy/luci-lib-docker
+rm -rf package/diy/luci-app-dockerman
+#git clone https://github.com/lisaac/luci-app-dockerman package/diy/luci-app-dockerman
+#for i in `find package/*/luci-app-dockerman/applications/luci-app-dockerman/`; do
+#	[ `grep -c "admin" $i 2>/dev/null` -gt "0" ] && sed -e 's|admin/docker|admin/services/docker|g; s|admin", "docker|admin", "services", "docker|g; s|admin","docker|admin", "services", "docker|g; s|admin\\/docker|admin\\/services\\/docker|g' $i -i
+#done
+#git clone https://github.com/lisaac/luci-lib-docker package/diy/luci-lib-docker
 
 rm -rf feeds/packages/utils/ttyd && \
 svn co https://github.com/coolsnowwolf/packages/trunk/utils/ttyd package/ipk/ttyd
