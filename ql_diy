@@ -5,14 +5,13 @@
 code_shell_path=$dir_config/code.sh
 # 获取token
 token=$(cat $file_auth_user | jq --raw-output .token)
-sed -i "s|By：https://github.com/whyour/qinglong|By：qinglong|" $file_notify_js
 
 # 下载 config.sh
 [[ -e $file_config_user ]] || touch $file_config_user
 if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" == "0" ]]; then
 	[[ -s $file_config_user ]] && mv $file_config_user $dir_config/config.sh.bk
 	if wget -O $file_config_user https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Conf/Qinglong/config.sample.sh 1>/dev/null 2>&1; then
-		sed -i 's/FRUIT_BEAN_CARD.*/FRUIT_BEAN_CARD="false"/' $file_config_user
+		sed -i 's/FRUIT_BEAN_CARD.*/FRUIT_BEAN_CARD="false"/;s/.*NOTIFY_AUTHOR.*/export NOTIFY_AUTHOR="qinglong"/' $file_config_user
 	else
 		echo "config.sh 下载失败"
 		exit 0
@@ -95,16 +94,17 @@ if ! wget -O $file_task_before https://ghproxy.com/https://raw.githubusercontent
 fi
 
 [[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" == "0" ]] && \
-sed -i '/update_qinglong "$2"/a\        [[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path\n        ;;\n     diy)\n        if [[ ${EnableExtraShell} == true ]] && [[ -f $dir_config/diy.sh ]]; then\n        echo -e "## 开始执行... $begin_time\\n" >>$log_path\n        [[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n            . $dir_config/diy.sh >>$log_path\n        fi' $dir_shell/update.sh
+sed -i '/update_qinglong "$2"/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path\n\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} == true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi' $dir_shell/update.sh
 
 if [[ ! -s $dir_config/diy.sh ]]; then
 	cat >"$dir_config/diy.sh" <<-\EOF
 		#!/usr/bin/env bash
 		echo "运行diy脚本"
 		. /ql/shell/share.sh
-		[[ "`grep -c 'diy.sh' $dir_shell/update.sh`" == "0" ]] && \
-		sed -i '/update_qinglong "$2"/a\        [[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path\n        ;;\n     diy)\n        if [[ ${EnableExtraShell} == true ]] && [[ -f $dir_config/diy.sh ]]; then\n        echo -e "## 开始执行... $begin_time\\n" >>$log_path\n        [[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n            . $dir_config/diy.sh >>$log_path\n        fi' $dir_shell/update.sh
+		[[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" == "0" ]] && \
+		sed -i '/update_qinglong "$2"/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path\n\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} == true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi' $dir_shell/update.sh
 		
-		sed -i "s|By：https://github.com/whyour/qinglong|By：qinglong|" $file_notify_js
+		wget -O $file_notify_js https://raw.githubusercontent.com/ccwav/QLScript/main/sendNotify.js 1>/dev/null 2>&1
+		sed -ri 's/本通知 By ccwav Mod/本通知 By qinglong/' $file_notify_js
 	EOF
 fi
