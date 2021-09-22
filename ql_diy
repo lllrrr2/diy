@@ -12,7 +12,7 @@ if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" == "0" ]]; then
 	[[ -s $file_config_user ]] && mv $file_config_user $dir_config/config.sh.bk
 	if wget -O $file_config_user https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Conf/Qinglong/config.sample.sh 1>/dev/null 2>&1; then
 		sed -i 's/FRUIT_BEAN_CARD.*/FRUIT_BEAN_CARD="false"/;s/.*NOTIFY_AUTHOR.*/export NOTIFY_AUTHOR="qinglong"/' $file_config_user
-		echo -e '##更新面板时何用开发分，true 为使用。\nR_branch=""' >> $file_config_user
+		[[ "$(grep -c 'R_branch' $file_config_user)" == "0" ]] && echo -e '## 更新面板时使用develop开发分支，true 为使用。\nR_branch=""' >> $file_config_user
 	else
 		echo "config.sh 下载失败"
 		exit 0
@@ -120,5 +120,12 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 
 		wget -O $file_notify_js https://raw.githubusercontent.com/ccwav/QLScript/main/sendNotify.js 1>/dev/null 2>&1
 		# sed -ri 's/本通知 By ccwav Mod/本通知 By qinglong/' $file_notify_js
+
+		p="jd_tsuk_wind_ddnc_farmpark.js jd_tsuk_wind_joypark_joy.js jd_tsuk_wind_joypark_open.js jd_tsuk_wind_joypark_task.js jd_esManager.js jd_star_wind_decompression.js jd_imwcc_wind_ruhui.js"
+		for x in ${p[@]}; do
+			if [[ "`grep -c $x $list_crontab_user`" = 0 ]]; then
+				ql raw https://gitee.com/wudongdefeng/jd_scripts/raw/master/$x
+			fi
+		done
 	EOF
 fi
