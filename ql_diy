@@ -8,7 +8,7 @@ token=$(cat $file_auth_user | jq --raw-output .token)
 
 # 下载 config.sh
 [[ -e $file_config_user ]] || touch $file_config_user
-if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" == "0" ]]; then
+if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" -eq "0" ]]; then
 	[[ -s $file_config_user ]] && mv $file_config_user $dir_config/config.sh.bk
 	if wget -O $file_config_user https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Conf/Qinglong/config.sample.sh 1>/dev/null 2>&1; then
 		sed -i '/FRUIT_BEAN_CARD/ s/true/false/;s/NOTIFY_AUTHOR.*/NOTIFY_AUTHOR="qinglong"/;s/openCardBean.*/openCardBean="10"/' $file_config_user
@@ -20,42 +20,42 @@ fi
 
 # 下载 extra.sh
 [[ -e $file_extra_shell ]] || touch $file_extra_shell
-if [[ "$(grep -c 'package_name' $file_extra_shell)" == "0" ]] || [[ "$(grep -c '/ql/config/ql_diy' $file_extra_shell)" -gt "0" ]]; then
+if [[ "$(grep -c 'package_name' $file_extra_shell)" -eq "0" ]] || [[ "$(grep -c 'dir_config/ql_diy' $file_extra_shell)" -gt "1" ]]; then
 	[[ -s $file_extra_shell ]] && mv $file_extra_shell $dir_config/extra.sh.bk
 	if wget -O $file_extra_shell https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Tasks/qlrepo/extra.sh 1>/dev/null 2>&1; then
-		sed -ri 's/require/require request/;s/dependencies="r"/dependencies="yes"/;s/require requestment_name/requestment_name/;s/install_require requestments/install_require/;s/Ninja="on"/Ninja=" "/' $file_extra_shell
-		chmod +x $file_extra_shell
+		sed -ri 's/ts-md5/ts-md5 ts-node/;s/dependencies="r"/dependencies="yes"/;s/Ninja="on"/Ninja=" "/' $file_extra_shell
+		echo -e 'ql repo https://github.com/curtinlv/JD-Script.git "jd_OpenCard"\nql repo https://gitee.com/wudongdefeng/jd_scripts "tsuk_wind_joypark_[jo]|imwcc_wind_ruhui"' >> $file_extra_shell
 	else
 		echo "extra.sh 下载失败"
 	fi
 fi
 
 # 将 shufflewzc 添加到定时任务
-# if [[ "$(grep -c shufflewzc $list_crontab_user)" == "0" ]]; then
+# if [[ "$(grep -c shufflewzc $list_crontab_user)" -eq "0" ]]; then
 	# echo "开始添加 shufflewzc库"
 	# curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"shufflewzc库","command":"ql repo https://github.com/shufflewzc/faker2.git \"jd_|jx_|gua_|jddj_|getJDCookie\" \"activity|backUp|Coupon|update\" \"^jd[^_]|USER|utils|function|^JS|^TS|^JDJRValidator_Pure|^ZooFaker|^sign|ql\"","schedule":"20 0-23/4 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
 # fi
 
 # 将 extra.sh 添加到定时任务
-if [[ "$(grep -c '15 0-23/4' $list_crontab_user)" == "0" ]]; then
+if [[ "$(grep -c '15 0-23/4' $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 extra"
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"初始化任务","command":"ql extra","schedule":"15 0-23/4 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
 fi
 
 # 将 wskey 添加到定时任务
-if [[ "$(grep -c wskey $list_crontab_user)" == "0" ]]; then
+if [[ "$(grep -c wskey $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 wskey"
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"拉取wskey","command":"ql repo https://github.com/Zy143L/wskey.git \"wskey\"","schedule":"20 */3 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
 fi
 
 # 将 diy 添加到定时任务
-if [[ "$(grep -c diy $list_crontab_user)" == "0" ]]; then
+if [[ "$(grep -c diy $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 diy"
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"运行diy.sh","command":"ql diy","schedule":"0 5 */15 * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
 fi
 
 # 将 bot 添加到定时任务
-if [[ "$(grep -c bot $list_crontab_user)" == "0" ]]; then
+if [[ "$(grep -c bot $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 bot"
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"拉取机器人","command":"ql bot","schedule":"13 14 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1626247933219' 1>/dev/null 2>&1
 fi
@@ -64,7 +64,7 @@ fi
 echo -e "\n2) JDHelloWorld		https://github.com/JDHelloWorld/jd_scripts\n3) he1pu		https://github.com/he1pu/JDHelp\n4) shufflewzc		https://github.com/shufflewzc/faker2\n6) Aaron-lv		https://github.com/Aaron-lv/sync\n7) yuannian1112		https://github.com/yuannian1112/jd_scripts\n"
 echo -n "输入你想拉取的仓库编号，多个仓库用空格分开(5秒后不输入选取默认值 4):"
 read -t 5 defaultNum
-if [ -z "$defaultNum" ]; then
+if [[ -z "$defaultNum" ]]; then
 	defaultNum=4
 else
 	defaultNum=${defaultNum:-'4'}
@@ -73,10 +73,9 @@ sed -i "s/^CollectedRepo.*/CollectedRepo=($defaultNum) ##示例：CollectedRepo=
 
 ## 下载 code.sh
 [[ -e $code_shell_path ]] || touch $code_shell_path
-if [[ "$(grep -c 'shufflewzc_faker2' $code_shell_path)" == "0" ]]; then
+if [[ "$(grep -c 'shufflewzc_faker2' $code_shell_path)" -eq "0" ]]; then
 	[[ -s $code_shell_path ]] && mv $code_shell_path $dir_config/code.sh.bk
 	if wget -O $code_shell_path https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Scripts/sh/Helpcode2.8/code.sh 1>/dev/null 2>&1; then
-		chmod +x $code_shell_path
 		sed -i 's/$repo4/$repo/' $code_shell_path
 	else
 		echo "code.sh 下载失败"
@@ -87,7 +86,7 @@ fi
 echo -e "\n## 将\"repo=\$repo1\"改成\"repo=\$repo2\"或其他，以默认调用其他仓库脚本日志\n2) JDHelloWorld_jd_scripts	#预设的 JDHelloWorld 仓库脚本日志\n3) he1pu_JDHelp			#预设的 he1pu 仓库脚本日志\n4) shufflewzc_faker2		#预设的 shufflewzc 仓库脚本日志\n6) Aaron-lv_sync_jd_scripts	#预设的 Aaron-lv 仓库脚本日志\n7) yuannian1112_jd_scripts	#预设的 yuannian1112 仓库脚本日志\n   repo=\$repo4			#默认调用 shufflewzc_faker2 仓库脚本日志\n"
 echo -n "输入你想调用助力码的仓库编号(5秒后不输入选取默认值 4):"
 read -t 5 repoNum
-if [ -z "$repoNum" ]; then
+if [[ -z "$repoNum" ]]; then
 	repoNum=4
 else
 	repoNum=${repoNum:-'4'}
@@ -95,9 +94,9 @@ fi
 sed -i "s/repo=.*/repo=\$repo$repoNum/g" $code_shell_path
 
 ## 将 code.sh 添加到定时任务
-if [[ "$(grep -c 'code.sh' $list_crontab_user)" == "0" ]]; then
+if [[ "$(grep -c 'code.sh' $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 task code.sh"
-	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"格式化更新助力码","command":"bash /ql/config/code.sh &","schedule":"*/10 */7 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1626247939659' 1>/dev/null 2>&1
+	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"格式化更新助力码","command":"bash /ql/config/code.sh &","schedule":"10 5 */7 * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1626247939659' 1>/dev/null 2>&1
 fi
 
 # 下载 task_before.sh
@@ -105,10 +104,10 @@ if ! wget -O $file_task_before https://ghproxy.com/https://raw.githubusercontent
 	echo "task_before.sh 下载失败"
 fi
 
-[[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" == "0" ]] && {
+[[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" -eq "0" ]] && {
 	sed -i '{
 	/cp -rf $ql_static_repo/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
-	/update_qinglong "$2"/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} == true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
+	/update_qinglong "$2"/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} -eq true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
 	}' $dir_shell/update.sh
 }
 
@@ -117,28 +116,24 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		#!/usr/bin/env bash
 		echo -e "## 开始运行diy脚本...\n"
 
-		[[ ${R_branch} == true ]] && {
+		[[ ${R_branch} -eq true ]] && {
 			git checkout develop 1>/dev/null 2>&1
 			git branch -d maste
 			sed -i '/dir_root/ s/master/develop/g' $dir_shell/update.sh
 		}
 
-		[[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" == "0" ]] && {
+		[[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" -eq "0" ]] && {
 			sed -i '{
 			/cp -rf $ql_static_repo/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
-			/update_qinglong "$2"/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} == true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
+			/update_qinglong "$2"/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} -eq true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
 			}' $dir_shell/update.sh
 		}
 
-		[[ "$(grep -c '通知时间' $file_notify_js)" == "0" ]] && \
+		[[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && \
 		wget https://raw.githubusercontent.com/ccwav/QLScript/main/sendNotify.js -O $file_notify_js 1>/dev/null 2>&1
 		# sed -ri 's/本通知 By ccwav Mod/本通知 By qinglong/' $file_notify_js
-
 	EOF
 fi
-
-ql repo https://github.com/curtinlv/JD-Script.git "jd_OpenCard"
-ql repo https://gitee.com/wudongdefeng/jd_scripts "tsuk_wind_joypark_[jo]|imwcc_wind_ruhui"
 
 # cat > "$dir_config/ql_diy" <<-\DIY
 
