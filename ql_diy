@@ -3,7 +3,6 @@
 ## 本脚本搬运并模仿 liuqitoday
 . /ql/shell/share.sh
 code_shell_path=$dir_config/code.sh
-# 获取token
 token=$(cat $file_auth_user | jq --raw-output .token)
 
 # 下载 config.sh
@@ -11,7 +10,7 @@ token=$(cat $file_auth_user | jq --raw-output .token)
 if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" -eq "0" ]]; then
 	[[ -s $file_config_user ]] && mv $file_config_user $dir_config/config.sh.bk
 	if wget -O $file_config_user https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Conf/Qinglong/config.sample.sh 1>/dev/null 2>&1; then
-		sed -i '/FRUIT_BEAN_CARD/ s/true/false/;s/NOTIFY_AUTHOR.*/NOTIFY_AUTHOR="qinglong"/;s/openCardBean.*/openCardBean="10"/' $file_config_user
+		sed -i '/FRUIT_BEAN_CARD/ s/true/false/;s/NOTIFY_AUTHOR.*/NOTIFY_AUTHOR="qinglong"/;s/openCardBean.*/openCardBean="10"/;s/37 0/25 0/' $file_config_user
 		echo -e '##更新面板时使用develop的开发分支，true 为使用\nR_branch=""' >> $file_config_user
 	else
 		echo "config.sh 下载失败"
@@ -60,10 +59,11 @@ if [[ "$(grep -c bot $list_crontab_user)" -eq "0" ]]; then
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"拉取机器人","command":"ql bot","schedule":"13 14 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1626247933219' 1>/dev/null 2>&1
 fi
 
+#for i in $(seq "5" -1 1); do echo -ne "  $i秒后开始 \r"; sleep 1; done
 # extra.sh 预设仓库及默认拉取仓库设置
 echo -e "\n2) JDHelloWorld		https://github.com/JDHelloWorld/jd_scripts\n3) he1pu		https://github.com/he1pu/JDHelp\n4) shufflewzc		https://github.com/shufflewzc/faker2\n6) Aaron-lv		https://github.com/Aaron-lv/sync\n7) yuannian1112		https://github.com/yuannian1112/jd_scripts\n"
-echo -n "输入你想拉取的仓库编号，多个仓库用空格分开(5秒后不输入选取默认值 4):"
-read -t 5 defaultNum
+echo -e "输入你想拉取的仓库编号，多个仓库用空格分开\c"
+read -t 10 -p "( 10秒后不输入选取默认值 4 ):" defaultNum
 if [[ -z "$defaultNum" ]]; then
 	defaultNum=4
 else
@@ -77,21 +77,22 @@ if [[ "$(grep -c 'shufflewzc_faker2' $code_shell_path)" -eq "0" ]]; then
 	[[ -s $code_shell_path ]] && mv $code_shell_path $dir_config/code.sh.bk
 	if wget -O $code_shell_path https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Scripts/sh/Helpcode2.8/code.sh 1>/dev/null 2>&1; then
 		sed -i 's/$repo4/$repo/' $code_shell_path
+		sed -i "s/^repo=.*/repo=\$repo$defaultNum/g" $code_shell_path
 	else
 		echo "code.sh 下载失败"
 	fi
 fi
 
 ## code.sh 预设仓库及默认调用仓库设置
-echo -e "\n## 将\"repo=\$repo1\"改成\"repo=\$repo2\"或其他，以默认调用其他仓库脚本日志\n2) JDHelloWorld_jd_scripts	#预设的 JDHelloWorld 仓库脚本日志\n3) he1pu_JDHelp			#预设的 he1pu 仓库脚本日志\n4) shufflewzc_faker2		#预设的 shufflewzc 仓库脚本日志\n6) Aaron-lv_sync_jd_scripts	#预设的 Aaron-lv 仓库脚本日志\n7) yuannian1112_jd_scripts	#预设的 yuannian1112 仓库脚本日志\n   repo=\$repo4			#默认调用 shufflewzc_faker2 仓库脚本日志\n"
-echo -n "输入你想调用助力码的仓库编号(5秒后不输入选取默认值 4):"
-read -t 5 repoNum
-if [[ -z "$repoNum" ]]; then
-	repoNum=4
-else
-	repoNum=${repoNum:-'4'}
-fi
-sed -i "s/repo=.*/repo=\$repo$repoNum/g" $code_shell_path
+# echo -e "\n## 将\"repo=\$repo1\"改成\"repo=\$repo2\"或其他，以默认调用其他仓库脚本日志\n2) JDHelloWorld_jd_scripts	#预设的 JDHelloWorld 仓库脚本日志\n3) he1pu_JDHelp			#预设的 he1pu 仓库脚本日志\n4) shufflewzc_faker2		#预设的 shufflewzc 仓库脚本日志\n6) Aaron-lv_sync_jd_scripts	#预设的 Aaron-lv 仓库脚本日志\n7) yuannian1112_jd_scripts	#预设的 yuannian1112 仓库脚本日志\n   repo=\$repo4			#默认调用 shufflewzc_faker2 仓库脚本日志\n"
+# echo -n "输入你想调用助力码的仓库编号(5秒后不输入选取默认值 4):"
+# read -t 5 repoNum
+# if [[ -z "$repoNum" ]]; then
+	# repoNum=4
+# else
+	# repoNum=${repoNum:-'4'}
+# fi
+# sed -i "s/^repo=.*/repo=\$repo$repoNum/g" $code_shell_path
 
 ## 将 code.sh 添加到定时任务
 if [[ "$(grep -c 'code.sh' $list_crontab_user)" -eq "0" ]]; then
