@@ -11,7 +11,7 @@ if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" -eq "0" ]]; then
 	[[ -s $file_config_user ]] && mv $file_config_user $dir_config/config.sh.bk
 	if wget -O $file_config_user https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Conf/Qinglong/config.sample.sh 1>/dev/null 2>&1; then
 		sed -i '/FRUIT_BEAN_CARD/ s/true/false/;s/openCardBean.*/openCardBean="10"/;s/37 0/25 0/' $file_config_user
-		echo -e '##更新面板时使用develop的开发分支，true 为使用\nR_branch=""' >> $file_config_user
+		echo -e '##更新面板时使用develop的开发分支，true 为使用\nR_branch="true"' >> $file_config_user
 	else
 		echo "config.sh 下载失败"
 	fi
@@ -23,6 +23,7 @@ if [[ "$(grep -c 'package_name' $file_extra_shell)" -eq "0" ]] || [[ "$(grep -c 
 	[[ -s $file_extra_shell ]] && mv $file_extra_shell $dir_config/extra.sh.bk
 	if wget -O $file_extra_shell https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Tasks/qlrepo/extra.sh 1>/dev/null 2>&1; then
 		sed -ri 's/ts-md5/ts-md5 ts-node/;s/dependencies="r"/dependencies="p"/;s/Ninja="on"/Ninja=" "/' $file_extra_shell
+		echo '. $dir_config/diy.sh' >>$file_extra_shell
 	else
 		echo "extra.sh 下载失败"
 	fi
@@ -50,10 +51,12 @@ fi
 if [[ "$(grep -c diy $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 diy"
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"运行diy.sh","command":"ql diy","schedule":"0 5 */15 * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
+	[[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" -eq "0" ]] && {
 	sed -i '{
 	/cp -rf $ql_static_repo/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
 	/update_qinglong "$2"/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} -eq true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
 	}' $dir_shell/update.sh
+	}
 fi
 
 # 将 bot 添加到定时任务
@@ -128,9 +131,9 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 
 		[[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && {
 		wget -O $file_notify_js https://raw.githubusercontent.com/ccwav/QLScript/main/sendNotify.js 1>/dev/null 2>&1
-		sed -i 's/.*NOTIFY_AUTHOR.*/export NOTIFY_AUTHOR="qinglong"/;/NOTIFY_AUTHOR/a### 当有CK失效自动用Zy143L_wskey_wskey更新\nexport NOTIFY_CKTASK="Zy143L_wskey_wskey.py"' $file_config_user
+		wget -O $dir_scripts/ql.js https://raw.githubusercontent.com/ccwav/QLScript/main/ql.js 1>/dev/null 2>&1
+		sed -i 's/.*NOTIFY_AUTHOR.*/export NOTIFY_AUTHOR="qinglong"/;/NOTIFY_AUTHOR/a### 当有CK失效自动更新Zy143L_wskey_wskey\nexport NOTIFY_CKTASK="Zy143L_wskey_wskey.py"' $file_config_user
 		}
-
 		#ql repo  https://github.com/shufflewzc/faker2 "jd_mofang.js|gua_UnknownTask3.js|d_dpqd_diy.js"
 		#ql repo https://github.com/curtinlv/JD-Script.git "jd_OpenCard"
 		#ql repo https://gitee.com/wudongdefeng/jd_scripts "tsuk_wind_joypark_[jo]|imwcc_wind_ruhui"
