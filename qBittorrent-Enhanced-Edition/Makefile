@@ -19,20 +19,26 @@ PKG_INSTALL:=1
 include $(INCLUDE_DIR)/package.mk
 
 define Package/qBittorrent-Enhanced-Edition
-  SUBMENU:=BitTorrent
   SECTION:=net
   CATEGORY:=Network
+  SUBMENU:=BitTorrent
+  DEPENDS:= +libgcc +libstdcpp \
+			+rblibtorrent \
+			+libopenssl \
+			+qt5-core \
+			+qt5-network \
+			+qt5-xml \
+			+zlib
   TITLE:=bittorrent client programmed in C++ / Qt
   URL:=https://github.com/c0re100/qBittorrent-Enhanced-Edition
-  DEPENDS:=+boost +libtorrent-rasterbar +python3 +qt5-core +qt5-network +qt5-sql +qt5-xml
 endef
 
 define Package/qBittorrent-Enhanced-Edition/description
-qBittorrent is a bittorrent client programmed in C++ / Qt that uses
-libtorrent (sometimes called libtorrent-rasterbar) by Arvid Norberg.
-It aims to be a good alternative to all other bittorrent clients out
-there. qBittorrent is fast, stable and provides unicode support as
-well as many features.
+  qBittorrent is a bittorrent client programmed in C++ / Qt that uses
+  libtorrent (sometimes called libtorrent-rasterbar) by Arvid Norberg.
+  It aims to be a good alternative to all other bittorrent clients out
+  there. qBittorrent is fast, stable and provides unicode support as
+  well as many features.
 endef
 
 CONFIGURE_VARS += \
