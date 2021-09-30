@@ -2,73 +2,42 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qBittorrent-Enhanced-Edition
 PKG_VERSION:=4.3.8.10
-PKG_RELEASE=1
+PKG_RELEASE=$(AUTORELEASE)
 
-STRIP:=true
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://codeload.github.com/c0re100/qBittorrent-Enhanced-Edition/tar.gz/release-$(PKG_VERSION)?
+PKG_HASH:=6862c410ea5417f38aeef34b78960ae8ceefe58c3f0f5429f05e87367738bcb3
 
-ifeq ($(ARCH),i386)
-	PKG_ARCH:=86
-endif
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-release-$(PKG_VERSION)
 
-ifeq ($(ARCH),x86_64)
-	PKG_ARCH:=x86_64-linux-musl
-endif
+PKG_LICENSE:=GPL-2.0-or-later
+PKG_LICENSE_FILES:=COPYING
 
-ifeq ($(ARCH),mipsel)
-	PKG_ARCH:=mipsel-linux-musl
-endif
-
-ifeq ($(ARCH),mips)
-	PKG_ARCH:=mipsel-linux-musl
-endif
-
-ifeq ($(ARCH),arm64)
-	PKG_ARCH:=aarch64-linux-musl
-endif
-
-ifeq ($(ARCH),aarch64)
-	PKG_ARCH:=aarch64-linux-musl
-endif
-
-ifeq ($(ARCH),arm)
-ifeq ($(BOARD),bcm53xx)
-	PKG_ARCH:=armv5
-else ifeq ($(BOARD),kirkwood)
-	PKG_ARCH:=armv5
-else
-	PKG_ARCH:=armv7
-endif
-endif
-
-PKG_SOURCE:=qbittorrent-nox_$(PKG_ARCH)_static.zip
-PKG_SOURCE_URL:=https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/download/release-$(PKG_VERSION)/
-PKG_HASH:=skip
+PKG_BUILD_PARALLEL:=1
+PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/$(PKG_NAME)
-	SECTION:=net
-	CATEGORY:=Network
-	SUBMENU:=BitTorrent
-	DEPENDS:=@(TARGET_x86||TARGET_rockchip)
-	TITLE:=bittorrent client programmed in C++ / Qt
-	URL:=https://www.qbittorrent.org/
-		DEPENDS:=+libgcc +libstdcpp \
-		+rblibtorrent \
-		+libopenssl \
-		+qt5-core \
-		+qt5-network \
-		+qt5-xml \
-		+zlib
+define Package/qBittorrent-Enhanced-Edition
+  SUBMENU:=BitTorrent
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=bittorrent client programmed in C++ / Qt
+  URL:=https://github.com/c0re100/qBittorrent-Enhanced-Edition
+  DEPENDS:=+boost +libtorrent-rasterbar +python3 +qt5-core +qt5-network +qt5-sql +qt5-xml
 endef
 
-define Package/$(PKG_NAME)/description
-  qBittorrent is a bittorrent client programmed in C++ / Qt that uses
-  libtorrent (sometimes called libtorrent-rasterbar) by Arvid Norberg.
-  It aims to be a good alternative to all other bittorrent clients out
-  there. qBittorrent is fast, stable and provides unicode support as
-  well as many features.
+define Package/qBittorrent-Enhanced-Edition/description
+qBittorrent is a bittorrent client programmed in C++ / Qt that uses
+libtorrent (sometimes called libtorrent-rasterbar) by Arvid Norberg.
+It aims to be a good alternative to all other bittorrent clients out
+there. qBittorrent is fast, stable and provides unicode support as
+well as many features.
 endef
+
+CONFIGURE_VARS += \
+  	QT_QMAKE="$(TOOLCHAIN_DIR)/bin" \
+	PKG_CONFIG_PATH="$(TOOLCHAIN_DIR)/lib/pkgconfig"
 
 CONFIGURE_ARGS += \
 	--disable-gui \
@@ -78,15 +47,14 @@ CONFIGURE_ARGS += \
 MAKE_VARS += \
 	INSTALL_ROOT="$(PKG_INSTALL_DIR)"
 
-TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
-
-define Package/qbittorrent/conffiles
-/etc/config/qbittorrent
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	$(SED) '/<context>/{:a;N;/<\/context>/!ba;/\/gui\//d}' `ls $(PKG_BUILD_DIR)/src/lang/qbittorrent_*.ts`
 endef
 
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(BUILD_DIR)/qbittorrent-nox $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/qbittorrent-nox $(1)/usr/bin
 endef
 
-$(eval $(call BuildPackage,$(PKG_NAME)))
+$(eval $(call BuildPackage,qBittorrent-Enhanced-Edition))
