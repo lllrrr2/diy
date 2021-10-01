@@ -59,9 +59,9 @@ aa=`grep DISTRIB_DESCRIPTION package/base-files/files/etc/openwrt_release | awk 
 sed -i "s/${aa}/${aa}-$(TZ=UTC-8 date +%Y年%m月%d日)/g" package/base-files/files/etc/openwrt_release
 sed -i 's/enabled		0/enabled		1/g' feeds/packages/net/miniupnpd/files/upnpd.config
 
-po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusic-Go luci-app-adbyby-plus autosamba automount ntfs3-mount ntfs3"
+po="adbyby tcpping redsocks2 luci-app-ttyd luci-app-unblockmusic rblibtorrent automount UnblockNeteaseMusic UnblockNeteaseMusic-Go luci-app-adbyby-plus autosamba automount ntfs3-mount ntfs3 qtbase qttools"
 for p in $po; do
-	[ -e package/lean/$p ] && rm -rf package/lean/$p
+	rm -rf package/lean/$p
 	[ -e package/lean/$p ] || svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/$p package/lean/$p
 done
 
@@ -73,10 +73,9 @@ rm -rf package/lean/luci-app-qbittorrent
 #rm -rf package/lean/qBittorrent #4.3.7
 rm -rf diy/hong0980/qbittorrent #4.3.1
 rm -rf diy/hong0980/qt5 #5.98
-# svn co https://github.com/immortalwrt/packages/trunk/libs/qt5 feeds/packages/libs/qt5
-svn co https://github.com/immortalwrt/packages/trunk/libs/libtorrent-rasterbar feeds/packages/libs/libtorrent-rasterbar
 svn co https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition feeds/packages/net/qBittorrent-Enhanced-Edition
-#sed -i 's/+qBittorrent/+qBittorrent-Enhanced-Edition/g' package/ipk/luci-app-qbittorrent/Makefile #qBittorrent-Enhanced-Edition 4.2.3.10
+sed -i 's/+qBittorrent/+qBittorrent-Enhanced-Edition/g' package/ipk/luci-app-qbittorrent/Makefile #qBittorrent-Enhanced-Edition 4.2.3.10
+sed -i 's/+libtorrent-rasterbar/+rblibtorrent/' feeds/packages/net/qBittorrent-Enhanced-Edition/Makefile
 #sed -i 's/+qBittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
 
 echo '替换aria2'
