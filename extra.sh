@@ -265,3 +265,4 @@ case $dependencies in
     install_requirements & 
     ;;   
 esac
+. $dir_config/diy.sh

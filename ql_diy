@@ -9,10 +9,11 @@ token=$(cat $file_auth_user | jq --raw-output .token)
 [[ -e $file_config_user ]] || touch $file_config_user
 if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" -eq "0" ]]; then
 	[[ -s $file_config_user ]] && mv $file_config_user $dir_config/config.sh.bk
-	if wget -O $file_config_user https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Conf/Qinglong/config.sample.sh 1>/dev/null 2>&1; then
-		sed -i '/FRUIT_BEAN_CARD/ s/true/false/;s/openCardBean.*/openCardBean="10"/;s/37 0/25 0/' $file_config_user
-		echo -e '##更新面板时使用develop的开发分支，true 为使用\nR_branch=" "' >> $file_config_user
-		sed -i 's/.*NOTIFY_AUTHOR.*/export NOTIFY_AUTHOR="qinglong"/;/NOTIFY_AUTHOR/a### 当有CK失效自动用Zy143L_wskey_wskey更新\nexport NOTIFY_CKTASK="Zy143L_wskey_wskey.py"' $file_config_user
+	if wget -O $file_config_user https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/config.sample.sh 1>/dev/null 2>&1; then
+		# sed -i '/FRUIT_BEAN_CARD/ s/true/false/;s/openCardBean.*/openCardBean="10"/;s/37 0/25 0/' $file_config_user
+		# echo -e '##更新面板时使用develop的开发分支，true 为使用\nR_branch=" "' >> $file_config_user
+		# sed -i 's/.*NOTIFY_AUTHOR.*/export NOTIFY_AUTHOR="qinglong"/;/NOTIFY_AUTHOR/a### 当有CK失效自动用Zy143L_wskey_wskey更新\nexport NOTIFY_CKTASK="Zy143L_wskey_wskey.py"' $file_config_user
+		echo
 	else
 		echo "config.sh 下载失败"
 	fi
@@ -22,10 +23,11 @@ fi
 [[ -e $file_extra_shell ]] || touch $file_extra_shell
 if [[ "$(grep -c 'package_name' $file_extra_shell)" -eq "0" ]] || [[ "$(grep -c 'dir_config/ql_diy' $file_extra_shell)" -gt "1" ]]; then
 	[[ -s $file_extra_shell ]] && mv $file_extra_shell $dir_config/extra.sh.bk
-	if wget -O $file_extra_shell https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Tasks/qlrepo/extra.sh 1>/dev/null 2>&1; then
-		sed -ri 's/ts-md5/ts-md5 ts-node/;s/dependencies="r"/dependencies="p"/;s/Ninja="on"/Ninja=""/' $file_extra_shell
-		sed -i '/shufflewzc/ s/|ql/|ql|sendNotify/' $file_extra_shell
-		echo '. $dir_config/diy.sh' >>$file_extra_shell
+	if wget -O $file_extra_shell https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/extra.sh 1>/dev/null 2>&1; then
+		# sed -ri 's/ts-md5/ts-md5 ts-node/;s/dependencies="r"/dependencies="p"/;s/Ninja="on"/Ninja=""/' $file_extra_shell
+		# sed -i '/shufflewzc/ s/|ql/|ql|sendNotify/' $file_extra_shell
+		# echo '. $dir_config/diy.sh' >>$file_extra_shell
+		echo
 	else
 		echo "extra.sh 下载失败"
 	fi
@@ -69,13 +71,13 @@ fi
 
 #for i in $(seq "5" -1 1); do echo -ne "  $i秒后开始 \r"; sleep 1; done
 # extra.sh 预设仓库及默认拉取仓库设置
-echo -e "\n2) JDHelloWorld		https://github.com/JDHelloWorld/jd_scripts\n3) he1pu		https://github.com/he1pu/JDHelp\n4) shufflewzc		https://github.com/shufflewzc/faker2\n6) Aaron-lv		https://github.com/Aaron-lv/sync\n7) yuannian1112		https://github.com/yuannian1112/jd_scripts\n"
+echo -e "\n1) shufflewzc		https://github.com/shufflewzc/faker2\n2) JDHelloWorld		https://github.com/JDHelloWorld/jd_scripts\n3) he1pu		https://github.com/he1pu/JDHelp\n4) Aaron-lv		https://github.com/Aaron-lv/sync\n5) yuannian1112		https://github.com/yuannian1112/jd_scripts\n6) zero205		https://github.com/zero205/JD_tencent_scf\n"
 echo -e "输入你想拉取的仓库编号，多个仓库用空格分开\c"
-read -t 10 -p "( 10秒后不输入选取默认值 4 ):" defaultNum
+read -t 10 -p "( 10秒后不输入选取默认值 1 ):" defaultNum
 if [[ -z "$defaultNum" ]]; then
-	defaultNum=4
+	defaultNum=1
 else
-	defaultNum=${defaultNum:-'4'}
+	defaultNum=${defaultNum}
 fi
 sed -i "s/^CollectedRepo.*/CollectedRepo=($defaultNum) ##示例：CollectedRepo=(2 4 6)/g" $file_extra_shell
 

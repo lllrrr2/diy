@@ -5,6 +5,9 @@
 
 ## 上面版本号中，如果第2位数字有变化，那么代表增加了新的参数，如果只有第3位数字有变化，仅代表更新了注释，没有增加新的参数，可更新可不更新
 
+##更新面板时使用develop的开发分支，true 为使用
+R_branch=" "
+
 ## 在运行 ql repo 命令时，是否自动删除失效的脚本与定时任务
 AutoDelCron="true"
 
@@ -12,7 +15,7 @@ AutoDelCron="true"
 AutoAddCron="true"
 
 ## 拉取脚本时默认的定时规则，当匹配不到定时规则时使用，例如: 0 9 * * *
-DefaultCronRule="37 0 * * *"
+DefaultCronRule="25 0 * * *"
 
 ## ql repo命令拉取脚本时需要拉取的文件后缀，直接写文件后缀名即可
 RepoFileExtensions="js py sh ts"
@@ -322,7 +325,7 @@ export JOIN_PK_TEAM="true"
 ## 10、东东超市是否用金币抽奖。true表示抽奖,false表示不抽奖
 export SUPERMARKET_LOTTERY="true"
 ## 11、东东农场是否使用水滴换豆卡。true表示换,false表示不换
-export FRUIT_BEAN_CARD="true"
+export FRUIT_BEAN_CARD="false"
 ## 12、是否取关商品。环境变量内容的意思依次是是否取关全部商品(0表示一个都不),是否取关全部店铺数(0表示一个都不),遇到此商品不再进行取关,遇到此店铺不再进行取关
 export UN_SUBSCRIBES="300,300,,"
 ## 12、jd_unsubscribe这个任务是用来取关每天做任务关注的商品和店铺，默认在每次运行时取关20个商品和20个店铺
@@ -373,7 +376,7 @@ export cash_zlzh="$(echo $JD_COOKIE | sed "s/&/ /g; s/\S*pt_pin=\([^;]\+\);\S*/\
 export jxgc_kaituan="$(echo $JD_COOKIE | sed "s/&/ /g; s/\S*pt_pin=\([^;]\+\)\S*;/\1/g; s/ /\&/g;" | awk 'BEGIN{for(i=0;i<10;i++)hex[i]=i;hex["A"]=hex["a"]=10;hex["B"]=hex["b"]=11;hex["C"]=hex["c"]=12;hex["D"]=hex["d"]=13;hex["E"]=hex["e"]=14;hex["F"]=hex["f"]=15;}{gsub(/\+/," ");i=$0;while(match(i,/%../)){;if(RSTART>1);printf"%s",substr(i,1,RSTART-1);printf"%c",hex[substr(i,RSTART+1,1)]*16+hex[substr(i,RSTART+2,1)];i=substr(i,RSTART+RLENGTH);}print i;}')"  ## 支持中文用户名
 ## 5、入会开卡
 ### int，入会送豆满足此值，否则不入会
-export openCardBean="30"
+export openCardBean="10"
 ### 布尔值，是否记录符合条件的shopid(默认True)
 export record="true"
 ### 布尔值， True:仅记录，不入会(默认False)
@@ -529,7 +532,9 @@ export NOTIFY_COMPTOGROUP2="false" ##true为推送到群组2
 export NOTIFY_NOCKFALSE="true"
 ### 7. 测试人
 ### 通知底部显示：本通知 By 测试人
-#export NOTIFY_AUTHOR="测试人"
+export NOTIFY_AUTHOR="qinglong"
+### 当有CK失效自动用Zy143L_wskey_wskey更新
+export NOTIFY_CKTASK="Zy143L_wskey_wskey.py"
 ### 8. 屏蔽登录成功
 ### 屏蔽青龙登陆成功通知，登陆失败不屏蔽
 export NOTIFY_NOLOGINSUCCESS="true"
