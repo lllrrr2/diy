@@ -38,6 +38,7 @@ Ninja=" " ##up为更新，on为启动，down为不运行
 3-he1pu
 4-Aaron-lv
 5-yuannian1112
+6-zero205
 二、其他仓库（Other Repositories）
 1-passerby-b
 2-curtinlv
@@ -72,6 +73,9 @@ CR4(){
 }
 CR5(){
     ql repo https://github.com/yuannian1112/jd_scripts.git "jd_|jx_|getJDCookie" "activity|backUp" "^jd[^_]|USER|utils"
+}
+CR6(){
+    ql repo https://github.com/zero205/JD_tencent_scf.git "jd_|jx_|getJDCookie" "backUp|icon" "^jd[^_]|USER|sendNotify|sign_graphics_validate|JDJR" "main"
 }
 for i in ${CollectedRepo[@]}; do
     CR$i
