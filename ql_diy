@@ -140,11 +140,11 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		}' $dir_shell/update.sh
 		}
 
-		[[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && {
-		mv $file_notify_js $dir_sample
-		wget -O $file_notify_js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/sendNotify.js 1>/dev/null 2>&1
-		wget -O $dir_scripts/ql.js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/ql.js 1>/dev/null 2>&1
-		}
+		# [[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && {
+		# mv $file_notify_js $dir_sample
+		# wget -O $file_notify_js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/sendNotify.js 1>/dev/null 2>&1
+		# wget -O $dir_scripts/ql.js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/ql.js 1>/dev/null 2>&1
+		# }
 
 		ql repo https://github.com/curtinlv/JD-Script.git "jd_OpenCard"
 	EOF
