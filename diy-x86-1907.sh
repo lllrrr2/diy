@@ -76,7 +76,7 @@ rm -rf diy/hong0980/qt5 #5.98
 # svn co https://github.com/immortalwrt/packages/trunk/libs/qt5 feeds/packages/libs/qt5
 svn co https://github.com/immortalwrt/packages/trunk/libs/libtorrent-rasterbar feeds/packages/libs/libtorrent-rasterbar
 svn co https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition feeds/packages/net/qBittorrent-Enhanced-Edition
-sed -i 's/+qBittorrent/+qBittorrent-Enhanced-Edition/g' package/ipk/luci-app-qbittorrent/Makefile #qBittorrent-Enhanced-Edition 4.2.3.10
+#sed -i 's/+qBittorrent/+qBittorrent-Enhanced-Edition/g' package/ipk/luci-app-qbittorrent/Makefile #qBittorrent-Enhanced-Edition 4.2.3.10
 #sed -i 's/+qBittorrent/+qBittorrent +python3/g' package/ipk/luci-app-qbittorrent/Makefile
 
 echo '替换aria2'
