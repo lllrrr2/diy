@@ -188,7 +188,7 @@ async function sendNotify(text, desp, params = {}, author = '\n\n本通知 By cc
 		if (text.indexOf("cookie已失效") != -1 || desp.indexOf("重新登录获取") != -1 || text == "Ninja 运行通知") {
 
 			if (Notify_CKTask) {
-				console.log("触发CK脚本，开始执行....");
+				console.log("触发wckey脚本，开始执行....");
 				Notify_CKTask = "task " + Notify_CKTask + " now";
 				await exec(Notify_CKTask, function (error, stdout, stderr) {
 					console.log(error, stdout, stderr)

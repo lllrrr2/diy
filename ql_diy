@@ -140,11 +140,11 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		}' $dir_shell/update.sh
 		}
 
-		# [[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && {
-		# wget -O $file_notify_js https://raw.githubusercontent.com/ccwav/QLScript/main/sendNotify.js 1>/dev/null 2>&1
-		# wget -O $dir_scripts/ql.js https://raw.githubusercontent.com/ccwav/QLScript/main/ql.js 1>/dev/null 2>&1
-		# sed -i 's/.*NOTIFY_AUTHOR.*/export NOTIFY_AUTHOR="qinglong"/;/NOTIFY_AUTHOR/a### 当有CK失效自动更新Zy143L_wskey_wskey\nexport NOTIFY_CKTASK="Zy143L_wskey_wskey.py"' $file_config_user
-		# }
+		[[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && {
+		mv $file_notify_js $dir_sample
+		wget -O $file_notify_js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/sendNotify.js 1>/dev/null 2>&1
+		wget -O $dir_scripts/ql.js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/ql.js 1>/dev/null 2>&1
+		}
 
 		ql repo https://github.com/curtinlv/JD-Script.git "jd_OpenCard"
 	EOF
