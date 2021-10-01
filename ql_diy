@@ -80,6 +80,13 @@ else
 	defaultNum=${defaultNum}
 fi
 sed -i "s/^CollectedRepo.*/CollectedRepo=($defaultNum) ##示例：CollectedRepo=(2 4 6)/g" $file_extra_shell
+if [[ $defaultNum -ne "1" ]]; then
+	mv $file_notify_js $dir_sample
+	wget -O $file_notify_js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/sendNotify.js 1>/dev/null 2>&1
+	wget -O $dir_scripts/ql.js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/ql.js 1>/dev/null 2>&1
+else
+	[[ -e $dir_samplesendNotify.js ]] && cp -rf $dir_samplesendNotify.js $file_notify_js
+fi
 
 ## 下载 code.sh
 [[ -e $code_shell_path ]] || touch $code_shell_path
