@@ -20,7 +20,7 @@
 
 #------ 设置区 ------#
 ## 1. 拉取仓库编号设置，默认 shufflewzc 仓库
-CollectedRepo=(1) ##示例：CollectedRepo=(2 4 6)
+CollectedRepo=() ##示例：CollectedRepo=(2 4 6)
 OtherRepo=() ##示例：OtherRepo=(1 3)
 ## 2. 是否安装依赖和安装依赖包的名称设置
 dependencies="p" ##yes为全部安装，no为不安装，p为安装package，r为安装requirement
@@ -116,7 +116,7 @@ OR14(){
     ql repo https://github.com/Tsukasa007/my_script.git "jd_|jx_" "jdCookie|USER_AGENTS|sendNotify|backup" "" "master"
 }
 OR15(){
-    ql repo https://github.com/ccwav/QLScript.git "jd_" "sendNotify.js" "ql.js"
+    ql repo https://github.com/ccwav/QLScript2.git "jd_" "NoUsed" "ql|sendNotify|utils"
 }
 for i in ${OtherRepo[@]}; do
     OR$i

@@ -9,35 +9,15 @@ token=$(cat $file_auth_user | jq --raw-output .token)
 [[ -e $file_config_user ]] || touch $file_config_user
 if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" -eq "0" ]]; then
 	[[ -s $file_config_user ]] && mv $file_config_user $dir_config/config.sh.bk
-	if wget -O $file_config_user https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/config.sample.sh 1>/dev/null 2>&1; then
-		# sed -i '/FRUIT_BEAN_CARD/ s/true/false/;s/openCardBean.*/openCardBean="10"/;s/37 0/25 0/' $file_config_user
-		# echo -e '##更新面板时使用develop的开发分支，true 为使用\nR_branch=" "' >> $file_config_user
-		# sed -i 's/.*NOTIFY_AUTHOR.*/export NOTIFY_AUTHOR="qinglong"/;/NOTIFY_AUTHOR/a### 当有CK失效自动用Zy143L_wskey_wskey更新\nexport NOTIFY_CKTASK="Zy143L_wskey_wskey.py"' $file_config_user
-		echo
-	else
-		echo "config.sh 下载失败"
-	fi
+	wget -q -O $file_config_user https://git.io/JoPHE || echo "config.sh 下载失败"
 fi
 
 # 下载 extra.sh
 [[ -e $file_extra_shell ]] || touch $file_extra_shell
 if [[ "$(grep -c 'package_name' $file_extra_shell)" -eq "0" ]] || [[ "$(grep -c 'dir_config/ql_diy' $file_extra_shell)" -gt "1" ]]; then
 	[[ -s $file_extra_shell ]] && mv $file_extra_shell $dir_config/extra.sh.bk
-	if wget -O $file_extra_shell https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/extra.sh 1>/dev/null 2>&1; then
-		# sed -ri 's/ts-md5/ts-md5 ts-node/;s/dependencies="r"/dependencies="p"/;s/Ninja="on"/Ninja=""/' $file_extra_shell
-		# sed -i '/shufflewzc/ s/|ql/|ql|sendNotify/' $file_extra_shell
-		# echo '. $dir_config/diy.sh' >>$file_extra_shell
-		echo
-	else
-		echo "extra.sh 下载失败"
-	fi
+	wget -q -O $file_extra_shell https://git.io/JoPAH || echo "extra.sh 下载失败"
 fi
-
-# 将 shufflewzc 添加到定时任务
-# if [[ "$(grep -c shufflewzc $list_crontab_user)" -eq "0" ]]; then
-	# echo "开始添加 shufflewzc库"
-	# curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"shufflewzc库","command":"ql repo https://github.com/shufflewzc/faker2.git \"jd_|jx_|gua_|jddj_|getJDCookie\" \"activity|backUp|Coupon|update\" \"^jd[^_]|USER|utils|function|^JS|^TS|^JDJRValidator_Pure|^ZooFaker|^sign|ql|sendNotify\"","schedule":"20 0-23/4 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
-# fi
 
 # 将 extra.sh 添加到定时任务
 if [[ "$(grep -c '15 0-23/4' $list_crontab_user)" -eq "0" ]]; then
@@ -69,30 +49,74 @@ if [[ "$(grep -c bot $list_crontab_user)" -eq "0" ]]; then
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"拉取机器人","command":"ql bot","schedule":"13 14 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1626247933219' 1>/dev/null 2>&1
 fi
 
-#for i in $(seq "5" -1 1); do echo -ne "  $i秒后开始 \r"; sleep 1; done
 # extra.sh 预设仓库及默认拉取仓库设置
-echo -e "\n1) shufflewzc		https://github.com/shufflewzc/faker2\n2) JDHelloWorld		https://github.com/JDHelloWorld/jd_scripts\n3) he1pu		https://github.com/he1pu/JDHelp\n4) Aaron-lv		https://github.com/Aaron-lv/sync\n5) yuannian1112		https://github.com/yuannian1112/jd_scripts\n6) zero205		https://github.com/zero205/JD_tencent_scf\n"
+echo -e "\n1) shufflewzc		https://github.com/shufflewzc/faker2\n2) JDHelloWorld		https://github.com/JDHelloWorld/jd_scripts\n3) he1pu		https://github.com/he1pu/JDHelp\n4) Aaron-lv		https://github.com/Aaron-lv/sync\n5) yuannian1112		https://github.com/yuannian1112/jd_scripts\n6) zero205		https://github.com/zero205/JD_tencent_scf\n7) ccwav		https://github.com/ccwav/QLScript2\n"
 echo -e "输入你想拉取的仓库编号，多个仓库用空格分开\c"
 read -t 10 -p "( 10秒后不输入选取默认值 1 ):" defaultNum
-if [[ -z "$defaultNum" ]]; then
-	defaultNum=1
-else
-	defaultNum=${defaultNum}
-fi
-sed -i "s/^CollectedRepo.*/CollectedRepo=($defaultNum) ##示例：CollectedRepo=(2 4 6)/g" $file_extra_shell
-if [[ $defaultNum -ne "1" ]]; then
-	mv $file_notify_js $dir_sample
-	wget -O $file_notify_js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/sendNotify.js 1>/dev/null 2>&1
-	wget -O $dir_scripts/ql.js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/ql.js 1>/dev/null 2>&1
-else
-	[[ -e $dir_samplesendNotify.js ]] && cp -rf $dir_samplesendNotify.js $file_notify_js
-fi
+[[ -n $(echo $defaultNum) ]] && defaultNum=${defaultNum} || defaultNum=1
+# sed -i "s/^CollectedRepo.*/CollectedRepo=($defaultNum) ##示例：CollectedRepo=(2 4 6)/g" $file_extra_shell
 
-## 下载 code.sh
+for i in ${defaultNum[@]}; do
+	case $i in
+		1)
+		default="ql repo https://github.com/shufflewzc/faker2.git 'jd_|jx_|gua_|jddj_|getJDCookie' 'activity|backUp|Coupon|update' '^jd[^_]|USER|utils|function|^JS|^TS|^JDJRValidator_Pure|^ZooFaker|^sign|ql|sendNotify'"
+		p='shufflewzc'
+		;;
+		2)
+		default="ql repo https://github.com/JDHelloWorld/jd_scripts.git 'jd_|jx_|getJDCookie' 'activity|backUp|Coupon|enen|update|test' '^jd[^_]|USER|^TS|utils|notify|env|package|ken.js'"
+		p='JDHelloWorld'
+		;;
+		3)
+		default="ql repo https://github.com/he1pu/JDHelp.git 'jd_|jx_|getJDCookie' 'activity|backUp|jd_delCoupon' '^jd[^_]|USER|utils'"
+		p='he1pu'
+		;;
+		4)
+		default="ql repo https://github.com/Aaron-lv/sync.git 'jd_|jx_|getJDCookie' 'activity|backUp|Coupon' '^jd[^_]|USER|utils' 'jd_scripts'"
+		p='Aaron-lv'
+		;;
+		5)
+		default="ql repo https://github.com/yuannian1112/jd_scripts.git 'jd_|jx_|getJDCookie' 'activity|backUp' '^jd[^_]|USER|utils'"
+		p='yuannian1112'
+		;;
+		6)
+		default="ql repo https://github.com/zero205/JD_tencent_scf.git 'jd_|jx_|getJDCookie' 'backUp|icon' '^jd[^_]|USER|sendNotify|sign_graphics_validate|JDJR|JDSign' 'main'"
+		p='zero205'
+		;;
+		7)
+		default="ql repo https://github.com/ccwav/QLScript2.git 'jd_' 'NoUsed' 'ql|sendNotify'"
+		p='ccwav'
+		;;
+		*)
+		break
+		;;
+	esac
+
+	#添加到定时任务
+	if [[ $default ]] && [[ "$(grep -c ${p} $list_crontab_user)" -eq "0" ]]; then
+		echo "开始添加$p库"
+		curl -s -H 'Accept: application/json' \
+				-H "Authorization: Bearer $token" \
+				-H 'Content-Type: application/json;charset=UTF-8' \
+				-H 'Accept-Language: zh-CN,zh;q=0.9' \
+				--data-binary "{\"name\":\"拉取 $p 库\",\"command\":\"$default\",\"schedule\":\"20 0-23/3 * * *\"}" \
+				--compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
+	fi
+
+	if [[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && [[ $i -ne "1" ]]; then
+		mv $file_notify_js $dir_sample
+		wget -q -O $file_notify_js https://git.io/JoPx2
+		wget -q -O $dir_scripts/ql.js https://git.io/JoPpc
+	else
+		[[ -e $dir_samplesendNotify.js ]] && cp -rf $dir_samplesendNotify.js $file_notify_js
+	fi
+	sleep 2
+done
+
 [[ -e $code_shell_path ]] || touch $code_shell_path
 if [[ "$(grep -c 'shufflewzc_faker2' $code_shell_path)" -eq "0" ]]; then
 	[[ -s $code_shell_path ]] && mv $code_shell_path $dir_config/code.sh.bk
-	if wget -O $code_shell_path https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Scripts/sh/Helpcode2.8/code.sh 1>/dev/null 2>&1; then
+	if wget -q -O $code_shell_path https://git.io/code.sh; then
+		echo "下载 code.sh"
 		sed -i 's/$repo4/$repo/' $code_shell_path
 		sed -i "s/^repo=.*/repo=\$repo$defaultNum/g" $code_shell_path
 	else
@@ -117,10 +141,7 @@ if [[ "$(grep -c 'code.sh' $list_crontab_user)" -eq "0" ]]; then
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"格式化更新助力码","command":"bash /ql/config/code.sh &","schedule":"10 5 */7 * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1626247939659' 1>/dev/null 2>&1
 fi
 
-# 下载 task_before.sh
-if ! wget -O $file_task_before https://ghproxy.com/https://raw.githubusercontent.com/Oreomeow/VIP/main/Scripts/sh/Helpcode2.8/task_before.sh 1>/dev/null 2>&1; then
-	echo "task_before.sh 下载失败"
-fi
+wget -q -O $file_task_before https://git.io/task_before.sh && echo "下载 task_before.sh" || echo "task_before.sh 下载失败"
 
 if [[ ! -s $dir_config/diy.sh ]]; then
 	cat >"$dir_config/diy.sh" <<-\EOF
@@ -140,13 +161,14 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		}' $dir_shell/update.sh
 		}
 
-		# [[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && {
-		# mv $file_notify_js $dir_sample
-		# wget -O $file_notify_js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/sendNotify.js 1>/dev/null 2>&1
-		# wget -O $dir_scripts/ql.js https://ghproxy.com/https://raw.githubusercontent.com/hong0980/diy/master/ql.js 1>/dev/null 2>&1
-		# }
+		[[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && {
+		mv $file_notify_js $dir_sample
+		wget -q -O $file_notify_js https://git.io/JoPx2
+		wget -q -O $dir_scripts/ql.js https://git.io/JoPpc
+		}
 
-		ql repo https://github.com/curtinlv/JD-Script.git "jd_OpenCard"
+		ql raw https://raw.githubusercontent.com/curtinlv/JD-Script/main/OpenCard/jd_OpenCard.py
+		
 	EOF
 fi
 
