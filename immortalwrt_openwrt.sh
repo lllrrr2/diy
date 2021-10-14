@@ -12,8 +12,8 @@ ansi_rev="\033[7m";               # 白色背景填充
 ansi_ul="\033[4m";                # 下划线
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
-# REPO_BRANCH=openwrt-21.02
-REPO_BRANCH=openwrt-18.06
+REPO_BRANCH=openwrt-21.02
+# REPO_BRANCH=openwrt-18.06
 # REPO_BRANCH=openwrt-18.06-dev
 # REPO_BRANCH=openwrt-18.06-k5.4
 
