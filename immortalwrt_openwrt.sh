@@ -48,6 +48,8 @@ cat >config_b <<-EOF
 EOF
 TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' config_b | sed -r 's/.*TARGET_(.*)=y/\1/')
 
+# echo "FREE_UP_DISK=false" >> $GITHUB_ENV #增加容量
+# echo "SSH_ACTIONS=false" >> $GITHUB_ENV #SSH后台
 # echo "UPLOAD_PACKAGES=false" >> $GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=true" >> $GITHUB_ENV
 # echo "UPLOAD_BIN_DIR=true" >> $GITHUB_ENV
@@ -56,10 +58,10 @@ TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' config_b | sed -r 's/.*TARGET_(.
 # echo "UPLOAD_WETRANSFER=true" >> $GITHUB_ENV
 [[ $TARGET == "x86" ]] && echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
 
-echo -e '${ansi_yellow}替换banner${ansi_std}'
+echo -e "${ansi_yellow}替换banner${ansi_std}"
 wget -q -O package/base-files/files/etc/banner https://git.io/JoNK8
 
-echo -e '${ansi_yellow}修改设置${ansi_std}'
+echo -e "${ansi_yellow}修改设置${ansi_std}"
 sed -i "{
 s/192.168.1.1/192.168.2.150/
 s/ImmortalWrt/OpenWrt/
@@ -73,7 +75,7 @@ s,.*banner$,chmod +x /etc/init.d/*,
 /upnp/d
 /99999/d
 s/auto/zh_cn\nuci set luci.main.mediaurlbase=\/luci-static\/bootstrap/
-}" package/*/*/files/zzz-default-settings
+}" package/*/*/*/zzz-default-settings
 
 clone_url() {
 	for x in $@; do
@@ -115,8 +117,8 @@ https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerm
 "
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
 
-rm -rf package/build/{luci-app-dockerman,luci-app-qbittorrent,luci-app-cpulimit}
-rm -rf feeds/luci/*/{luci-app-dockerman,luci-app-diskman,luci-app-filebrowser}
+rm -rf package/build/{luci-app-dockerman,luci-lib-docker,luci-app-diskman,luci-app-qbittorrent,luci-app-cpulimit}
+rm -rf feeds/luci/*/{luci-app-filebrowser}
 
 echo -e "${ansi_yellow}修改 target/linux/$TARGET/Makefile${ansi_std}"
 packages="
