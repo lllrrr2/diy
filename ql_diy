@@ -41,6 +41,13 @@ if [[ "$(grep -c diy $list_crontab_user)" -eq "0" ]]; then
 	/update_qinglong "$2"/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} -eq true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
 	}' $dir_shell/update.sh
 	}
+
+	[[ "$(grep -c 'git log' /ql/shell/share.sh)" -eq "0" ]] && {
+	sed -i '{
+	/git_pull_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
+	s/git pull/git pull\n\tlog \$dir_work/
+	}' /ql/shell/share.sh
+	}
 fi
 
 # 将 bot 添加到定时任务
@@ -159,6 +166,13 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		/cp -rf $ql_static_repo/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
 		/update_qinglong "$2"/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} -eq true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
 		}' $dir_shell/update.sh
+		}
+
+		[[ "$(grep -c 'git log' $dir_shell/share.sh)" -eq "0" ]] && {
+		sed -i '{
+		/git_pull_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\ncommit/")\\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
+		s/git pull/git pull\n\tlog \$dir_work/
+		}' $dir_shell/share.sh
 		}
 
 		[[ "$(grep -c '通知时间' $file_notify_js)" -eq "0" ]] && {

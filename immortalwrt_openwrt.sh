@@ -12,8 +12,8 @@ ansi_rev="\033[7m";               # 白色背景填充
 ansi_ul="\033[4m";                # 下划线
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
-REPO_BRANCH=openwrt-21.02
-# REPO_BRANCH=openwrt-18.06
+# REPO_BRANCH=openwrt-21.02
+REPO_BRANCH=openwrt-18.06
 # REPO_BRANCH=openwrt-18.06-dev
 # REPO_BRANCH=openwrt-18.06-k5.4
 
@@ -27,7 +27,7 @@ cat >config_b <<-EOF
 	## target
 	CONFIG_TARGET_x86=y
 	CONFIG_TARGET_x86_64=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=800
+	CONFIG_TARGET_ROOTFS_PARTSIZE=900
 	# CONFIG_TARGET_ramips=y
 	# CONFIG_TARGET_ramips_mt7621=y
 	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
@@ -48,9 +48,9 @@ cat >config_b <<-EOF
 EOF
 TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' config_b | sed -r 's/.*TARGET_(.*)=y/\1/')
 
-# echo "FREE_UP_DISK=false" >> $GITHUB_ENV #增加容量
-# echo "SSH_ACTIONS=false" >> $GITHUB_ENV #SSH后台
-# echo "UPLOAD_PACKAGES=false" >> $GITHUB_ENV
+# echo "FREE_UP_DISK=true" >> $GITHUB_ENV #增加容量
+# echo "SSH_ACTIONS=true" >> $GITHUB_ENV #SSH后台
+# echo "UPLOAD_PACKAGES=true" >> $GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=true" >> $GITHUB_ENV
 # echo "UPLOAD_BIN_DIR=true" >> $GITHUB_ENV
 # echo "UPLOAD_FIRMWARE=true" >> $GITHUB_ENV
@@ -331,9 +331,9 @@ fi
 
 if [ -d package/luci-app-diskman ]; then
 	for v in $(find package/luci-app-diskman -name "*.lua" -o -name "*.htm"); do
-		if [ $(egrep -c '/system/|"system"' $v 2>/dev/null) -ge "1" ]; then
+		if [ $(grep diskman $v | egrep -c '/system/|"system"' 2>/dev/null) -ge "1" ]; then
 			sed -e 's|/system/|/nas/|g; s|"system"|"nas"|g' $v -i
-			# echo "修改了$v"
+			echo "修改了$v"
 		fi
 	done
 fi
