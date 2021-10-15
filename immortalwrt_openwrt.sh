@@ -12,8 +12,8 @@ ansi_rev="\033[7m";               # 白色背景填充
 ansi_ul="\033[4m";                # 下划线
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
-# REPO_BRANCH=openwrt-21.02
-REPO_BRANCH=openwrt-18.06
+REPO_BRANCH=openwrt-21.02
+# REPO_BRANCH=openwrt-18.06
 # REPO_BRANCH=openwrt-18.06-dev
 # REPO_BRANCH=openwrt-18.06-k5.4
 
@@ -54,7 +54,7 @@ echo "FREE_UP_DISK=true" >> $GITHUB_ENV #增加容量
 # echo "UPLOAD_SYSUPGRADE=true" >> $GITHUB_ENV
 # echo "UPLOAD_BIN_DIR=true" >> $GITHUB_ENV
 # echo "UPLOAD_FIRMWARE=true" >> $GITHUB_ENV
-# echo "UPLOAD_COWTRANSFER=true" >> $GITHUB_ENV
+echo "UPLOAD_COWTRANSFER=false" >> $GITHUB_ENV
 # echo "UPLOAD_WETRANSFER=true" >> $GITHUB_ENV
 [[ $TARGET == "x86" ]] && echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
 
