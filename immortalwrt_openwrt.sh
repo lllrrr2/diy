@@ -48,7 +48,7 @@ cat >config_b <<-EOF
 EOF
 TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' config_b | sed -r 's/.*TARGET_(.*)=y/\1/')
 
-# echo "FREE_UP_DISK=true" >> $GITHUB_ENV #增加容量
+echo "FREE_UP_DISK=true" >> $GITHUB_ENV #增加容量
 # echo "SSH_ACTIONS=true" >> $GITHUB_ENV #SSH后台
 # echo "UPLOAD_PACKAGES=true" >> $GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=true" >> $GITHUB_ENV
@@ -304,7 +304,7 @@ https://github.com/hong0980/packages/trunk/net/transmission
 https://github.com/hong0980/luci/trunk/applications/luci-app-transmission
 https://github.com/hong0980/packages/trunk/net/transmission-web-control
 "
-	echo -e "CONFIG_PACKAGE_luci-app-argon-config=y\nCONFIG_PACKAGE_luci-theme-argon=y" >>config_b
+	# echo -e "CONFIG_PACKAGE_luci-app-argon-config=y\nCONFIG_PACKAGE_luci-theme-argon=y" >>config_b
 fi
 
 if [ -d package/luci-app-dockerman ]; then
