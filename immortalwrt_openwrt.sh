@@ -312,28 +312,31 @@ if [ -d package/luci-app-dockerman ]; then
 		if [ $(egrep -c 'admin/docker|admin", "docker|admin","docker|admin\\/docker' $i 2>/dev/null) -ge "1" ]; then
 			sed -e '{
 			s|admin/docker|admin/services/docker|g
-			s|admin", "docker|admin", "services", "docker|g
-			s|admin","docker|admin", "services", "docker|g
 			s|admin\\/docker|admin\\/services\\/docker|g
+			s|admin","docker|admin", "services", "docker|g
+			s|admin", "docker|admin", "services", "docker|g
 			}' $i -i
 			# echo "修改了$i"
 		fi
 	done
 
 	sed -i '{
-	s/"config")/"overview")/
-	s/Configuration"), 8/Configuration"), 2/
-	s/Overview"), 2/Overview"), 1/
+	s|"config")|"overview")|
+	s|Configuration"), 8|Configuration"), 2|
+	s|Overview"), 2|Overview"), 1|
 	}' package/*/*/controller/dockerman.lua
 
 	sed -i 's/default_config.advance or //' package/*/*/*/*/dockerman/newcontainer.lua
 fi
 
 if [ -d package/luci-app-diskman ]; then
-	for v in $(find package/luci-app-diskman -name "*.lua" -o -name "*.htm"); do
-		if [ $(grep diskman $v | egrep -c '/system/|"system"' 2>/dev/null) -ge "1" ]; then
-			sed -e 's|/system/|/nas/|g; s|"system"|"nas"|g' $v -i
-			echo "修改了$v"
+	for m in $(find package/luci-app-diskman -name "*.lua" -o -name "*.htm"); do
+		if [ $(egrep -c '/system/|"system"' $m 2>/dev/null) -ge "1" ]; then
+			sed -e '{
+			s|/system/|/nas/|g
+			s|"system"|"nas"|g
+			}' $m -i
+			echo "修改了$m"
 		fi
 	done
 fi
