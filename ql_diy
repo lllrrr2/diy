@@ -5,14 +5,12 @@ code_shell_path=$dir_config/code.sh
 token=$(cat $file_auth_user | jq --raw-output .token)
 
 # 下载 config.sh
-[[ -e $file_config_user ]] || touch $file_config_user
 if [[ "$(grep -c 'JD_UNSEB_NOTIFY' $file_config_user)" -eq "0" ]]; then
 	[[ -s $file_config_user ]] && mv $file_config_user $dir_config/config.sh.bk
 	wget -q -O $file_config_user https://git.io/JoPHE || echo "config.sh 下载失败"
 fi
 
 # 下载 extra.sh
-[[ -e $file_extra_shell ]] || touch $file_extra_shell
 if [[ "$(grep -c 'package_name' $file_extra_shell)" -eq "0" ]] || [[ "$(grep -c 'dir_config/ql_diy' $file_extra_shell)" -gt "1" ]]; then
 	[[ -s $file_extra_shell ]] && mv $file_extra_shell $dir_config/extra.sh.bk
 	wget -q -O $file_extra_shell https://git.io/JoPAH || echo "extra.sh 下载失败"
@@ -27,12 +25,12 @@ list_crontab(){
 				-H 'Content-Type: application/json;charset=UTF-8' \
 				-H 'Accept-Language: zh-CN,zh;q=0.9' \
 				--data-binary "{\"name\":\"拉取 $p 库\",\"command\":\"$default\",\"schedule\":\"$f\"}" \
-				--compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473'
+				--compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
 	fi
 }
 
 # 将 extra.sh 添加到定时任务
-if [[ "$(grep -c '15 0-23/4' $list_crontab_user)" -eq "0" ]]; then
+if [[ "$(grep -c 'ql extra' $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 extra"
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"初始化任务","command":"ql extra","schedule":"15 0-23/4 * * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
 fi
@@ -44,7 +42,7 @@ if [[ "$(grep -c wskey $list_crontab_user)" -eq "0" ]]; then
 fi
 
 # 将 diy 添加到定时任务
-if [[ "$(grep -c diy $list_crontab_user)" -eq "0" ]]; then
+if [[ "$(grep -c 'ql diy' $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 diy"
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"运行diy.sh","command":"ql diy","schedule":"0 5 */15 * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1624782068473' 1>/dev/null 2>&1
 	[[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" -eq "0" ]] && {
@@ -56,7 +54,7 @@ if [[ "$(grep -c diy $list_crontab_user)" -eq "0" ]]; then
 
 	[[ "$(grep -c 'git log' $dir_shell/share.sh)" -eq "0" ]] && {
 	sed -i '{
-	/git_pull_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n========================================================"\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "========================================================\\n\\n"\n}\n
+	/git_clone_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
 	s/git pull/git pull\n\tlog \$dir_work/
 	1,/exit_status/{s/exit_status=$?/exit_status=$?\n\t[ $exit_status = "0" ] \&\& log $dir/}
 	}' $dir_shell/share.sh
@@ -72,7 +70,7 @@ fi
 # extra.sh 预设仓库及默认拉取仓库设置
 echo -e "\n1) shufflewzc		https://github.com/shufflewzc/faker2\n2) JDHelloWorld		https://github.com/JDHelloWorld/jd_scripts\n3) he1pu		https://github.com/he1pu/JDHelp\n4) Aaron-lv		https://github.com/Aaron-lv/sync\n5) yuannian1112		https://github.com/yuannian1112/jd_scripts\n6) zero205		https://github.com/zero205/JD_tencent_scf\n7) ccwav		https://github.com/ccwav/QLScript2\n"
 echo -e "输入你想拉取的仓库编号，多个仓库用空格分开\c"
-read -t 10 -p "( 10秒后不输入选取默认值 1 ):" defaultNum
+read -t 15 -p "( 15秒后不输入选取默认值 1 ):" defaultNum
 [[ -n $(echo $defaultNum) ]] && defaultNum=${defaultNum} || defaultNum=1
 # sed -i "s/^CollectedRepo.*/CollectedRepo=($defaultNum) ##示例：CollectedRepo=(2 4 6)/g" $file_extra_shell
 
@@ -111,7 +109,7 @@ for i in ${defaultNum[@]}; do
 		7)
 		default="ql repo https://github.com/ccwav/QLScript2.git 'jd_' 'NoUsed|CheckCK|bean_change' 'ql|sendNotify'"
 		p='ccwav'
-		f='20 0-23/3 * * *'
+		f='55 0-23/3 * * *'
 		;;
 		*)
 		break
@@ -130,15 +128,23 @@ for i in ${defaultNum[@]}; do
 	sleep 2
 done
 
-[[ -e $code_shell_path ]] || touch $code_shell_path
-if [[ "$(grep -c 'shufflewzc_faker2' $code_shell_path)" -eq "0" ]]; then
+if [[ ! -e $code_shell_path ]] || [[ "$(grep -c 'shufflewzc_faker2' $code_shell_path)" -eq "0" ]]; then
 	[[ -s $code_shell_path ]] && mv $code_shell_path $dir_config/code.sh.bk
 	if wget -q -O $code_shell_path https://git.io/code.sh; then
-		echo "下载 code.sh"
+		echo "下载 code.sh 完成"
 		sed -i 's/$repo4/$repo/' $code_shell_path
 		sed -i "s/^repo=.*/repo=\$repo$defaultNum/g" $code_shell_path
 	else
 		echo "code.sh 下载失败"
+	fi
+fi
+
+if [[ ! -e $file_task_before ]] || [[ "$(grep -c '互助码' $file_task_before)" -eq "0" ]]; then
+	[[ -s $file_task_before ]] && mv $file_task_before $dir_config/task_before.sh.bk
+	if wget -q -O $file_task_before https://git.io/task_before.sh; then
+		echo "task_before.sh 下载完成"
+	else
+		echo "task_before.sh 下载失败"
 	fi
 fi
 
@@ -158,8 +164,6 @@ if [[ "$(grep -c 'code.sh' $list_crontab_user)" -eq "0" ]]; then
 	echo "开始添加 task code.sh"
 	curl -s -H 'Accept: application/json' -H "Authorization: Bearer $token" -H 'Content-Type: application/json;charset=UTF-8' -H 'Accept-Language: zh-CN,zh;q=0.9' --data-binary '{"name":"格式化更新助力码","command":"bash /ql/config/code.sh &","schedule":"10 5 */7 * *"}' --compressed 'http://127.0.0.1:5700/api/crons?t=1626247939659' 1>/dev/null 2>&1
 fi
-
-wget -q -O $file_task_before https://git.io/task_before.sh && echo "下载 task_before.sh" || echo "task_before.sh 下载失败"
 
 if [[ ! -s $dir_config/diy.sh ]]; then
 	cat >"$dir_config/diy.sh" <<-\EOF
@@ -181,7 +185,7 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 
 		[[ "$(grep -c 'git log' $dir_shell/share.sh)" -eq "0" ]] && {
 		sed -i '{
-		/git_pull_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n========================================================"\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "========================================================\\n\\n"\n}\n
+		/git_clone_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
 		s/git pull/git pull\n\tlog \$dir_work/
 		1,/exit_status/{s/exit_status=$?/exit_status=$?\n\t[ $exit_status = "0" ] \&\& log $dir/}
 		}' $dir_shell/share.sh
@@ -193,7 +197,7 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		wget -q -O $dir_scripts/ql.js https://git.io/JoPpc
 		}
 
-		ql repo https://github.com/curtinlv/JD-Script.git 'jd_OpenCard.py'
+		[[ "$(grep -c jd_OpenCard $list_crontab_user)" -eq "0" ]] && ql repo https://github.com/curtinlv/JD-Script.git 'jd_OpenCard.py'
 
 	EOF
 fi
