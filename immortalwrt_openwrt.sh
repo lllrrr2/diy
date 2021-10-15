@@ -12,8 +12,8 @@ ansi_rev="\033[7m";               # 白色背景填充
 ansi_ul="\033[4m";                # 下划线
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
-REPO_BRANCH=openwrt-21.02
-# REPO_BRANCH=openwrt-18.06
+# REPO_BRANCH=openwrt-21.02
+REPO_BRANCH=openwrt-18.06
 # REPO_BRANCH=openwrt-18.06-dev
 # REPO_BRANCH=openwrt-18.06-k5.4
 
@@ -111,14 +111,14 @@ https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
 https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-adbyby-plus
 https://github.com/zaiyuyishiyoudu/luci-app-kickass/trunk/luci-app-kickass
-https://github.com/lisaac/luci-app-diskman/trunk/applications/luci-app-diskman
+#https://github.com/lisaac/luci-app-diskman/trunk/applications/luci-app-diskman
 https://github.com/lisaac/luci-lib-docker/trunk/collections/luci-lib-docker
-https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
+#https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
 "
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
 
-rm -rf package/build/{luci-app-dockerman,luci-lib-docker,luci-app-diskman,luci-app-qbittorrent,luci-app-cpulimit}
-rm -rf feeds/luci/*/{luci-app-filebrowser}
+rm -rf package/build/{luci-lib-docker,luci-app-qbittorrent,luci-app-cpulimit}
+rm -rf feeds/luci/*/{luci-app-filebrowser,luci-app-dockerman,luci-app-diskman}
 
 echo -e "${ansi_yellow}修改 target/linux/$TARGET/Makefile${ansi_std}"
 packages="
