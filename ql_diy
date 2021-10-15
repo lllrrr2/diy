@@ -46,7 +46,7 @@ if [[ "$(grep -c diy $list_crontab_user)" -eq "0" ]]; then
 	sed -i '{
 	/git_pull_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
 	s/git pull/git pull\n\tlog \$dir_work/
-	/git clone/a\    log \$dir_work
+	1,/exit_status/{s/exit_status=$?/exit_status=$?\n\t[ $exit_status = "0" ] \&\& log $dir/}
 	}' $dir_shell/share.sh
 	}
 fi
@@ -173,7 +173,7 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		sed -i '{
 		/git_pull_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
 		s/git pull/git pull\n\tlog \$dir_work/
-		/git clone/a\    log \$dir_work
+		1,/exit_status/{s/exit_status=$?/exit_status=$?\n\t[ $exit_status = "0" ] \&\& log $dir/}
 		}' $dir_shell/share.sh
 		}
 
