@@ -183,8 +183,8 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		wget -q -O $dir_scripts/ql.js https://git.io/JoPpc
 		}
 
-		ql repo https://github.com/curtinlv/JD-Script 'OpenCard_jd_OpenCard'
-		
+		ql repo https://github.com/curtinlv/JD-Script.git 'jd_OpenCard.py'
+
 	EOF
 fi
 
