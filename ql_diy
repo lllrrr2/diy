@@ -98,7 +98,7 @@ fi
 
 [[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" -eq "0" ]] && {
 	sed -i '{
-	/eval update_qinglong/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
+	/update_qinglong "$2"/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
 	/run_extra_shell >>$log_path/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} -eq true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
 	}' $dir_shell/update.sh
 }
@@ -178,10 +178,10 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		}
 
 		[[ "$(grep -c 'diy.sh' $dir_shell/update.sh)" -eq "0" ]] && {
-			sed -i '{
-			/update_qinglong "$2"/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
-			/run_extra_shell >>$log_path/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} -eq true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
-			}' $dir_shell/update.sh
+		sed -i '{
+		/update_qinglong "$2"/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
+		/run_extra_shell >>$log_path/a\\t\t;;\n\tdiy)\n\t\tif [[ ${EnableExtraShell} -eq true ]] && [[ -f $dir_config/diy.sh ]]; then\n\t\t\techo -e "## 开始执行... $begin_time\\n" >>$log_path\n\t\t\t[[ -f $task_error_log_path ]] && cat $task_error_log_path >>$log_path\n\t\t\t. $dir_config/diy.sh >>$log_path\n\t\tfi
+		}' $dir_shell/update.sh
 		}
 
 		[[ "$(grep -c 'git log' $dir_shell/share.sh)" -eq "0" ]] && {
@@ -200,7 +200,8 @@ if [[ ! -s $dir_config/diy.sh ]]; then
 		wget -q -O $dir_scripts/ql.js https://git.io/JoPpc
 		}
 
-		[[ "$(grep -c jd_OpenCard $list_crontab_user)" -eq "0" ]] && ql repo https://github.com/curtinlv/JD-Script.git 'jd_OpenCard.py'
+		[[ "$(grep -c jd_OpenCard $list_crontab_user)" -eq "0" ]] && ql repo https://github.com/curtinlv/JD-Script.git 'jd_OpenCard.py' \
+		&& ql repo https://gitee.com/wudongdefeng/jd_scripts "tsuk_wind_joypark_[jo]|imwcc_wind_ruhui"
 
 	EOF
 fi

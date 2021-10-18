@@ -25,12 +25,12 @@ cd openwrt
 
 cat >config_b <<-EOF
 	## target
-	CONFIG_TARGET_x86=y
-	CONFIG_TARGET_x86_64=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=900
-	# CONFIG_TARGET_ramips=y
-	# CONFIG_TARGET_ramips_mt7621=y
-	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	# CONFIG_TARGET_x86=y
+	# CONFIG_TARGET_x86_64=y
+	# CONFIG_TARGET_ROOTFS_PARTSIZE=900
+	CONFIG_TARGET_ramips=y
+	CONFIG_TARGET_ramips_mt7621=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 	## luci app
@@ -122,7 +122,7 @@ rm -rf feeds/luci/*/{luci-app-filebrowser,luci-app-dockerman,luci-app-diskman}
 
 echo -e "${ansi_yellow}修改 target/linux/$TARGET/Makefile${ansi_std}"
 packages="
-default-settings autosamba kmod-rtl8187 kmod-rt2500-usb diffutils patch
+default-settings autosamba kmod-rtl8187 kmod-rt2500-usb diffutils patch axel
 luci-app-aria2
 luci-app-transmission
 luci-app-ssr-plus
