@@ -127,6 +127,7 @@ luci-app-aria2
 luci-app-transmission
 luci-app-ssr-plus
 luci-app-passwall
+luci-app-vssr
 luci-app-adblock-plus
 luci-app-bridge
 luci-app-ddnsto
@@ -151,7 +152,6 @@ luci-app-kickass
 luci-app-upnp
 luci-app-pushbot
 luci-app-control-weburl
-luci-app-qos-gargoyle
 "
 # packages=""
 zz=target/linux/$TARGET/Makefile
@@ -178,9 +178,9 @@ luci-app-smartdns
 luci-app-dockerman
 luci-app-adbyby-plus
 luci-app-openclash
-luci-app-vssr
 luci-app-poweroff
 luci-app-netdata
+luci-app-qos-gargoyle
 nano lsscsi pciutils lscpu lsusb screen bash htop ariang webui-aria2
 
 #USB3.0支持
@@ -288,7 +288,10 @@ kmod-drm-ttm
 		wget -q -O feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch https://git.io/JoNoj
 	}
 else
-	sed -i 's/192.168.2.150/192.168.2.1/' package/*/*/bin/config_generate
+	sed -i "{
+	s/192.168.2.150/192.168.2.1/
+	s/ImmortalWrt/Newifi/
+	}" package/*/*/bin/config_generate
 fi
 
 if [[ "$REPO_BRANCH" == "openwrt-21.02" ]]; then
@@ -319,7 +322,6 @@ if [ -d package/luci-app-dockerman ]; then
 			# echo "修改了$i"
 		fi
 	done
-
 	sed -i '{
 	s|"config")|"overview")|
 	s|Configuration"), 8|Configuration"), 2|
