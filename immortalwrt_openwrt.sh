@@ -20,6 +20,8 @@ REPO_BRANCH=openwrt-18.06
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 git clone --depth 1 $REPO_URL $cmd openwrt
 cd openwrt
+sed -i "/routing.*/routing https://git.openwrt.org/feed/routing.git" feeds.conf.default
+sed -i "/telephony.*/telephony https://git.openwrt.org/feed/telephony.git" feeds.conf.default
 ./scripts/feeds update -a 1>/dev/null 2>&1
 ./scripts/feeds install -a 1>/dev/null 2>&1
 
