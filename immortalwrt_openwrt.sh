@@ -20,8 +20,6 @@ REPO_BRANCH=openwrt-18.06
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 git clone --depth 1 $REPO_URL $cmd openwrt
 cd openwrt
-sed -i "s|routing.*|routing https://git.openwrt.org/feed/routing.git|" feeds.conf.default
-sed -i "s|telephony.*|telephony https://git.openwrt.org/feed/telephony.git|" feeds.conf.default
 ./scripts/feeds update -a 1>/dev/null 2>&1
 ./scripts/feeds install -a 1>/dev/null 2>&1
 
@@ -32,8 +30,8 @@ cat >config_b <<-EOF
 	# CONFIG_TARGET_ROOTFS_PARTSIZE=900
 	CONFIG_TARGET_ramips=y
 	CONFIG_TARGET_ramips_mt7621=y
-	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
-	CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 	## luci app
