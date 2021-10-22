@@ -11,85 +11,69 @@ ansi_std="\033[m"        # 常规无效果，作为后缀
 ansi_rev="\033[7m"       # 白色背景填充
 ansi_ul="\033[4m"        # 下划线
 
-REPO_URL=https://github.com/immortalwrt/immortalwrt
-REPO_BRANCH=openwrt-21.02
-# REPO_BRANCH=openwrt-18.06
-# REPO_BRANCH=openwrt-18.06-dev
-# REPO_BRANCH=openwrt-18.06-k5.4
+# REPO_URL="https://github.com/coolsnowwolf/lede"
+REPO_URL="https://github.com/Lienol/openwrt -b main"
+# REPO_URL="https://github.com/Lienol/openwrt -b 19.07"
 
-[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-git clone --depth 1 $REPO_URL $cmd openwrt
+git clone $REPO_URL openwrt 1>/dev/null 2>&1
 cd openwrt
 ./scripts/feeds update -a 1>/dev/null 2>&1
 ./scripts/feeds install -a 1>/dev/null 2>&1
 
 cat >config_b <<-EOF
 	## target
-	CONFIG_TARGET_x86=y
-	CONFIG_TARGET_x86_64=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=800
-	# CONFIG_TARGET_ramips=y
-	# CONFIG_TARGET_ramips_mt7621=y
-	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	# CONFIG_TARGET_x86=y
+	# CONFIG_TARGET_x86_64=y
+	# CONFIG_TARGET_ROOTFS_PARTSIZE=700
+	CONFIG_TARGET_ramips=y
+	CONFIG_TARGET_ramips_mt7621=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 	## luci app
-	CONFIG_PACKAGE_luci-app-ssr-plus=y
-	CONFIG_PACKAGE_luci-app-passwall=y
+	CONFIG_PACKAGE_luci-app-accesscontrol=y
 	CONFIG_PACKAGE_luci-app-adblock-plus=y
 	CONFIG_PACKAGE_luci-app-bridge=y
-	CONFIG_PACKAGE_luci-app-ddnsto=y
-	CONFIG_PACKAGE_luci-app-cowbping=y
-	CONFIG_PACKAGE_luci-app-rebootschedule=y
-	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
-	CONFIG_PACKAGE_luci-app-accesscontrol=y
-	CONFIG_PACKAGE_luci-app-filetransfer=y
-	CONFIG_PACKAGE_luci-app-filebrowser=y
-	CONFIG_PACKAGE_luci-app-upnp=y
+	CONFIG_PACKAGE_luci-app-cowbping=y
 	CONFIG_PACKAGE_luci-app-cpulimit=y
-	CONFIG_PACKAGE_luci-app-ttyd=y
+	CONFIG_PACKAGE_luci-app-ddnsto=y
+	CONFIG_PACKAGE_luci-app-filebrowser=y
+	CONFIG_PACKAGE_luci-app-easymesh=y
+	CONFIG_PACKAGE_luci-app-filetransfer=y
+	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-oaf=y
+	CONFIG_PACKAGE_luci-app-passwall=y
+	CONFIG_PACKAGE_luci-app-rebootschedule=y
+	CONFIG_PACKAGE_luci-app-ssr-plus=y
+	CONFIG_PACKAGE_luci-app-ttyd=y
+	CONFIG_PACKAGE_luci-app-upnp=y
 	## luci theme
 	CONFIG_PACKAGE_luci-theme-material=y
 	## remove
 	# CONFIG_VMDK_IMAGES is not set
+	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
+	# CONFIG_PACKAGE_luci-app-xlnetacc is not set
+	# CONFIG_PACKAGE_luci-app-uugamebooster is not set
 	## CONFIG_GRUB_EFI_IMAGES is not set
 	# Libraries
 	CONFIG_PACKAGE_patch=y
 	CONFIG_PACKAGE_diffutils=y
 	CONFIG_PACKAGE_default-settings=y
 	CONFIG_TARGET_IMAGES_GZIP=y
-	CONFIG_BRCMFMAC_SDIO=y
-	CONFIG_LUCI_LANG_en=y
-	CONFIG_LUCI_LANG_zh_Hans=y
-	CONFIG_DEFAULT_SETTINGS_OPTIMIZE_FOR_CHINESE=y
 EOF
 TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' config_b | sed -r 's/.*TARGET_(.*)=y/\1/')
 DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' config_b | sed -r 's/.*DEVICE_(.*)=y/\1/')
-
-echo -e "${ansi_yellow}替换banner${ansi_std}"
-wget -q -O package/base-files/files/etc/banner git.io/JoNK8
-
-echo -e "${ansi_yellow}修改设置${ansi_std}"
-sed -i "/DISTRIB_DESCRIPTION/{s/'$/-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
-sed -i "/IMG_PREFIX:/ {s/=/=ImmortalWrt-$(date +%m%d-%H%M)-/}" include/image.mk
-sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
-sed -i 's/ImmortalWrt/OpenWrt/' include/version.mk
-sed -i "{
-		/upnp/d
-		s,.*banner$,#chmod +x /etc/init.d/*,
-		s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
-		}" package/*/*/*/zzz-default-settings
 
 clone_url() {
 	for x in $@; do
 		x="$(echo $x | grep -v "^#")"
 		if [ $x ]; then
-			k="$(find feeds/ -maxdepth 4 -type d -name ${x##*/})"
-			[[ -d $k && ${x##*/} != "build" ]] && rm -rf $k
+			k="$(find package/lean -type d -name ${x##*/})"
+			[[ -z $k ]] && k="$(find feeds/ -maxdepth 4 -type d -name ${x##*/})"
+			[[ -z $k && -d package/diy ]] && k="$(find package/diy -type d -name ${x##*/})"
+			[[ -d $k ]] && rm -rf $k
 			[[ $? -eq "0" ]] && p="1"
 			[[ $(echo $x | grep -c "trunk|branches") -eq "0" ]] && {
 				git clone $x package/${x##*/} 1>/dev/null 2>&1
@@ -112,26 +96,54 @@ _packages() {
 	done
 }
 
+echo -e "${ansi_yellow}替换banner${ansi_std}"
+wget -q -O package/base-files/files/etc/banner git.io/JoNK8
+
+echo -e "${ansi_yellow}修改设置${ansi_std}"
+m=$(echo $REPO_URL | cut -d/ -f4)
+[[ "$m" = "coolsnowwolf" ]] && m="lean"
+sed -i "/DISTRIB_DESCRIPTION/{s/'$/-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+sed -i "/IMG_PREFIX:/ {s/=/=$m-$(date +%m%d-%H%M)-/}" include/image.mk
+sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
+sed -i "{
+		/upnp/d
+		/banner/d
+		/openwrt_release/d
+		s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
+		s/V4UetPzk$CYXluq4wUazHjmCDBCqXF.:0/RysBCijW$wIxPNkj9Ht9WhglXAXo4w0:18206/
+		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua^
+		}" $(find package/ -type f -name "zzz-default-settings")
+
 clone_url "
-https://github.com/hong0980/build
+https://github.com/fw876/helloworld
+https://github.com/xiaorouji/openwrt-passwall
 https://github.com/destan19/OpenAppFilter
 https://github.com/jerrykuku/luci-app-vssr
+https://github.com/jerrykuku/lua-maxminddb
 https://github.com/zzsj0928/luci-app-pushbot
 https://github.com/small-5/luci-app-adblock-plus
-https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus
+https://github.com/hong0980/build/trunk/axel
+https://github.com/hong0980/build/trunk/luci-app-bridge
+https://github.com/hong0980/build/trunk/luci-app-cowb-speedlimit
+https://github.com/hong0980/build/trunk/luci-app-rebootschedule
+https://github.com/hong0980/build/trunk/luci-app-network-settings
+https://github.com/hong0980/build/trunk/luci-app-poweroff
+https://github.com/hong0980/build/trunk/luci-app-softwarecenter
+https://github.com/hong0980/build/trunk/luci-app-diskman
+https://github.com/hong0980/build/trunk/luci-app-dockerman
+https://github.com/hong0980/build/trunk/luci-app-filebrowser
 https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
-https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-adbyby-plus
-https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-easymesh
 https://github.com/lisaac/luci-lib-docker/trunk/collections/luci-lib-docker
-#https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
 #https://github.com/zaiyuyishiyoudu/luci-app-kickass/trunk/luci-app-kickass
 #https://github.com/lisaac/luci-app-diskman/trunk/applications/luci-app-diskman
+#https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
 "
-# https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
+# https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
 
-rm -rf package/build/{luci-lib-docker,luci-app-qbittorrent,luci-app-cpulimit}
-rm -rf feeds/*/*/{luci-app-filebrowser,luci-app-dockerman,luci-app-diskman,luci-app-appfilter,appfilter,open-app-filter}
+[[ `echo $REPO_URL | grep -c "coolsnowwolf"` -eq "0" ]] && clone_url "
+https://github.com/coolsnowwolf/lede/trunk/package/lean/redsocks2
+https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-easymesh
+"
 
 [[ $TARGET == "x86" ]] && {
 	_packages "
@@ -241,10 +253,7 @@ rm -rf feeds/*/*/{luci-app-filebrowser,luci-app-dockerman,luci-app-diskman,luci-
 	kmod-drm-ttm
 	"
 
-	sed -i "{
-	s/192.168.1.1/192.168.2.150/
-	s/ImmortalWrt/OpenWrt/
-	}" package/*/*/*/config_generate
+	sed -i "s/192.168.1.1/192.168.2.150/" package/*/*/*/config_generate
 
 	[[ $(awk -F= '/PKG_VERSION:/{print $2}' feeds/*/*/netdata/Makefile) == "1.30.1" ]] && {
 		rm feeds/*/*/netdata/patches/*web*
@@ -252,12 +261,17 @@ rm -rf feeds/*/*/{luci-app-filebrowser,luci-app-dockerman,luci-app-diskman,luci-
 	}
 } || {
 	[[ "$DEVICE_NAME" == "phicomm_k2p" ]] && {
-		sed -i "s/ImmortalWrt/PHICOMM_K2P/" package/*/*/*/config_generate
+		sed -i "s/OpenWrt/PHICOMM_K2P/" package/*/*/*/config_generate
 	} || {
-		sed -i "{
-		s/192.168.1.1/192.168.2.1/
-		s/ImmortalWrt/Newifi/
-		}" package/*/*/*/config_generate
+		sed -i "s/192.168.1.1/192.168.2.1/" package/*/*/*/config_generate
+		clone_url "
+		https://github.com/hong0980/packages/trunk/net/aria2
+		https://github.com/hong0980/luci/trunk/applications/luci-app-aria2
+		https://github.com/hong0980/packages/trunk/net/ariang
+		https://github.com/hong0980/packages/trunk/net/transmission
+		https://github.com/hong0980/luci/trunk/applications/luci-app-transmission
+		https://github.com/hong0980/packages/trunk/net/transmission-web-control
+		"
 		_packages "
 		autosamba automount kmod-rtl8187 kmod-rt2500-usb axel
 		luci-app-aria2
@@ -276,24 +290,6 @@ rm -rf feeds/*/*/{luci-app-filebrowser,luci-app-dockerman,luci-app-diskman,luci-
 	}
 }
 
-[[ "$REPO_BRANCH" == "openwrt-21.02" ]] && {
-	sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
-	sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
-	echo "CONFIG_PACKAGE_luci-app-easymesh=y" >>config_b
-} || {
-	[[ "$DEVICE_NAME" != "phicomm_k2p" ]] && {
-		clone_url "
-		https://github.com/hong0980/packages/trunk/net/aria2
-		https://github.com/hong0980/luci/trunk/applications/luci-app-aria2
-		https://github.com/hong0980/packages/trunk/net/ariang
-		https://github.com/hong0980/packages/trunk/net/transmission
-		https://github.com/hong0980/luci/trunk/applications/luci-app-transmission
-		https://github.com/hong0980/packages/trunk/net/transmission-web-control
-		"
-	}
-	# echo -e "CONFIG_PACKAGE_luci-app-argon-config=y\nCONFIG_PACKAGE_luci-theme-argon=y" >>config_b
-}
-
 [[ -d package/luci-app-dockerman ]] && {
 	for i in $(find package/luci-app-dockerman -name "*.lua" -o -name "*.htm"); do
 		if [[ $(egrep -c 'admin/docker|admin", "docker|admin","docker|admin\\/docker' $i 2>/dev/null) -ge "1" ]]; then
@@ -303,7 +299,7 @@ rm -rf feeds/*/*/{luci-app-filebrowser,luci-app-dockerman,luci-app-diskman,luci-
 			s|admin","docker|admin", "services", "docker|g
 			s|admin", "docker|admin", "services", "docker|g
 			}' $i -i
-			# echo "修改了$i"
+			echo "修改了$i"
 		fi
 	done
 	sed -i '{
@@ -326,20 +322,6 @@ rm -rf feeds/*/*/{luci-app-filebrowser,luci-app-dockerman,luci-app-diskman,luci-
 		fi
 	done
 }
-
-for p in $(find package/ -maxdepth 4 -type d -name "po"); do
-	[[ "$REPO_BRANCH" == "openwrt-21.02" ]] && {
-		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
-			ln -s zh-cn $p/zh_Hans 2>/dev/null
-			echo -e "$p ${ansi_green}添加zh_Hans${ansi_std}"
-		fi
-	} || {
-		if [[ ! -d $p/zh-cn && -d $p/zh_Hans ]]; then
-			ln -s zh_Hans $p/zh-cn 2>/dev/null
-			echo -e "$p ${ansi_green}添加zh-cn${ansi_std}"
-		fi
-	}
-done
 
 cat config_b >>.config
 make defconfig

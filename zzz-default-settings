@@ -67,7 +67,7 @@ uci set turboacc.config.sfe_flow='0'
 uci set turboacc.config.fullcone_nat='0'
 uci commit turboacc
 
-sed -i 's/ Lienol//g' /usr/lib/lua/luci/version.lua
+sed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua
 sed -i '/lienol/d' /etc/opkg/distfeeds.conf
 sed -i 's/Lienol//g' /etc/openwrt_release
 sed -i 's/option enabled.*/option enabled 1/g' /etc/config/upnpd
