@@ -12,22 +12,22 @@ ansi_rev="\033[7m"       # 白色背景填充
 ansi_ul="\033[4m"        # 下划线
 
 # REPO_URL="https://github.com/coolsnowwolf/lede"
-REPO_URL="https://github.com/Lienol/openwrt"
-# REPO_URL="https://github.com/Lienol/openwrt -b 19.07"
+# REPO_URL="https://github.com/Lienol/openwrt"
+REPO_URL="https://github.com/Lienol/openwrt -b 19.07"
 
-git clone -q $REPO_URL openwrt
+git clone -q "$REPO_URL" openwrt
 cd openwrt
 ./scripts/feeds update -a 1>/dev/null 2>&1
 ./scripts/feeds install -a 1>/dev/null 2>&1
 
 cat > .config <<-EOF
 	## target
-	# CONFIG_TARGET_x86=y
-	# CONFIG_TARGET_x86_64=y
-	# CONFIG_TARGET_ROOTFS_PARTSIZE=850
-	CONFIG_TARGET_ramips=y
-	CONFIG_TARGET_ramips_mt7621=y
-	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	CONFIG_TARGET_x86=y
+	CONFIG_TARGET_x86_64=y
+	CONFIG_TARGET_ROOTFS_PARTSIZE=750
+	# CONFIG_TARGET_ramips=y
+	# CONFIG_TARGET_ramips_mt7621=y
+	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"

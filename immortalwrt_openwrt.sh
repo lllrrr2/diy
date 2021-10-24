@@ -309,10 +309,8 @@ rm -rf feeds/*/*/{luci-app-filebrowser,luci-app-appfilter,appfilter,open-app-fil
 [[ -d package/A/luci-app-diskman ]] && {
 	for m in $(find package/A/luci-app-diskman -name "*.lua" -o -name "*.htm"); do
 		if [[ $(egrep -c '/system/|"system"' $m) -ge "1" ]]; then
-			sed -e '{
-			s|/system/|/nas/|g
-			s|"system"|"nas"|g
-			}' $m -i
+			sed -i 's^/system/^/nas/^g' $m
+			sed -i 's^"system"^"nas"^g' $m
 		fi
 	done
 }
