@@ -20,15 +20,15 @@ cd openwrt
 ./scripts/feeds update -a 1>/dev/null 2>&1
 ./scripts/feeds install -a 1>/dev/null 2>&1
 
-cat > config_b <<-EOF
+cat > .config <<-EOF
 	## target
 	# CONFIG_TARGET_x86=y
 	# CONFIG_TARGET_x86_64=y
 	# CONFIG_TARGET_ROOTFS_PARTSIZE=850
 	CONFIG_TARGET_ramips=y
 	CONFIG_TARGET_ramips_mt7621=y
-	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
-	CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 	## luci app
@@ -63,8 +63,9 @@ cat > config_b <<-EOF
 	CONFIG_PACKAGE_default-settings=y
 	CONFIG_TARGET_IMAGES_GZIP=y
 EOF
-TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' config_b | sed -r 's/.*TARGET_(.*)=y/\1/')
-DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' config_b | sed -r 's/.*DEVICE_(.*)=y/\1/')
+TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
+DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
+config_generate="package/base-files/files/bin/config_generate"
 
 clone_url() {
 	for x in $@; do
@@ -88,7 +89,7 @@ clone_url() {
 
 _packages() {
 	for z in $@; do
-		[[ $(echo $z | grep -v "^#") ]] && echo "CONFIG_PACKAGE_$z=y" >> config_b
+		[[ $(echo $z | grep -v "^#") ]] && echo "CONFIG_PACKAGE_$z=y" >> .config
 	done
 }
 
@@ -252,7 +253,7 @@ if [[ $TARGET == "x86" ]]; then
 	kmod-drm-ttm
 	"
 
-	sed -i "s/192.168.1.1/192.168.2.150/" package/*/*/*/config_generate
+	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 
 	if [[ $(awk -F= '/PKG_VERSION:/{print $2}' feeds/*/*/netdata/Makefile) == "1.30.1" ]]; then
 		rm feeds/*/*/netdata/patches/*web*
@@ -261,10 +262,10 @@ if [[ $TARGET == "x86" ]]; then
 fi
 
 if [[ "$DEVICE_NAME" == "phicomm_k2p" ]]; then
-	sed -i "s/OpenWrt/PHICOMM_K2P/" package/*/*/*/config_generate
+	sed -i "s/OpenWrt/PHICOMM_K2P/" $config_generate
 else
-	sed -i "s/192.168.1.1/192.168.2.1/" package/*/*/*/config_generate
-	[[ -n "$DEVICE_NAME" ]] && sed -i "s/OpenWrt/Newifi/" package/*/*/*/config_generate
+	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
+	[[ -n "$DEVICE_NAME" ]] && sed -i "s/OpenWrt/Newifi/" $config_generate
 	clone_url "
 	https://github.com/hong0980/packages/trunk/net/aria2
 	https://github.com/hong0980/luci/trunk/applications/luci-app-aria2
@@ -319,7 +320,7 @@ if [[ -d package/A/luci-app-diskman ]]; then
 		fi
 	done
 fi
-cat config_b >.config
+# cat config_b >.config
 make defconfig
 DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 
