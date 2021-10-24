@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 ansi_red="\033[1;31m"    # 红色字体
 ansi_white="\033[1;37m"  # 白色字体
@@ -11,23 +11,25 @@ ansi_std="\033[m"        # 常规无效果，作为后缀
 ansi_rev="\033[7m"       # 白色背景填充
 ansi_ul="\033[4m"        # 下划线
 
-# REPO_URL="https://github.com/coolsnowwolf/lede"
+REPO_URL="https://github.com/coolsnowwolf/lede"
 # REPO_URL="https://github.com/Lienol/openwrt"
-REPO_URL="https://github.com/Lienol/openwrt -b 19.07"
+# REPO_BRANCH="main"
+# REPO_BRANCH="19.07"
 
-git clone -q "$REPO_URL" openwrt
-cd openwrt
+[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
+git clone -q $REPO_URL $cmd openwrt
+cd openwrt || exit
 ./scripts/feeds update -a 1>/dev/null 2>&1
 ./scripts/feeds install -a 1>/dev/null 2>&1
 
 cat > .config <<-EOF
 	## target
-	CONFIG_TARGET_x86=y
-	CONFIG_TARGET_x86_64=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=750
-	# CONFIG_TARGET_ramips=y
-	# CONFIG_TARGET_ramips_mt7621=y
-	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	# CONFIG_TARGET_x86=y
+	# CONFIG_TARGET_x86_64=y
+	# CONFIG_TARGET_ROOTFS_PARTSIZE=750
+	CONFIG_TARGET_ramips=y
+	CONFIG_TARGET_ramips_mt7621=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
@@ -39,7 +41,7 @@ cat > .config <<-EOF
 	CONFIG_PACKAGE_luci-app-cowbping=y
 	CONFIG_PACKAGE_luci-app-cpulimit=y
 	CONFIG_PACKAGE_luci-app-ddnsto=y
-	CONFIG_PACKAGE_luci-app-easymesh=y
+	#CONFIG_PACKAGE_luci-app-easymesh=y
 	CONFIG_PACKAGE_luci-app-filebrowser=y
 	CONFIG_PACKAGE_luci-app-filetransfer=y
 	CONFIG_PACKAGE_luci-app-network-settings=y
@@ -120,25 +122,26 @@ clone_url "
 	https://github.com/small-5/luci-app-adblock-plus
 	https://github.com/hong0980/build/trunk/axel
 	https://github.com/hong0980/build/trunk/luci-app-bridge
-	https://github.com/hong0980/build/trunk/luci-app-cowb-speedlimit
-	https://github.com/hong0980/build/trunk/luci-app-rebootschedule
-	https://github.com/hong0980/build/trunk/luci-app-network-settings
+	https://github.com/hong0980/build/trunk/luci-app-diskman
 	https://github.com/hong0980/build/trunk/luci-app-poweroff
-	https://github.com/hong0980/build/trunk/luci-app-softwarecenter
-	#https://github.com/hong0980/build/trunk/luci-app-diskman
-	#https://github.com/hong0980/build/trunk/luci-app-dockerman
+	https://github.com/hong0980/build/trunk/luci-app-dockerman
 	https://github.com/hong0980/build/trunk/luci-app-filebrowser
+	https://github.com/hong0980/build/trunk/luci-app-softwarecenter
+	https://github.com/hong0980/build/trunk/luci-app-rebootschedule
+	https://github.com/hong0980/build/trunk/luci-app-cowb-speedlimit
+	https://github.com/hong0980/build/trunk/luci-app-network-settings
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	#https://github.com/immortalwrt/packages/trunk/libs/libcryptopp
-	https://github.com/lisaac/luci-app-diskman/trunk/applications/luci-app-diskman
+	#https://github.com/lisaac/luci-app-diskman/trunk/applications/luci-app-diskman
 	https://github.com/lisaac/luci-lib-docker/trunk/collections/luci-lib-docker
-	https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
+	#https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
 	#https://github.com/zaiyuyishiyoudu/luci-app-kickass/trunk/luci-app-kickass
 "
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
 
-[[ "$(echo $REPO_URL | grep -c 'Lienol')" -eq "1" ]] && {
+[[ "$REPO_URL" == "https://github.com/Lienol/openwrt" ]] && {
 	clone_url "
+	https://github.com/coolsnowwolf/packages/trunk/utils/parted
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/redsocks2
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-easymesh
 	#https://github.com/openwrt/routing/branches/openwrt-19.07/batman-adv
@@ -291,36 +294,34 @@ else
 	"
 fi
 
-if [[ -d package/A/luci-app-dockerman ]]; then
-	for i in $(find package/A/luci-app-dockerman -name "*.lua" -o -name "*.htm"); do
-		if [[ $(egrep -c 'admin/docker|admin", "docker|admin","docker|admin\\/docker' $i) -ge "1" ]]; then
-			sed -e '{
-			s|admin/docker|admin/services/docker|g
-			s|admin\\/docker|admin\\/services\\/docker|g
-			s|admin","docker|admin", "services", "docker|g
-			s|admin", "docker|admin", "services", "docker|g
-			}' $i -i
-		fi
-	done
-	sed -i '{
-	s|"config")|"overview")|
-	s|Configuration"), 8|Configuration"), 2|
-	s|Overview"), 2|Overview"), 1|
-	}' package/*/*/*/controller/dockerman.lua
-	sed -i 's/default_config.advance or //' package/*/*/*/*/*/dockerman/newcontainer.lua
-fi
+# if [[ -d package/A/luci-app-dockerman ]]; then
+	# for i in $(find package/A/luci-app-dockerman -name "*.lua" -o -name "*.htm"); do
+		# if [[ $(egrep -c 'admin/docker|admin", "docker|admin","docker|admin\\/docker' $i) -ge "1" ]]; then
+			# sed -e '{
+			# s|admin/docker|admin/services/docker|g
+			# s|admin\\/docker|admin\\/services\\/docker|g
+			# s|admin","docker|admin", "services", "docker|g
+			# s|admin", "docker|admin", "services", "docker|g
+			# }' $i -i
+		# fi
+	# done
+	# sed -i '{
+	# s|"config")|"overview")|
+	# s|Configuration"), 8|Configuration"), 2|
+	# s|Overview"), 2|Overview"), 1|
+	# }' package/*/*/*/controller/dockerman.lua
+	# sed -i 's/default_config.advance or //' package/*/*/*/*/*/dockerman/newcontainer.lua
+# fi
 
-if [[ -d package/A/luci-app-diskman ]]; then
-	for m in $(find package/A/luci-app-diskman -name "*.lua" -o -name "*.htm"); do
-		if [[ $(egrep -c '/system/|"system"' $m) -ge "1" ]]; then
-			sed -e '{
-			s|/system/|/nas/|g
-			s|"system"|"nas"|g
-			}' $m -i
-		fi
-	done
-fi
-# cat config_b >.config
+# if [[ -d package/A/luci-app-diskman ]]; then
+	# for m in $(find package/A/luci-app-diskman -name "*.lua" -o -name "*.htm"); do
+		# if [[ $(egrep -c '/system/|"system"' $m) -ge "1" ]]; then
+			# sed -i 's^/system/^/nas/^g' $m
+			# sed -i 's^"system"^"nas"^g' $m
+		# fi
+	# done
+# fi
+
 make defconfig
 DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 
