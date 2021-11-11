@@ -25,12 +25,12 @@ cd openwrt || exit
 
 cat > .config <<-EOF
 	## target
-	# CONFIG_TARGET_x86=y
-	# CONFIG_TARGET_x86_64=y
-	# CONFIG_TARGET_ROOTFS_PARTSIZE=700
-	CONFIG_TARGET_ramips=y
-	CONFIG_TARGET_ramips_mt7621=y
-	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	CONFIG_TARGET_x86=y
+	CONFIG_TARGET_x86_64=y
+	CONFIG_TARGET_ROOTFS_PARTSIZE=800
+	# CONFIG_TARGET_ramips=y
+	# CONFIG_TARGET_ramips_mt7621=y
+	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	# CONFIG_TARGET_bcm47xx=y
 	# CONFIG_TARGET_bcm47xx_mips74k=y
