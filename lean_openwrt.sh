@@ -50,6 +50,7 @@ cat > .config <<-EOF
 	CONFIG_PACKAGE_luci-app-filetransfer=y
 	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-oaf=y
+	CONFIG_PACKAGE_luci-app-openclash=y
 	CONFIG_PACKAGE_luci-app-passwall=y
 	CONFIG_PACKAGE_luci-app-rebootschedule=y
 	CONFIG_PACKAGE_luci-app-ssr-plus=y
