@@ -180,6 +180,8 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 	luci-app-openclash
 	luci-app-poweroff
 	luci-app-qbittorrent
+	luci-app-jd-dailybonus
+	luci-app-unblockmusic
 	luci-app-smartdns
 	ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2
 	#subversion-server #unixodbc git-http
@@ -289,6 +291,8 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 		wget -q -O feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch git.io/JoNoj
 	}
 	# clone_url "https://github.com/hong0980/packages/trunk/net/subversion"
+	clone_url "https://github.com/hong0980/build/trunk/luci-app-qbittorrent"
+	sed -i 's/+qBittorrent/+qBittorrent-Enhanced-Edition/g' feeds/luci/applications/luci-app-qbittorrent/Makefile
 }
 
 [[ "$DEVICE_NAME" == "phicomm_k2p" ]] || {
