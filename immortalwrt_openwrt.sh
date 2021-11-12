@@ -118,7 +118,7 @@ clone_url() {
 		elif [[ "$(echo $x | grep -v "^#" | grep -E "helloworld|passwall|build")" ]]; then
 			for w in $x; do
 				if git clone -q $w ../${w##*/}; then
-					for x in `ls -F ../${w##*/} | grep "/$" | sed 's|/$||' | grep -Ev 'kernel|*rrent|*pulimit|*dump|*info|*dtest|*Deny|*dog|*cowbb*'`; do
+					for x in `ls -F ../${w##*/} | grep "/$" | sed 's|/$||' | grep -Ev 'kernel|*pulimit|*dump|*info|*dtest|*Deny|*dog|*cowbb*'`; do
 						if [[ "$x" && -d ../${w##*/}/$x ]]; then
 							g=$(find . -maxdepth 4 -type d -name $x)
 							if ([[ -d "$g" ]] && rm -rf $g); then
