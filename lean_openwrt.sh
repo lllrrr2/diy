@@ -91,6 +91,8 @@ sed -i "{
 		s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua\n[ -f '/bin/bash' ] \&\& sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd^
 		}" $(find package -type f -name "zzz-default-settings")
+[[ "$m" == "coolsnowwolf" ]] && sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' package/lean/*/*/*/index.htm
+[[ "$m" == "Lienol" && "$REPO_BRANCH" == "18.06" ]] && sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' feeds/luci/modules/luci-mod-admin-full/*/*/*/index.*tm
 
 clone_url() {
 	for x in $@; do

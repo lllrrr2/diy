@@ -95,6 +95,7 @@ sed -i "{
 		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
 		}" $(find package/ -type f -name "zzz-default-settings")
+sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' package/emortal/*/*/*/index.htm
 
 clone_url() {
 	for x in $@; do
@@ -179,7 +180,7 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 	luci-app-netdata
 	luci-app-openclash
 	luci-app-poweroff
-	#luci-app-qbittorrent
+	luci-app-qbittorrent
 	luci-app-jd-dailybonus
 	luci-app-unblockmusic
 	luci-app-smartdns
@@ -282,16 +283,13 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 	snmpd
 	"
 
-	sed -i "{
-	s/192.168.1.1/192.168.2.150/
-	s/OpenWrt/OpenWrt-x86_64/
-	}" $config_generate
+	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 	[[ $(awk -F= '/PKG_VERSION:/{print $2}' feeds/*/*/netdata/Makefile) == "1.30.1" ]] && {
 		rm feeds/*/*/netdata/patches/*web*
 		wget -q -O feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch git.io/JoNoj
 	}
 	# clone_url "https://github.com/hong0980/packages/trunk/net/subversion"
-	sed -i 's/+qBittorrent/+qBittorrent-Enhanced-Edition/g' feeds/luci/applications/luci-app-qbittorrent/Makefile 1>/dev/null 2>&1
+	# sed -i 's/+qBittorrent/+qBittorrent-Enhanced-Edition/g' feeds/luci/applications/luci-app-qbittorrent/Makefile 1>/dev/null 2>&1
 }
 
 [[ "$DEVICE_NAME" == "phicomm_k2p" ]] || {
