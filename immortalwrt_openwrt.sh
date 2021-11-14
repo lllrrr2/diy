@@ -35,12 +35,12 @@ cd openwrt || exit
 
 cat > .config <<-EOF
 	## target
-	CONFIG_TARGET_x86=y
-	CONFIG_TARGET_x86_64=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=900
-	# CONFIG_TARGET_ramips=y
-	# CONFIG_TARGET_ramips_mt7621=y
-	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	# CONFIG_TARGET_x86=y
+	# CONFIG_TARGET_x86_64=y
+	# CONFIG_TARGET_ROOTFS_PARTSIZE=900
+	CONFIG_TARGET_ramips=y
+	CONFIG_TARGET_ramips_mt7621=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	# CONFIG_TARGET_armvirt=y
 	# CONFIG_TARGET_armvirt_64=y
@@ -353,12 +353,12 @@ for p in $(find . -maxdepth 5 -type d -name "po"); do
 	[[ "$m" == "21.02" ]] && {
 		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
 			ln -s zh-cn $p/zh_Hans 2>/dev/null
-			echo -e "$(echo $p | awk -F/ '{print $(NF-1)}') ${cg}添加zh_Hans${cend}"
+			echo -e "添加zh_Hans ${uplus} $(echo $p | awk -F/ '{print $(NF-1)}')"
 		fi
 	} || {
 		if [[ ! -d $p/zh-cn && -d $p/zh_Hans ]]; then
 			ln -s zh_Hans $p/zh-cn 2>/dev/null
-			echo -e "$(echo $p | awk -F/ '{print $(NF-1)}') ${cg}添加zh-cn${cend}"
+			echo -e "添加zh-cn ${uplus} $(echo $p | awk -F/ '{print $(NF-1)}')"
 		fi
 	}
 done
@@ -379,9 +379,9 @@ echo "BUILD_NPROC=7" >>$GITHUB_ENV
 [[ "$TARGET" == "brcm47xx" ]] && echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV && echo "DEVICE_NAME=Asus-RT-N16" >>$GITHUB_ENV
 if [[ "$TARGET" == "x86" ]]; then
 	echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
-	echo "当前的机型 x86_64"
+	echo -e "当前的机型${cc} x86_64${cend}"
 else
-	echo "当前的机型 $DEVICE_NAME"
+	echo -e "当前的机型${cc} $DEVICE_NAME${cend}"
 fi
 
 echo -e "${cg}脚本运行完成${cend}"

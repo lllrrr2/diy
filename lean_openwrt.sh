@@ -34,12 +34,12 @@ cd openwrt || exit
 
 cat > .config <<-EOF
 	## target
-	# CONFIG_TARGET_x86=y
-	# CONFIG_TARGET_x86_64=y
-	# CONFIG_TARGET_ROOTFS_PARTSIZE=800
-	CONFIG_TARGET_ramips=y
-	CONFIG_TARGET_ramips_mt7621=y
-	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	CONFIG_TARGET_x86=y
+	CONFIG_TARGET_x86_64=y
+	CONFIG_TARGET_ROOTFS_PARTSIZE=800
+	# CONFIG_TARGET_ramips=y
+	# CONFIG_TARGET_ramips_mt7621=y
+	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	# CONFIG_TARGET_bcm47xx=y
 	# CONFIG_TARGET_bcm47xx_mips74k=y
@@ -88,7 +88,7 @@ TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*
 DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 
 echo -e "${cy}修改设置${cend}"
-wget -q -O package/base-files/files/etc/banner git.io/JoNK8
+wget -qO package/base-files/files/etc/banner git.io/JoNK8
 sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$m-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 sed -i "/IMG_PREFIX:/ {s/=/=$m-$REPO_BRANCH-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
@@ -287,7 +287,7 @@ if [[ "$TARGET" == "x86" ]]; then
 	sed -i "/easymesh/d" .config
 	if [[ $(awk -F= '/PKG_VERSION:/{print $2}' feeds/*/*/netdata/Makefile) == "1.30.1" ]]; then
 		rm feeds/*/*/netdata/patches/*web*
-		wget -q -O feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch git.io/JoNoj
+		wget -qO feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch git.io/JoNoj
 	fi
 fi
 
@@ -348,9 +348,9 @@ echo "BUILD_NPROC=7" >>$GITHUB_ENV
 [[ "$TARGET" == "brcm47xx" ]] && echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV && echo "DEVICE_NAME=Asus-RT-N16" >>$GITHUB_ENV
 if [[ "$TARGET" == "x86" ]]; then
 	echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
-	echo "当前的机型 x86_64"
+	echo -e "当前的机型${cc} x86_64${cend}"
 else
-	echo "当前的机型 $DEVICE_NAME"
+	echo -e "当前的机型${cc} $DEVICE_NAME${cend}"
 fi
 
 echo -e "${cg}脚本运行完成${cend}"
