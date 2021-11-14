@@ -8,8 +8,8 @@ cc="\e[36m" && clc="\e[96m" # [c]olor[c]yan		&& [c]olor[l]ight[c]yan
 tb="\e[1m"  && td="\e[2m"   # [t]ext[b]old		&& [t]ext[d]im
 tn="\n"     && tu="\e[4m"   # [t]ext[n]ewline 	&& [t]ext[u]nderlined
 utick="\e[32m\U2714\e[0m"   # [u]nicode][tick]
-uplus="\e[36m\U002b\e[0m"   # [u]nicode][plus]
-ucross="\e[31m\U00D7\e[0m"  # [u]nicode][cross]
+uplus="\e[34m\U002b\e[0m"   # [u]nicode][plus]
+ucross="\e[31m\U2715\e[0m"  # [u]nicode][cross]
 urc="\e[31m\U25cf\e[0m" && ulrc="\e[91m\U25cf\e[0m"    # [u]nicode[r]ed[c]ircle     && [u]nicode[l]ight[r]ed[c]ircle
 ugc="\e[32m\U25cf\e[0m" && ulgc="\e[92m\U25cf\e[0m"    # [u]nicode[g]reen[c]ircle   && [u]nicode[l]ight[g]reen[c]ircle
 uyc="\e[33m\U25cf\e[0m" && ulyc="\e[93m\U25cf\e[0m"    # [u]nicode[y]ellow[c]ircle  && [u]nicode[l]ight[y]ellow[c]ircle
@@ -121,9 +121,9 @@ clone_url() {
 			else
 				if (git clone -q $x $k); then f="1"; fi
 			fi
-			[[ $f -eq $p ]] && echo -e "${x##*/} ${cb}替换完成 ${cend}"
-			[[ $f -gt $p ]] && echo -e "${x##*/} ${cg}拉取完成 ${cend}"
-			[[ $f -lt $p ]] && echo -e "${x##*/} ${cr}替换失败 ${cend}"
+			[[ $f -eq $p ]] && echo -e "替换完成 ${utick} ${x##*/}"
+			[[ $f -gt $p ]] && echo -e "拉取完成 ${uplus} ${x##*/}"
+			[[ $f -lt $p ]] && echo -e "替换失败 ${ucross} ${x##*/}"
 			unset -v p f k
 		elif [[ "$(echo $x | grep -v "^#" | grep -E "helloworld|passwall|build")" ]]; then
 			for w in $x; do
@@ -142,8 +142,8 @@ clone_url() {
 								f="1"
 							fi
 						fi
-						[[ $f -eq $p ]] && echo -e "${x##*/} ${cb}替换完成 ${cend}"
-						[[ $f -gt $p ]] && echo -e "${x##*/} ${cm}新加完成 ${cend}"
+						[[ $f -eq $p ]] && echo -e "替换完成 ${utick} ${x##*/}"
+						[[ $f -gt $p ]] && echo -e "新加完成 ${uplus} ${x##*/}"
 						unset -v p f k
 					done
 				fi
