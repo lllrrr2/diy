@@ -1,16 +1,24 @@
-#!/bin/bash
-
-ansi_red="\033[1;31m"    # 红色字体
-ansi_white="\033[1;37m"  # 白色字体
-ansi_green="\033[1;32m"  # 绿色字体
-ansi_yellow="\033[1;33m" # 黄色字体
-ansi_blue="\033[1;34m"   # 蓝色字体
-ansi_purple="\033[1;35m" # 紫色字体
-ansi_bell="\007"         # 响铃提示
-ansi_blink="\033[5m"     # 半透明背景填充
-ansi_std="\033[m"        # 常规无效果，作为后缀
-ansi_rev="\033[7m"       # 白色背景填充
-ansi_ul="\033[4m"        # 下划线
+#!/usr/bin/env bash
+cr="\e[31m" && clr="\e[91m" # [c]olor[r]ed		&& [c]olor[l]ight[r]ed
+cg="\e[32m" && clg="\e[92m" # [c]olor[g]reen	&& [c]olor[l]ight[g]reen
+cy="\e[33m" && cly="\e[93m" # [c]olor[y]ellow	&& [c]olor[l]ight[y]ellow
+cb="\e[34m" && clb="\e[94m" # [c]olor[b]lue		&& [c]olor[l]ight[b]lue
+cm="\e[35m" && clm="\e[95m" # [c]olor[m]agenta	&& [c]olor[l]ight[m]agenta
+cc="\e[36m" && clc="\e[96m" # [c]olor[c]yan		&& [c]olor[l]ight[c]yan
+tb="\e[1m"  && td="\e[2m"   # [t]ext[b]old		&& [t]ext[d]im
+tn="\n"     && tu="\e[4m"   # [t]ext[n]ewline 	&& [t]ext[u]nderlined
+utick="\e[32m\U2714\e[0m"   # [u]nicode][tick]
+uplus="\e[36m\U002b\e[0m"   # [u]nicode][plus]
+ucross="\e[31m\U00D7\e[0m"  # [u]nicode][cross]
+urc="\e[31m\U25cf\e[0m" && ulrc="\e[91m\U25cf\e[0m"    # [u]nicode[r]ed[c]ircle     && [u]nicode[l]ight[r]ed[c]ircle
+ugc="\e[32m\U25cf\e[0m" && ulgc="\e[92m\U25cf\e[0m"    # [u]nicode[g]reen[c]ircle   && [u]nicode[l]ight[g]reen[c]ircle
+uyc="\e[33m\U25cf\e[0m" && ulyc="\e[93m\U25cf\e[0m"    # [u]nicode[y]ellow[c]ircle  && [u]nicode[l]ight[y]ellow[c]ircle
+ubc="\e[34m\U25cf\e[0m" && ulbc="\e[94m\U25cf\e[0m"    # [u]nicode[b]lue[c]ircle    && [u]nicode[l]ight[b]lue[c]ircle
+umc="\e[35m\U25cf\e[0m" && ulmc="\e[95m\U25cf\e[0m"    # [u]nicode[m]agenta[c]ircle && [u]nicode[l]ight[m]agenta[c]ircle
+ucc="\e[36m\U25cf\e[0m" && ulcc="\e[96m\U25cf\e[0m"    # [u]nicode[c]yan[c]ircle    && [u]nicode[l]ight[c]yan[c]ircle
+ugrc="\e[37m\U25cf\e[0m" && ulgrcc="\e[97m\U25cf\e[0m" # [u]nicode[gr]ey[c]ircle    && [u]nicode[l]ight[gr]ey[c]ircle
+cdef="\e[39m" # [c]olor[def]ault
+cend="\e[0m"  # [c]olor[end]
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
 # REPO_BRANCH="openwrt-21.02"
@@ -19,7 +27,7 @@ REPO_BRANCH="openwrt-18.06"
 # REPO_BRANCH="openwrt-18.06-k5.4"
 
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-echo -e "${ansi_yellow}拉取源码中.... ${ansi_std}"
+echo -e "${cy}拉取源码中.... ${cend}"
 git clone -q $REPO_URL $cmd openwrt
 cd openwrt || exit
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -82,8 +90,8 @@ config_generate="package/base-files/files/bin/config_generate"
 TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
 DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 
-echo -e "${ansi_yellow}修改设置${ansi_std}"
-wget -q -O package/base-files/files/etc/banner git.io/JoNK8
+echo -e "${cy}修改设置${cend}"
+wget -qO package/base-files/files/etc/banner git.io/JoNK8
 sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-immortalwrt-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 sed -i "/IMG_PREFIX:/ {s/=/=Immortal-$m-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
@@ -113,9 +121,9 @@ clone_url() {
 			else
 				if (git clone -q $x $k); then f="1"; fi
 			fi
-			[[ $f -eq $p ]] && echo -e "${x##*/} ${ansi_blue}替换完成 ${ansi_std}"
-			[[ $f -gt $p ]] && echo -e "${x##*/} ${ansi_green}拉取完成 ${ansi_std}"
-			[[ $f -lt $p ]] && echo -e "${x##*/} ${ansi_red}替换失败 ${ansi_std}"
+			[[ $f -eq $p ]] && echo -e "${x##*/} ${cb}替换完成 ${cend}"
+			[[ $f -gt $p ]] && echo -e "${x##*/} ${cg}拉取完成 ${cend}"
+			[[ $f -lt $p ]] && echo -e "${x##*/} ${cr}替换失败 ${cend}"
 			unset -v p f k
 		elif [[ "$(echo $x | grep -v "^#" | grep -E "helloworld|passwall|build")" ]]; then
 			for w in $x; do
@@ -134,8 +142,8 @@ clone_url() {
 								f="1"
 							fi
 						fi
-						[[ $f -eq $p ]] && echo -e "${x##*/} ${ansi_blue}替换完成 ${ansi_std}"
-						[[ $f -gt $p ]] && echo -e "${x##*/} ${ansi_purple}新加完成 ${ansi_std}"
+						[[ $f -eq $p ]] && echo -e "${x##*/} ${cb}替换完成 ${cend}"
+						[[ $f -gt $p ]] && echo -e "${x##*/} ${cm}新加完成 ${cend}"
 						unset -v p f k
 					done
 				fi
@@ -186,7 +194,7 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 	luci-app-unblockmusic
 	luci-app-smartdns
 	ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2
-	#subversion-server #unixodbc git-http
+	#subversion-server #unixodbc #git-http
 
 	#USB3.0支持
 	kmod-usb-audio
@@ -287,10 +295,20 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 	[[ $(awk -F= '/PKG_VERSION:/{print $2}' feeds/*/*/netdata/Makefile) == "1.30.1" ]] && {
 		rm feeds/*/*/netdata/patches/*web*
-		wget -q -O feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch git.io/JoNoj
+		wget -qO feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch git.io/JoNoj
 	}
-	# clone_url "https://github.com/hong0980/packages/trunk/net/subversion"
-	# sed -i 's/+qBittorrent/+qBittorrent-Enhanced-Edition/g' feeds/luci/applications/luci-app-qbittorrent/Makefile 1>/dev/null 2>&1
+
+	clone_url "
+	https://github.com/coolsnowwolf/lede/trunk/package/lean/qtbase
+	https://github.com/coolsnowwolf/lede/trunk/package/lean/qttools
+	https://github.com/coolsnowwolf/lede/trunk/package/lean/qBittorrent
+	https://github.com/coolsnowwolf/lede/trunk/package/lean/rblibtorrent
+	https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-qbittorrent
+	https://github.com/coolsnowwolf/lede/trunk/package/lean/qBittorrent-static
+	"
+	[[ -d package/A/qtbase ]] && rm -rf feeds/packages/libs/qt5
+	# sed -i 's/qtbase/qt5/' package/A/qttools/Makefile
+	# sed -i 's/Enhanced-Edition/static/g' feeds/luci/applications/luci-app-qbittorrent/Makefile 1>/dev/null 2>&1
 }
 
 [[ "$DEVICE_NAME" == "phicomm_k2p" ]] || {
@@ -332,15 +350,15 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 }
 
 for p in $(find . -maxdepth 5 -type d -name "po"); do
-	[[ "$REPO_BRANCH" == "openwrt-21.02" ]] && {
+	[[ "$m" == "21.02" ]] && {
 		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
 			ln -s zh-cn $p/zh_Hans 2>/dev/null
-			echo -e "$(echo $p | awk -F/ '{print $(NF-1)}') ${ansi_green}添加zh_Hans${ansi_std}"
+			echo -e "$(echo $p | awk -F/ '{print $(NF-1)}') ${cg}添加zh_Hans${cend}"
 		fi
 	} || {
 		if [[ ! -d $p/zh-cn && -d $p/zh_Hans ]]; then
 			ln -s zh_Hans $p/zh-cn 2>/dev/null
-			echo -e "$(echo $p | awk -F/ '{print $(NF-1)}') ${ansi_green}添加zh-cn${ansi_std}"
+			echo -e "$(echo $p | awk -F/ '{print $(NF-1)}') ${cg}添加zh-cn${cend}"
 		fi
 	}
 done
@@ -366,4 +384,4 @@ else
 	echo "当前的机型 $DEVICE_NAME"
 fi
 
-echo -e "${ansi_green}脚本运行完成${ansi_std}"
+echo -e "${cg}脚本运行完成${cend}"
