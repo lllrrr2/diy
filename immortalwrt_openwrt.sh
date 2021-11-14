@@ -7,9 +7,10 @@ cm="\e[35m" && clm="\e[95m" # [c]olor[m]agenta	&& [c]olor[l]ight[m]agenta
 cc="\e[36m" && clc="\e[96m" # [c]olor[c]yan		&& [c]olor[l]ight[c]yan
 tb="\e[1m"  && td="\e[2m"   # [t]ext[b]old		&& [t]ext[d]im
 tn="\n"     && tu="\e[4m"   # [t]ext[n]ewline 	&& [t]ext[u]nderlined
-utick="\e[32m\U2714\e[0m"   # [u]nicode][tick]
-uplus="\e[34m\U002b\e[0m"   # [u]nicode][plus]
-ucross="\e[31m\U2715\e[0m"  # [u]nicode][cross]
+ut="\e[32m\U2714\e[0m"	# [u]nicode][t]ick
+up="\e[34m\U002b\e[0m"	# [u]nicode][p]lus
+uc="\e[31m\U2715\e[0m"	# [u]nicode][c]ross
+ce="\e[0m"				# [c]olor[e]nd
 urc="\e[31m\U25cf\e[0m" && ulrc="\e[91m\U25cf\e[0m"    # [u]nicode[r]ed[c]ircle     && [u]nicode[l]ight[r]ed[c]ircle
 ugc="\e[32m\U25cf\e[0m" && ulgc="\e[92m\U25cf\e[0m"    # [u]nicode[g]reen[c]ircle   && [u]nicode[l]ight[g]reen[c]ircle
 uyc="\e[33m\U25cf\e[0m" && ulyc="\e[93m\U25cf\e[0m"    # [u]nicode[y]ellow[c]ircle  && [u]nicode[l]ight[y]ellow[c]ircle
@@ -17,8 +18,7 @@ ubc="\e[34m\U25cf\e[0m" && ulbc="\e[94m\U25cf\e[0m"    # [u]nicode[b]lue[c]ircle
 umc="\e[35m\U25cf\e[0m" && ulmc="\e[95m\U25cf\e[0m"    # [u]nicode[m]agenta[c]ircle && [u]nicode[l]ight[m]agenta[c]ircle
 ucc="\e[36m\U25cf\e[0m" && ulcc="\e[96m\U25cf\e[0m"    # [u]nicode[c]yan[c]ircle    && [u]nicode[l]ight[c]yan[c]ircle
 ugrc="\e[37m\U25cf\e[0m" && ulgrcc="\e[97m\U25cf\e[0m" # [u]nicode[gr]ey[c]ircle    && [u]nicode[l]ight[gr]ey[c]ircle
-cdef="\e[39m" # [c]olor[def]ault
-cend="\e[0m"  # [c]olor[end]
+cdef="\e[39m"			# [c]olor[def]ault
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
 # REPO_BRANCH="openwrt-21.02"
@@ -27,7 +27,7 @@ REPO_BRANCH="openwrt-18.06"
 # REPO_BRANCH="openwrt-18.06-k5.4"
 
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-echo -e "${cy}拉取源码中.... ${cend}"
+echo -e "${cy}拉取源码中.... ${ce}"
 git clone -q $REPO_URL $cmd openwrt
 cd openwrt || exit
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -90,7 +90,7 @@ config_generate="package/base-files/files/bin/config_generate"
 TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
 DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 
-echo -e "${cy}修改设置${cend}"
+echo -e "${cy}修改设置${ce}"
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-immortalwrt-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 sed -i "/IMG_PREFIX:/ {s/=/=Immortal-$m-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
@@ -121,9 +121,9 @@ clone_url() {
 			else
 				if (git clone -q $x $k); then f="1"; fi
 			fi
-			[[ $f -eq $p ]] && echo -e "替换完成 ${utick} ${x##*/}"
-			[[ $f -gt $p ]] && echo -e "拉取完成 ${uplus} ${x##*/}"
-			[[ $f -lt $p ]] && echo -e "替换失败 ${ucross} ${x##*/}"
+			[[ $f -eq $p ]] && echo -e "替换完成 ${ut} ${x##*/}"
+			[[ $f -gt $p ]] && echo -e "拉取完成 ${up} ${x##*/}"
+			[[ $f -lt $p ]] && echo -e "替换失败 ${uc} ${x##*/}"
 			unset -v p f k
 		elif [[ "$(echo $x | grep -v "^#" | grep -E "helloworld|passwall|build")" ]]; then
 			for w in $x; do
@@ -142,8 +142,8 @@ clone_url() {
 								f="1"
 							fi
 						fi
-						[[ $f -eq $p ]] && echo -e "替换完成 ${utick} ${x##*/}"
-						[[ $f -gt $p ]] && echo -e "新加完成 ${uplus} ${x##*/}"
+						[[ $f -eq $p ]] && echo -e "替换完成 ${ut} ${x##*/}"
+						[[ $f -gt $p ]] && echo -e "新加完成 ${up} ${x##*/}"
 						unset -v p f k
 					done
 				fi
@@ -312,7 +312,7 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 }
 
 [[ "$DEVICE_NAME" == "phicomm_k2p" ]] || {
-	[[ "$DEVICE_NAME" == "d-team_newifi-d2" ]] && sed -i "s/192.168.1.1/192.168.2.1/" $config_generate; _packages "luci-app-unblockmusic"
+	[[ "$DEVICE_NAME" == "d-team_newifi-d2" ]] && sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	[[ "$DEVICE_NAME" == "asus_rt-n16" ]] && {
 	sed -i "s/192.168.1.1/192.168.2.130/" $config_generate
 	}
@@ -330,7 +330,7 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 	luci-app-transmission
 	luci-app-usb-printer
 	luci-app-vssr
-	luci-app-unblockmusic
+	#luci-app-unblockmusic
 	"
 }
 
@@ -353,12 +353,12 @@ for p in $(find . -maxdepth 5 -type d -name "po"); do
 	[[ "$m" == "21.02" ]] && {
 		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
 			ln -s zh-cn $p/zh_Hans 2>/dev/null
-			echo -e "添加zh_Hans ${uplus} $(echo $p | awk -F/ '{print $(NF-1)}')"
+			echo -e "添加zh_Hans ${up} $(echo $p | awk -F/ '{print $(NF-1)}')"
 		fi
 	} || {
 		if [[ ! -d $p/zh-cn && -d $p/zh_Hans ]]; then
 			ln -s zh_Hans $p/zh-cn 2>/dev/null
-			echo -e "添加zh-cn ${uplus} $(echo $p | awk -F/ '{print $(NF-1)}')"
+			echo -e "添加zh-cn ${up} $(echo $p | awk -F/ '{print $(NF-1)}')"
 		fi
 	}
 done
@@ -379,9 +379,9 @@ echo "BUILD_NPROC=7" >>$GITHUB_ENV
 [[ "$TARGET" == "brcm47xx" ]] && echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV && echo "DEVICE_NAME=Asus-RT-N16" >>$GITHUB_ENV
 if [[ "$TARGET" == "x86" ]]; then
 	echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
-	echo -e "当前的机型${cc} x86_64${cend}"
+	echo -e "当前的机型${cc} x86_64${ce}"
 else
-	echo -e "当前的机型${cc} $DEVICE_NAME${cend}"
+	echo -e "当前的机型${cc} $DEVICE_NAME${ce}"
 fi
 
-echo -e "${cg}脚本运行完成${cend}"
+echo -e "${cg}脚本运行完成${ce}"

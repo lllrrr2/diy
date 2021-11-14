@@ -7,18 +7,10 @@ cm="\e[35m" && clm="\e[95m" # [c]olor[m]agenta	&& [c]olor[l]ight[m]agenta
 cc="\e[36m" && clc="\e[96m" # [c]olor[c]yan		&& [c]olor[l]ight[c]yan
 tb="\e[1m"  && td="\e[2m"   # [t]ext[b]old		&& [t]ext[d]im
 tn="\n"     && tu="\e[4m"   # [t]ext[n]ewline 	&& [t]ext[u]nderlined
-utick="\e[32m\U2714\e[0m"   # [u]nicode][tick]
-uplus="\e[34m\U002b\e[0m"   # [u]nicode][plus]
-ucross="\e[31m\U2715\e[0m"  # [u]nicode][cross]
-urc="\e[31m\U25cf\e[0m" && ulrc="\e[91m\U25cf\e[0m"    # [u]nicode[r]ed[c]ircle     && [u]nicode[l]ight[r]ed[c]ircle
-ugc="\e[32m\U25cf\e[0m" && ulgc="\e[92m\U25cf\e[0m"    # [u]nicode[g]reen[c]ircle   && [u]nicode[l]ight[g]reen[c]ircle
-uyc="\e[33m\U25cf\e[0m" && ulyc="\e[93m\U25cf\e[0m"    # [u]nicode[y]ellow[c]ircle  && [u]nicode[l]ight[y]ellow[c]ircle
-ubc="\e[34m\U25cf\e[0m" && ulbc="\e[94m\U25cf\e[0m"    # [u]nicode[b]lue[c]ircle    && [u]nicode[l]ight[b]lue[c]ircle
-umc="\e[35m\U25cf\e[0m" && ulmc="\e[95m\U25cf\e[0m"    # [u]nicode[m]agenta[c]ircle && [u]nicode[l]ight[m]agenta[c]ircle
-ucc="\e[36m\U25cf\e[0m" && ulcc="\e[96m\U25cf\e[0m"    # [u]nicode[c]yan[c]ircle    && [u]nicode[l]ight[c]yan[c]ircle
-ugrc="\e[37m\U25cf\e[0m" && ulgrcc="\e[97m\U25cf\e[0m" # [u]nicode[gr]ey[c]ircle    && [u]nicode[l]ight[gr]ey[c]ircle
-cdef="\e[39m" # [c]olor[def]ault
-cend="\e[0m"  # [c]olor[end]
+ut="\e[32m\U2714\e[0m"		# [u]nicode][t]ick
+up="\e[34m\U002b\e[0m"		# [u]nicode][p]lus
+uc="\e[31m\U2715\e[0m"		# [u]nicode][c]ross
+ce="\e[0m"					# [c]olor[e]nd
 
 REPO_URL="https://github.com/coolsnowwolf/lede"
 # REPO_URL="https://github.com/Lienol/openwrt"
@@ -26,7 +18,7 @@ REPO_URL="https://github.com/coolsnowwolf/lede"
 # REPO_BRANCH="19.07"
 
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-echo -e "${cy}拉取源码中.... ${cend}"
+echo -e "${cy}拉取源码中.... ${ce}"
 git clone -q $REPO_URL $cmd openwrt
 cd openwrt || exit
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -87,7 +79,7 @@ config_generate="package/base-files/files/bin/config_generate"
 TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
 DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 
-echo -e "${cy}修改设置${cend}"
+echo -e "${cy}修改设置${ce}"
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$m-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 sed -i "/IMG_PREFIX:/ {s/=/=$m-$REPO_BRANCH-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
@@ -100,7 +92,7 @@ sed -i "{
 		s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua\n[ -f '/bin/bash' ] \&\& sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd^
 		}" $(find package -type f -name "zzz-default-settings")
-[[ "$m" == "coolsnowwolf" ]] && sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' package/lean/*/*/*/index.htm
+[[ "$m" == "lean" ]] && sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' package/lean/*/*/*/index.htm
 [[ "$m" == "Lienol" && "$REPO_BRANCH" == "18.06" ]] && sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' feeds/luci/modules/luci-mod-admin-full/*/*/*/index.*tm
 
 clone_url() {
@@ -119,9 +111,9 @@ clone_url() {
 				git clone -q $x $k
 				[[ $? -eq "0" ]] && f="1"
 			fi
-			[[ $f -eq $p ]] && echo -e "替换完成 ${utick} ${x##*/}"
-			[[ $f -gt $p ]] && echo -e "拉取完成 ${uplus} ${x##*/}"
-			[[ $f -lt $p ]] && echo -e "替换失败 ${ucross} ${x##*/}"
+			[[ $f -eq $p ]] && echo -e "替换完成 ${ut} ${x##*/}"
+			[[ $f -gt $p ]] && echo -e "拉取完成 ${up} ${x##*/}"
+			[[ $f -lt $p ]] && echo -e "替换失败 ${uc} ${x##*/}"
 			unset -v p f k
 		fi
 	done
@@ -184,6 +176,7 @@ if [[ "$TARGET" == "x86" ]]; then
 	luci-app-poweroff
 	luci-app-qbittorrent
 	luci-app-smartdns
+	luci-app-unblockmusic
 	ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2
 	#subversion-client
 
@@ -294,7 +287,7 @@ fi
 if [[ "$DEVICE_NAME" == "phicomm_k2p" ]]; then
 	sed -i "s/OpenWrt/OpenWrt/" $config_generate
 else
-	[[ "$DEVICE_NAME" == "d-team_newifi-d2" ]] && sed -i "s/192.168.1.1/192.168.2.1/" $config_generate; _packages "luci-app-unblockmusic"
+	[[ "$DEVICE_NAME" == "d-team_newifi-d2" ]] && sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	[[ "$DEVICE_NAME" == "asus_rt-n16" ]] && {
 	sed -i "s/192.168.1.1/192.168.2.130/" $config_generate
 	#_packages "
@@ -304,6 +297,7 @@ else
 	#luci-app-qbittorrent
 	#luci-app-smartdns
 	#ariang lsusb screen
+	#luci-app-unblockmusic
 	#"
 	}
 	clone_url "
@@ -348,9 +342,9 @@ echo "BUILD_NPROC=7" >>$GITHUB_ENV
 [[ "$TARGET" == "brcm47xx" ]] && echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV && echo "DEVICE_NAME=Asus-RT-N16" >>$GITHUB_ENV
 if [[ "$TARGET" == "x86" ]]; then
 	echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
-	echo -e "当前的机型${cc} x86_64${cend}"
+	echo -e "当前的机型${cc} x86_64${ce}"
 else
-	echo -e "当前的机型${cc} $DEVICE_NAME${cend}"
+	echo -e "当前的机型${cc} $DEVICE_NAME${ce}"
 fi
 
-echo -e "${cg}脚本运行完成${cend}"
+echo -e "${cg}脚本运行完成${ce}"
