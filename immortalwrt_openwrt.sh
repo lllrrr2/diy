@@ -21,8 +21,8 @@ ugrc="\e[37m\U25cf\e[0m" && ulgrcc="\e[97m\U25cf\e[0m" # [u]nicode[gr]ey[c]ircle
 cdef="\e[39m"			# [c]olor[def]ault
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
-# REPO_BRANCH="openwrt-21.02"
-REPO_BRANCH="openwrt-18.06"
+REPO_BRANCH="openwrt-21.02"
+# REPO_BRANCH="openwrt-18.06"
 # REPO_BRANCH="openwrt-18.06-dev"
 # REPO_BRANCH="openwrt-18.06-k5.4"
 
@@ -35,12 +35,12 @@ cd openwrt || exit
 
 cat > .config <<-EOF
 	## target
-	# CONFIG_TARGET_x86=y
-	# CONFIG_TARGET_x86_64=y
-	# CONFIG_TARGET_ROOTFS_PARTSIZE=900
-	CONFIG_TARGET_ramips=y
-	CONFIG_TARGET_ramips_mt7621=y
-	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	CONFIG_TARGET_x86=y
+	CONFIG_TARGET_x86_64=y
+	CONFIG_TARGET_ROOTFS_PARTSIZE=900
+	# CONFIG_TARGET_ramips=y
+	# CONFIG_TARGET_ramips_mt7621=y
+	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	# CONFIG_TARGET_armvirt=y
 	# CONFIG_TARGET_armvirt_64=y
