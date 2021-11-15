@@ -93,7 +93,7 @@ sed -i "{
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua\n[ -f '/bin/bash' ] \&\& sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd^
 		}" $(find package -type f -name "zzz-default-settings")
 [[ "$m" == "lean" ]] && sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' package/lean/*/*/*/index.htm
-[[ "$m" == "Lienol" && "$REPO_BRANCH" == "18.06" ]] && sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' feeds/luci/modules/luci-mod-admin-full/*/*/*/index.*tm
+[[ "$m" == "Lienol" && "$REPO_BRANCH" == "18.06" ]] && sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' feeds/luci/modules/luci-mod-admin-full/*/*/*/index.*
 
 clone_url() {
 	for x in $@; do
@@ -143,6 +143,7 @@ clone_url "
 	https://github.com/hong0980/build/trunk/luci-app-poweroff
 	https://github.com/hong0980/build/trunk/luci-app-dockerman
 	https://github.com/hong0980/build/trunk/luci-app-filebrowser
+	https://github.com/hong0980/build/trunk/luci-app-qbittorrent
 	https://github.com/hong0980/build/trunk/luci-app-softwarecenter
 	https://github.com/hong0980/build/trunk/luci-app-rebootschedule
 	https://github.com/hong0980/build/trunk/luci-app-cowb-speedlimit
@@ -156,9 +157,9 @@ clone_url "
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
 sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' package/A/{helloworld/*/*/*/*/deny.list,openwrt-passwall/luci-app-passwall/*/*/*/*/*/direct_host} -i
 
-[[ "$REPO_URL" == "https://github.com/Lienol/openwrt" ]] && {
+[[ "$m" == "Lienol" ]] && {
 	clone_url "
-	#https://github.com/coolsnowwolf/packages/trunk/utils/parted
+	https://github.com/coolsnowwolf/packages/trunk/utils/parted
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/redsocks2
 	https://github.com/coolsnowwolf/lede/trunk/package/network/services/hostapd
 	#https://github.com/openwrt/routing/branches/openwrt-19.07/batman-adv
@@ -339,12 +340,12 @@ echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 # echo "UPLOAD_WETRANSFER=true" >> $GITHUB_ENV
 echo "BUILD_NPROC=7" >>$GITHUB_ENV
 [[ "$TARGET" == "ramips" ]] && echo "FIRMWARE_TYPE=sysupgrade" >>$GITHUB_ENV
-[[ "$TARGET" == "brcm47xx" ]] && echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV && echo "DEVICE_NAME=Asus-RT-N16" >>$GITHUB_ENV
+[[ "$TARGET" == "bcm47xx" ]] && echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV && echo "DEVICE_NAME=Asus-RT-N16" >>$GITHUB_ENV
 if [[ "$TARGET" == "x86" ]]; then
 	echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
-	echo -e "当前的机型${cc} x86_64${ce}"
+	echo -e "当前的机型${cc} $m-x86_64${ce}"
 else
-	echo -e "当前的机型${cc} $DEVICE_NAME${ce}"
+	echo -e "当前的机型${cc} $m-$DEVICE_NAME${ce}"
 fi
 
 echo -e "${cg}脚本运行完成${ce}"

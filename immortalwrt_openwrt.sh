@@ -128,7 +128,7 @@ clone_url() {
 		elif [[ "$(echo $x | grep -v "^#" | grep -E "helloworld|passwall|build")" ]]; then
 			for w in $x; do
 				if git clone -q $w ../${w##*/}; then
-					for x in `ls -F ../${w##*/} | grep "/$" | sed 's|/$||' | grep -Ev 'kernel|*rrent|*pulimit|*dump|*info|*dtest|*Deny|*dog|*cowbb*'`; do
+					for x in `ls -F ../${w##*/} | grep "/$" | sed 's|/$||' | grep -Ev 'kernel|*pulimit|*dump|*info|*dtest|*Deny|*dog|*cowbb*'`; do
 						if [[ "$x" && -d ../${w##*/}/$x ]]; then
 							g=$(find . -maxdepth 4 -type d -name $x)
 							if ([[ -d "$g" ]] && rm -rf $g); then
@@ -303,7 +303,7 @@ sed -e '$a\pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' feeds
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qttools
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qBittorrent
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/rblibtorrent
-	https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-qbittorrent
+	#https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-qbittorrent
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qBittorrent-static
 	"
 	[[ -d package/A/qtbase ]] && rm -rf feeds/packages/libs/qt5
@@ -379,9 +379,9 @@ echo "BUILD_NPROC=7" >>$GITHUB_ENV
 [[ "$TARGET" == "brcm47xx" ]] && echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV && echo "DEVICE_NAME=Asus-RT-N16" >>$GITHUB_ENV
 if [[ "$TARGET" == "x86" ]]; then
 	echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
-	echo -e "当前的机型${cc} x86_64${ce}"
+	echo -e "当前的机型${cc} $m-x86_64${ce}"
 else
-	echo -e "当前的机型${cc} $DEVICE_NAME${ce}"
+	echo -e "当前的机型${cc} $m-$DEVICE_NAME${ce}"
 fi
 
 echo -e "${cg}脚本运行完成${ce}"
