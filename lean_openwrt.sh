@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # set -x
 [[ x$REPO_FLODER = x ]] && \
-(REPO_FLODER="openwrt" && echo "REPO_FLODER=openwrt" >>$GITHUB_ENV)
+(REPO_FLODER="lede" && echo "REPO_FLODER=lede" >>$GITHUB_ENV)
 
 # shopt -s extglob expand_aliases
 # shopt -os emacs histexpand history monitor
@@ -73,21 +73,52 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds install -a 1>/dev/null 2>&1
 status
 
-cat > .config <<-EOF
-	## target
+case $TARGET_DEVICE in
+	x86_64)
+	cat >.config<<-EOF
 	CONFIG_TARGET_x86=y
 	CONFIG_TARGET_x86_64=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=800
-	# CONFIG_TARGET_ramips=y
-	# CONFIG_TARGET_ramips_mt7621=y
-	# CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
-	# CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
-	# CONFIG_TARGET_armvirt=y
-	# CONFIG_TARGET_armvirt_64=y
-	# CONFIG_TARGET_armvirt_64_Default=y
-	# CONFIG_TARGET_bcm47xx=y
-	# CONFIG_TARGET_bcm47xx_mips74k=y
-	# CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
+	CONFIG_TARGET_ROOTFS_PARTSIZE=1000
+	EOF
+	;;
+	newifi-d2)
+	cat >.config<<-EOF
+	CONFIG_TARGET_ramips=y
+	CONFIG_TARGET_ramips_mt7621=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	EOF
+	;;
+	phicomm_k2p)
+	cat >.config<<-EOF
+	CONFIG_TARGET_ramips=y
+	CONFIG_TARGET_ramips_mt7621=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
+	EOF
+	;;
+	asus_rt-n16)
+	cat >.config<<-EOF
+	CONFIG_TARGET_bcm47xx=y
+	CONFIG_TARGET_bcm47xx_mips74k=y
+	CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
+	EOF
+	;;
+	armvirt_64_Default)
+	cat >.config<<-EOF
+	CONFIG_TARGET_armvirt=y
+	CONFIG_TARGET_armvirt_64=y
+	CONFIG_TARGET_armvirt_64_Default=y
+	EOF
+	;;
+	*)
+	cat >.config<<-EOF
+	CONFIG_TARGET_x86=y
+	CONFIG_TARGET_x86_64=y
+	CONFIG_TARGET_ROOTFS_PARTSIZE=900
+	EOF
+	;;
+esac
+
+cat >> .config <<-EOF
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 	## luci app
@@ -234,7 +265,7 @@ tee -a {$(find package/ feeds/luci/applications/ -type d -name "luci-app-vssr")/
 	"
 }
 
-[[ "$DEVICE_NAME" != "phicomm_k2p" ]] && {
+[[ "$TARGET_DEVICE" != "phicomm_k2p" ]] && {
 	clone_url "
 	https://github.com/hong0980/build/trunk/aria2
 	https://github.com/hong0980/build/trunk/ariang
@@ -270,25 +301,23 @@ x=$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/de
 
 case $TARGET in
 "ramips")
-	echo "FIRMWARE_TYPE=sysupgrade" >>$GITHUB_ENV
+	FIRMWARE_TYPE="sysupgrade"
 	if [ "$DEVICE_NAME" = "d-team_newifi-d2" ]; then
 		DEVICE_NAME="Newifi-D2"
 		sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	fi
 	if [ "$DEVICE_NAME" = "phicomm_k2p" ]; then
 		DEVICE_NAME="Phicomm-K2P"
-		sed -i '/openclash/d' .config
-		sed -i 's/O2/Os/g' include/target.mk
 	fi
 	;;
 "bcm47xx")
 	DEVICE_NAME="Asus-RT-N16"
-	echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV
+	FIRMWARE_TYPE="n16"
 	sed -i "s/192.168.1.1/192.168.2.130/" $config_generate
 	;;
 "x86")
 	DEVICE_NAME="x86_64"
-	echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
+	FIRMWARE_TYPE="combined"
 	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 	_packages "
 	luci-app-adbyby-plus
@@ -355,8 +384,8 @@ case $TARGET in
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.3.9_v2.0.5/' $(find package/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	;;
 "armvirt")
-	DEVICE_NAME="Phicomm_n1"
-	echo "FIRMWARE_TYPE=armvirt-64-default" >>$GITHUB_ENV
+	DEVICE_NAME="armvirt-64-default"
+	FIRMWARE_TYPE="armvirt-64-default"
 	sed -i '/easymesh/d' .config
 	sed -i "s/192.168.1.1/192.168.2.110/" $config_generate
 	# clone_url "https://github.com/tuanqing/install-program" && rm -rf package/A/install-program/tools
@@ -403,22 +432,23 @@ case $TARGET in
 	;;
 esac
 
-echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo -e "$(color cy 当前的机型) $(color cb $m-${DEVICE_NAME})"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
-# echo "FREE_UP_DISK=true" >>$GITHUB_ENV #增加容量
-# echo "SSH_ACTIONS=true" >> $GITHUB_ENV #SSH后台
-# echo "UPLOAD_PACKAGES=true" >> $GITHUB_ENV
-# echo "UPLOAD_SYSUPGRADE=true" >> $GITHUB_ENV
-# echo "UPLOAD_BIN_DIR=true" >> $GITHUB_ENV
-# echo "UPLOAD_FIRMWARE=true" >> $GITHUB_ENV
-echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
-# echo "UPLOAD_WETRANSFER=true" >> $GITHUB_ENV
 echo "BUILD_NPROC=$(($(nproc)+2))" >>$GITHUB_ENV
+# echo "FREE_UP_DISK=true" >>$GITHUB_ENV #增加容量
+# echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
+# echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
+# echo "UPLOAD_SYSUPGRADE=false" >>$GITHUB_ENV
+# echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
+# echo "UPLOAD_FIRMWARE=false" >>$GITHUB_ENV
+echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
+# echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
 echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
+echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"

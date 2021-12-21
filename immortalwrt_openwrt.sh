@@ -112,9 +112,9 @@ clone_url() {
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
 # REPO_BRANCH="openwrt-21.02"
-REPO_BRANCH="openwrt-18.06"
+# REPO_BRANCH="openwrt-18.06"
 # REPO_BRANCH="openwrt-18.06-dev"
-# REPO_BRANCH="openwrt-18.06-k5.4"
+REPO_BRANCH="openwrt-18.06-k5.4"
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 
 echo -e "$(color cy '拉取源码....')\c"
@@ -138,7 +138,7 @@ case $TARGET_DEVICE in
 	cat >.config<<-EOF
 	CONFIG_TARGET_x86=y
 	CONFIG_TARGET_x86_64=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=1000
+	CONFIG_TARGET_ROOTFS_PARTSIZE=800
 	EOF
 	;;
 	newifi-d2)
@@ -217,7 +217,6 @@ cat >>.config<<-EOF
 	CONFIG_DEFAULT_SETTINGS_OPTIMIZE_FOR_CHINESE=y
 EOF
 
-m=$(awk -F- '{print $NF}' <<<$REPO_BRANCH)
 config_generate="package/base-files/files/bin/config_generate"
 color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
@@ -272,7 +271,6 @@ tee -a {$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr"
 	luci-app-control-weburl
 	luci-app-diskman
 	luci-app-hd-idle
-	luci-app-kickass
 	luci-app-pushbot
 	luci-app-softwarecenter
 	luci-app-transmission
@@ -289,7 +287,7 @@ tee -a {$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr"
 	sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
 	sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
 } || {
-	clone_url "https://github.com/openwrt/routing/branches/openwrt-19.07/batman-adv"
+	# clone_url "https://github.com/openwrt/routing/branches/openwrt-19.07/batman-adv"
 	[[ $TARGET_DEVICE == phicomm_k2p ]] || _packages "luci-app-smartinfo"
 	for d in $(find feeds/ package/ -type f -name "index.htm"); do
 		if grep -q "Kernel Version" $d; then
@@ -302,7 +300,7 @@ tee -a {$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr"
 }
 
 for p in $(find package/A/ feeds/luci/applications/ -maxdepth 2 -type d -name "po" 2>/dev/null); do
-	if [[ "$m" == "21.02" ]]; then
+	if [[ "${REPO_BRANCH#*-}" == "21.02" ]]; then
 		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
 			ln -s zh-cn $p/zh_Hans 2>/dev/null
 			printf "%-13s %-33s %s %s %s\n" \
@@ -323,31 +321,29 @@ x=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/
 case $TARGET_DEVICE in
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
-	echo "FIRMWARE_TYPE=sysupgrade" >>$GITHUB_ENV
+	FIRMWARE_TYPE="sysupgrade"
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
-	echo "FIRMWARE_TYPE=sysupgrade" >>$GITHUB_ENV
-	sed -i '/openclash/d' .config
-	sed -i 's/O2/Os/g' include/target.mk
+	FIRMWARE_TYPE="sysupgrade"
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
-	echo "FIRMWARE_TYPE=n16" >>$GITHUB_ENV
+	FIRMWARE_TYPE="n16"
 	sed -i "s/192.168.1.1/192.168.2.130/" $config_generate
 	;;
 "x86_64")
 	DEVICE_NAME="x86_64"
-	echo "FIRMWARE_TYPE=squashfs" >>$GITHUB_ENV
+	FIRMWARE_TYPE="combined"
 	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 	_packages "
 	luci-app-adbyby-plus
-	luci-app-adguardhome
+	#luci-app-adguardhome
 	luci-app-amule
 	luci-app-dockerman
 	luci-app-netdata
-	luci-app-jd-dailybonus
+	#luci-app-jd-dailybonus
 	luci-app-poweroff
 	luci-app-qbittorrent
 	luci-app-smartdns
@@ -387,11 +383,11 @@ case $TARGET_DEVICE in
 	# wget -qO feeds/luci/applications/luci-app-qbittorrent/Makefile raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06/applications/luci-app-qbittorrent/Makefile
 	# sed -i 's/-Enhanced-Edition/-static/' feeds/luci/applications/luci-app-qbittorrent/Makefile
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.3.9_v2.0.5/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
-	wget -qO feeds/packages/lang/node-yarn/Makefile raw.githubusercontent.com/coolsnowwolf/packages/master/lang/node-yarn/Makefile
+	# wget -qO feeds/packages/lang/node-yarn/Makefile raw.githubusercontent.com/coolsnowwolf/packages/master/lang/node-yarn/Makefile
 	;;
 "armvirt_64_Default")
-	DEVICE_NAME="Phicomm_n1"
-	echo "FIRMWARE_TYPE=armvirt-64-default" >>$GITHUB_ENV
+	DEVICE_NAME="armvirt-64-default"
+	FIRMWARE_TYPE="armvirt-64-default"
 	sed -i '/easymesh/d' .config
 	sed -i "s/192.168.1.1/192.168.2.110/" $config_generate
 	# clone_url "https://github.com/tuanqing/install-program" && rm -rf package/A/install-program/tools
@@ -405,11 +401,9 @@ case $TARGET_DEVICE in
 	luci-app-qbittorrent mkf2fs ntfs-3g parted pv python3 resize2fs tune2fs unzip
 	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkf"
 
-	# wget -qO feeds/luci/applications/luci-app-qbittorrent/Makefile https://raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06/applications/luci-app-qbittorrent/Makefile
-	# sed -i 's/-Enhanced-Edition//' feeds/luci/applications/luci-app-qbittorrent/Makefile
-	sed -i 's/@arm/@TARGET_armvirt_64/g' $(find . -type d -name "luci-app-cpufreq")/Makefile
 	sed -i 's/default 160/default 600/' config/Config-images.in
-	sed -e 's/services/system/; s/00//' $(find . -type d -name "luci-app-cpufreq")/luasrc/controller/cpufreq.lua -i
+	sed -i 's/@arm/@TARGET_armvirt_64/g' $(find  package/A/ feeds/ -type d -name "luci-app-cpufreq")/Makefile
+	sed -e 's/services/system/; s/00//' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/luasrc/controller/cpufreq.lua -i
 	[ -d ../opt/openwrt_packit ] && {
 		sed -i '{
 		s|mv |mv -v |
@@ -438,22 +432,23 @@ case $TARGET_DEVICE in
 	;;
 esac
 
-echo -e "$(color cy 当前的机型) $(color cb $m-${DEVICE_NAME})"
+echo -e "$(color cy 当前的机型) $(color cb ${REPO_BRANCH#*-}-${DEVICE_NAME})"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
+echo "BUILD_NPROC=$(($(nproc)+2))" >>$GITHUB_ENV
 # echo "FREE_UP_DISK=true" >>$GITHUB_ENV #增加容量
 # echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
-# echo "UPLOAD_PACKAGES=true" >>$GITHUB_ENV
-# echo "UPLOAD_SYSUPGRADE=true" >>$GITHUB_ENV
-# echo "UPLOAD_BIN_DIR=true" >>$GITHUB_ENV
-# echo "UPLOAD_FIRMWARE=true" >>$GITHUB_ENV
-# echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
-# echo "UPLOAD_WETRANSFER=false" >>$GITHUB_ENV
-echo "BUILD_NPROC=$(($(nproc)+2))" >>$GITHUB_ENV
-echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
+# echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
+# echo "UPLOAD_SYSUPGRADE=false" >>$GITHUB_ENV
+# echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
+# echo "UPLOAD_FIRMWARE=false" >>$GITHUB_ENV
+echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
+# echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
 echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
+echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
