@@ -74,35 +74,35 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 status
 
 case $TARGET_DEVICE in
-	x86_64)
+	"x86_64")
 	cat >.config<<-EOF
 	CONFIG_TARGET_x86=y
 	CONFIG_TARGET_x86_64=y
 	CONFIG_TARGET_ROOTFS_PARTSIZE=1000
 	EOF
 	;;
-	newifi-d2)
+	"newifi-d2")
 	cat >.config<<-EOF
 	CONFIG_TARGET_ramips=y
 	CONFIG_TARGET_ramips_mt7621=y
 	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	EOF
 	;;
-	phicomm_k2p)
+	"phicomm_k2p")
 	cat >.config<<-EOF
 	CONFIG_TARGET_ramips=y
 	CONFIG_TARGET_ramips_mt7621=y
 	CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	EOF
 	;;
-	asus_rt-n16)
+	"asus_rt-n16")
 	cat >.config<<-EOF
 	CONFIG_TARGET_bcm47xx=y
 	CONFIG_TARGET_bcm47xx_mips74k=y
 	CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
 	EOF
 	;;
-	armvirt_64_Default)
+	"armvirt_64_Default")
 	cat >.config<<-EOF
 	CONFIG_TARGET_armvirt=y
 	CONFIG_TARGET_armvirt_64=y

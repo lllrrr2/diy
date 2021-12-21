@@ -111,10 +111,11 @@ clone_url() {
 }
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
-# REPO_BRANCH="openwrt-21.02"
+# REPO_BRANCH="master" #rockchip
 # REPO_BRANCH="openwrt-18.06"
 # REPO_BRANCH="openwrt-18.06-dev"
-REPO_BRANCH="openwrt-18.06-k5.4"
+REPO_BRANCH="openwrt-18.06-k5.4" #rockchip
+# REPO_BRANCH="openwrt-21.02" #rockchip
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 
 echo -e "$(color cy '拉取源码....')\c"
@@ -134,35 +135,35 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 status
 
 case $TARGET_DEVICE in
-	x86_64)
+	"x86_64")
 	cat >.config<<-EOF
 	CONFIG_TARGET_x86=y
 	CONFIG_TARGET_x86_64=y
 	CONFIG_TARGET_ROOTFS_PARTSIZE=800
 	EOF
 	;;
-	newifi-d2)
+	"newifi-d2")
 	cat >.config<<-EOF
 	CONFIG_TARGET_ramips=y
 	CONFIG_TARGET_ramips_mt7621=y
 	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 	EOF
 	;;
-	phicomm_k2p)
+	"phicomm_k2p")
 	cat >.config<<-EOF
 	CONFIG_TARGET_ramips=y
 	CONFIG_TARGET_ramips_mt7621=y
 	CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 	EOF
 	;;
-	asus_rt-n16)
+	"asus_rt-n16")
 	cat >.config<<-EOF
 	CONFIG_TARGET_brcm47xx=y
 	CONFIG_TARGET_brcm47xx_mips74k=y
 	CONFIG_TARGET_brcm47xx_mips74k_DEVICE_asus_rt-n16=y
 	EOF
 	;;
-	armvirt_64_Default)
+	"armvirt_64_Default")
 	cat >.config<<-EOF
 	CONFIG_TARGET_armvirt=y
 	CONFIG_TARGET_armvirt_64=y
@@ -402,7 +403,7 @@ case $TARGET_DEVICE in
 	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkf"
 
 	sed -i 's/default 160/default 600/' config/Config-images.in
-	sed -i 's/@arm/@TARGET_armvirt_64/g' $(find  package/A/ feeds/ -type d -name "luci-app-cpufreq")/Makefile
+	sed -i 's/@arm/@TARGET_armvirt_64/g' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/Makefile
 	sed -e 's/services/system/; s/00//' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/luasrc/controller/cpufreq.lua -i
 	[ -d ../opt/openwrt_packit ] && {
 		sed -i '{
