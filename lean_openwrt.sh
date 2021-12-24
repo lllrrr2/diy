@@ -134,7 +134,6 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-app-filetransfer=y
 	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-oaf=y
-	CONFIG_PACKAGE_luci-app-openclash=y
 	CONFIG_PACKAGE_luci-app-passwall=y
 	CONFIG_PACKAGE_luci-app-rebootschedule=y
 	CONFIG_PACKAGE_luci-app-ssr-plus=y
@@ -143,16 +142,15 @@ cat >> .config <<-EOF
 	## luci theme
 	CONFIG_PACKAGE_luci-theme-material=y
 	## remove
+	CONFIG_TARGET_IMAGES_GZIP=y
 	# CONFIG_VMDK_IMAGES is not set
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
 	# CONFIG_PACKAGE_luci-app-xlnetacc is not set
 	# CONFIG_PACKAGE_luci-app-uugamebooster is not set
-	## CONFIG_GRUB_EFI_IMAGES is not set
 	# Libraries
 	CONFIG_PACKAGE_patch=y
 	CONFIG_PACKAGE_diffutils=y
 	CONFIG_PACKAGE_default-settings=y
-	CONFIG_TARGET_IMAGES_GZIP=y
 EOF
 
 m=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)
@@ -284,6 +282,7 @@ tee -a {$(find package/ feeds/luci/applications/ -type d -name "luci-app-vssr")/
 	luci-app-aria2
 	luci-app-cifs-mount
 	luci-app-control-weburl
+	luci-app-openclash
 	luci-app-diskman
 	luci-app-hd-idle
 	luci-app-kickass
@@ -317,7 +316,7 @@ case $TARGET in
 	;;
 "x86")
 	DEVICE_NAME="x86_64"
-	FIRMWARE_TYPE="combined"
+	FIRMWARE_TYPE="squashfs-combined"
 	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 	_packages "
 	luci-app-adbyby-plus
@@ -326,7 +325,7 @@ case $TARGET in
 	luci-app-dockerman
 	luci-app-netdata
 	luci-app-openclash
-	luci-app-jd-dailybonus
+	#luci-app-jd-dailybonus
 	luci-app-poweroff
 	luci-app-qbittorrent
 	luci-app-smartdns
@@ -438,8 +437,6 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
-echo "BUILD_NPROC=$(($(nproc)+2))" >>$GITHUB_ENV
-# echo "FREE_UP_DISK=true" >>$GITHUB_ENV #增加容量
 # echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
 # echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=false" >>$GITHUB_ENV
@@ -450,5 +447,7 @@ echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
+echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
+echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"

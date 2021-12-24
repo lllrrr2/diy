@@ -113,8 +113,8 @@ clone_url() {
 REPO_URL=https://github.com/immortalwrt/immortalwrt
 # REPO_BRANCH="master" #rockchip
 # REPO_BRANCH="openwrt-18.06"
-# REPO_BRANCH="openwrt-18.06-dev"
-REPO_BRANCH="openwrt-18.06-k5.4" #rockchip
+REPO_BRANCH="openwrt-18.06-dev"
+# REPO_BRANCH="openwrt-18.06-k5.4" #rockchip
 # REPO_BRANCH="openwrt-21.02" #rockchip
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 
@@ -134,7 +134,8 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds install -a 1>/dev/null 2>&1
 status
 
-case $TARGET_DEVICE in
+: >.config
+case "$TARGET_DEVICE" in
 	"x86_64")
 	cat >.config<<-EOF
 	CONFIG_TARGET_x86=y
@@ -157,24 +158,25 @@ case $TARGET_DEVICE in
 	EOF
 	;;
 	"asus_rt-n16")
-	cat >.config<<-EOF
-	CONFIG_TARGET_brcm47xx=y
-	CONFIG_TARGET_brcm47xx_mips74k=y
-	CONFIG_TARGET_brcm47xx_mips74k_DEVICE_asus_rt-n16=y
-	EOF
+	if [[ "${REPO_BRANCH#*-}" = "18.06" || "${REPO_BRANCH#*-}" = "18.06-dev" ]]; then
+		cat >.config<<-EOF
+		CONFIG_TARGET_brcm47xx=y
+		CONFIG_TARGET_brcm47xx_mips74k=y
+		CONFIG_TARGET_brcm47xx_mips74k_DEVICE_asus_rt-n16=y
+		EOF
+	else
+		cat >.config<<-EOF
+		CONFIG_TARGET_bcm47xx=y
+		CONFIG_TARGET_bcm47xx_mips74k=y
+		CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
+		EOF
+	fi
 	;;
 	"armvirt_64_Default")
 	cat >.config<<-EOF
 	CONFIG_TARGET_armvirt=y
 	CONFIG_TARGET_armvirt_64=y
 	CONFIG_TARGET_armvirt_64_Default=y
-	EOF
-	;;
-	*)
-	cat >.config<<-EOF
-	CONFIG_TARGET_x86=y
-	CONFIG_TARGET_x86_64=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=900
 	EOF
 	;;
 esac
@@ -195,15 +197,12 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-filetransfer=y
 	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-oaf=y
-	CONFIG_PACKAGE_luci-app-openclash=y
 	CONFIG_PACKAGE_luci-app-passwall=y
 	CONFIG_PACKAGE_luci-app-rebootschedule=y
 	CONFIG_PACKAGE_luci-app-ssr-plus=y
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-opkg=y
-	## luci theme
-	CONFIG_PACKAGE_luci-theme-material=y
 	## remove
 	# CONFIG_VMDK_IMAGES is not set
 	## CONFIG_GRUB_EFI_IMAGES is not set
@@ -278,6 +277,8 @@ tee -a {$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr"
 	luci-app-usb-printer
 	luci-app-vssr
 	luci-app-bypass
+	luci-app-openclash
+	luci-theme-material
 	"
 	trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile`
 	wget -qO feeds/packages/net/transmission/patches/tr$trv.patch raw.githubusercontent.com/hong0980/diy/master/files/transmission/tr$trv.patch
@@ -285,7 +286,7 @@ tee -a {$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr"
 }
 
 [[ "$REPO_BRANCH" == "openwrt-21.02" ]] && {
-	sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
+	# sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
 	sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
 } || {
 	# clone_url "https://github.com/openwrt/routing/branches/openwrt-19.07/batman-adv"
@@ -319,7 +320,7 @@ done
 x=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)
 [[ -f $x/Makefile ]] && sed -i 's/default y/default n/g' "$x/Makefile"
 
-case $TARGET_DEVICE in
+case "$TARGET_DEVICE" in
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
 	FIRMWARE_TYPE="sysupgrade"
@@ -336,7 +337,7 @@ case $TARGET_DEVICE in
 	;;
 "x86_64")
 	DEVICE_NAME="x86_64"
-	FIRMWARE_TYPE="combined"
+	FIRMWARE_TYPE="squashfs-combined"
 	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 	_packages "
 	luci-app-adbyby-plus
@@ -385,6 +386,7 @@ case $TARGET_DEVICE in
 	# sed -i 's/-Enhanced-Edition/-static/' feeds/luci/applications/luci-app-qbittorrent/Makefile
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.3.9_v2.0.5/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	# wget -qO feeds/packages/lang/node-yarn/Makefile raw.githubusercontent.com/coolsnowwolf/packages/master/lang/node-yarn/Makefile
+	# rm -rf feeds/luci/applications/luci-app-transmission
 	;;
 "armvirt_64_Default")
 	DEVICE_NAME="armvirt-64-default"
@@ -395,7 +397,7 @@ case $TARGET_DEVICE in
 	_packages "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
 	btrfs-progs cfdisk chattr curl dosfstools e2fsprogs f2fs-tools f2fsck fdisk getopt
 	hostpad-common htop install-program iperf3 kmod-brcmfmac kmod-brcmutil kmod-cfg80211
-	kmod-fs-exfat kmod-fs-ext4 kmod-fs-vfat kmod-mac80211 kmod-rt2800-usb kmod-usb-net
+	kmod-fs-ext4 kmod-fs-vfat kmod-mac80211 kmod-rt2800-usb kmod-usb-net
 	kmod-usb-net-asix-ax88179 kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 kmod-usb-storage
 	kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb2 kmod-usb3 lm-sensors losetup
 	lsattr lsblk lscpu lsscsi luci-app-adguardhome luci-app-cpufreq luci-app-dockerman
@@ -439,8 +441,6 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
-echo "BUILD_NPROC=$(($(nproc)+2))" >>$GITHUB_ENV
-# echo "FREE_UP_DISK=true" >>$GITHUB_ENV #增加容量
 # echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
 # echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=false" >>$GITHUB_ENV
@@ -451,5 +451,7 @@ echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
+echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
+[[ "$TARGET_DEVICE" = "newifi-d2" || "$TARGET_DEVICE" = "phicomm_k2p" ]] && echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
