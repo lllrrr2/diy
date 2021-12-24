@@ -113,8 +113,8 @@ clone_url() {
 REPO_URL=https://github.com/immortalwrt/immortalwrt
 # REPO_BRANCH="master" #rockchip
 # REPO_BRANCH="openwrt-18.06"
-REPO_BRANCH="openwrt-18.06-dev"
-# REPO_BRANCH="openwrt-18.06-k5.4" #rockchip
+# REPO_BRANCH="openwrt-18.06-dev"
+REPO_BRANCH="openwrt-18.06-k5.4" #rockchip
 # REPO_BRANCH="openwrt-21.02" #rockchip
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 
@@ -223,6 +223,7 @@ wget -qO package/base-files/files/etc/banner git.io/JoNK8
 sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-immortalwrt-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 sed -i "/IMG_PREFIX:/ {s/=/=Immortal-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
+sed -i 's/option dports.*/option enabled 2/' feeds/*/*/*/*/upnpd.config
 sed -i "s/ImmortalWrt/OpenWrt/" {$config_generate,include/version.mk}
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 sed -i "{
@@ -262,6 +263,7 @@ tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or
 
 echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
 tee -a {$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/*/*/*/status_top.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ssr-plus")/*/*/*/status.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")/*/*/*/status.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-passwall")/*/*/*/global/{status.htm,status2.htm}} >/dev/null
+sed -i 's/option dports.*/option dports 2/' feeds/luci/applications/luci-app-vssr/root/etc/config/vssr
 
 [[ $TARGET_DEVICE = phicomm_k2p ]] || {
 	_packages "
