@@ -167,11 +167,9 @@ sed -i "/IMG_PREFIX:/ {s/=/=$m-$REPO_BRANCH-\$(shell date +%m%d-%H%M -d +8hour)-
 sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 sed -i "{
-		/upnp/d
-		/banner/d
-		/openwrt_release/d
+		/upnp/d;/banner/d;/openwrt_release/d
 		s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua\n[ -f '/bin/bash' ] \&\& sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd^
+		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua
 		}" $(find package/ -type f -name "zzz-default-settings")
 
 [[ "$REPO_BRANCH" == "19.07" ]] || {

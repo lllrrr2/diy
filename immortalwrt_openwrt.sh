@@ -227,8 +227,7 @@ sed -i 's/option dports.*/option enabled 2/' feeds/*/*/*/*/upnpd.config
 sed -i "s/ImmortalWrt/OpenWrt/" {$config_generate,include/version.mk}
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 sed -i "{
-		/upnp/d
-		/banner/d
+		/upnp/d;/bash/d;/banner/d
 		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
 		}" $(find package/ -type f -name "*-default-settings")
@@ -242,7 +241,7 @@ clone_url "
 	#https://github.com/kiddin9/openwrt-packages
 	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/destan19/OpenAppFilter
-	https://github.com/jerrykuku/luci-app-vssr
+	https://github.com/jerrykuku/luci-app-vssr #bash
 	https://github.com/kiddin9/openwrt-bypass
 	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
@@ -253,7 +252,7 @@ clone_url "
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qBittorrent
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/rblibtorrent
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qBittorrent-static
-	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
+	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash #bash
 	https://github.com/lisaac/luci-lib-docker/trunk/collections/luci-lib-docker
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/luci-app-adbyby-plus
 "
