@@ -88,7 +88,7 @@ clone_url() {
 		else
 			for w in $(grep "^https" <<<$x); do
 				if git clone -q $w ../${w##*/}; then
-					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev 'kernel|*pulimit|*dump|*dtest|*Deny|*dog|*cowbb*'`; do
+					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*pulimit|*dump|*dtest|*Deny|*dog|*ding'`; do
 						g=$(find package/ feeds/ -maxdepth 3 -type d -name $x 2>/dev/null)
 						if ([[ -d "$g" ]] && rm -rf $g); then
 							k="$g"
@@ -330,6 +330,7 @@ case "$TARGET_DEVICE" in
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
 	FIRMWARE_TYPE="sysupgrade"
+	sed -i '/openclash/d;/vssr/d' .config
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"

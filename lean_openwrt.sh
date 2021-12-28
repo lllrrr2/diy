@@ -230,6 +230,7 @@ clone_url "
 	https://github.com/hong0980/build/trunk/luci-app-bridge
 	https://github.com/hong0980/build/trunk/luci-app-diskman
 	https://github.com/hong0980/build/trunk/luci-app-poweroff
+	https://github.com/hong0980/build/trunk/luci-app-cowbping
 	https://github.com/hong0980/build/trunk/luci-app-dockerman
 	https://github.com/hong0980/build/trunk/luci-app-smartinfo
 	https://github.com/hong0980/build/trunk/luci-app-filebrowser
