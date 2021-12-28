@@ -325,12 +325,12 @@ case "$TARGET_DEVICE" in
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
 	FIRMWARE_TYPE="sysupgrade"
+	sed -i '/openclash/d;/vssr/d' .config
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
 	FIRMWARE_TYPE="sysupgrade"
-	sed -i '/openclash/d;/vssr/d' .config
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
