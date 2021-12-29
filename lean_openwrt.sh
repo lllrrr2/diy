@@ -440,7 +440,7 @@ status
 # echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
 # echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=false" >>$GITHUB_ENV
-# echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
+echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
 # echo "UPLOAD_FIRMWARE=false" >>$GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 # echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
