@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # set -x
+sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+timedatectl
 [[ x$REPO_FLODER = x ]] && \
 (REPO_FLODER="lede" && echo "REPO_FLODER=lede" >>$GITHUB_ENV)
 

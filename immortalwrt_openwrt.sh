@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # set -x
 sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-
+timedatectl
 [[ x$REPO_FLODER = x ]] && \
 (REPO_FLODER="openwrt" && echo "REPO_FLODER=openwrt" >>$GITHUB_ENV)
 
@@ -350,8 +350,6 @@ case "$TARGET_DEVICE" in
 	luci-app-dockerman
 	luci-app-netdata
 	#luci-app-jd-dailybonus
-	luci-theme-argon
-	luci-app-argon-config
 	luci-app-poweroff
 	luci-app-qbittorrent
 	luci-app-smartdns
