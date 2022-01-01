@@ -242,8 +242,6 @@ clone_url "
 	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/destan19/OpenAppFilter
 	https://github.com/jerrykuku/luci-app-vssr #bash
-	https://github.com/jerrykuku/luci-theme-argon
-	https://github.com/jerrykuku/luci-app-argon-config
 	https://github.com/kiddin9/openwrt-bypass
 	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
