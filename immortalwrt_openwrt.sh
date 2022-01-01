@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
 # set -x
-echo "当前系统的时间和时区"
-timedatectl
-echo "可用的时间和时区"
-timedatectl list-timezones
-sudo timedatectl set-timezone Asia/Shanghai
-echo "timedatectl set-timezone Asia/Shanghai 修改后系统的时间和时区"
-timedatectl
 sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-echo "ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime修改后系统的时间和时区"
-timedatectl
 
 [[ x$REPO_FLODER = x ]] && \
 (REPO_FLODER="openwrt" && echo "REPO_FLODER=openwrt" >>$GITHUB_ENV)
