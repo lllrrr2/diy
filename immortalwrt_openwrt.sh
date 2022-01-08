@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 # set -x
 sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+echo $TERM
+echo $PS1
+echo -en "\x1b[70G[ " && echo -e "\033[1;33mOK\033[0;39m ]"
+
+curl -sSOL https://git.io/bpm  && chmod 755 bpm  && sudo mv bpm  /usr/bin/
+curl -sSOL https://git.io/ansi && chmod 755 ansi && sudo mv ansi /usr/bin/
+export ANSI_FORCE_SUPPORT=anything
+ansi --color-table
+ansi --color-codes
+echo -ne "pp" && ansi -n --cuf=40 "[ " && echo -e "\033[1;33mOK\033[0;39m ]"
+printf "\x1b[70C[ " && printf  "\x1b[1;33mOK\x1b[0;39m ]\n"
 [[ x$REPO_FLODER = x ]] && \
 (REPO_FLODER="openwrt" && echo "REPO_FLODER=openwrt" >>$GITHUB_ENV)
-
-# shopt -s extglob expand_aliases
-# shopt -os emacs histexpand history monitor
-# echo -E "1)字符后移70$(echo -en "\033[70G[ " && echo -e "ok ]")"
-# echo -E "2)字符后移70$(printf "\033[70G[ ok ]\n")"
 
 color() {
 	case $1 in
