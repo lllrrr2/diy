@@ -322,7 +322,7 @@ case "$TARGET_DEVICE" in
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
 	FIRMWARE_TYPE="sysupgrade"
-	# sed -i '/openclash/d;/vssr/d' .config
+	sed -i '/openclash/d' .config
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
 "phicomm_k2p")
@@ -377,24 +377,18 @@ case "$TARGET_DEVICE" in
 	kmod-mmc-spi kmod-r8168 kmod-rtl8xxxu kmod-sdhci
 	kmod-tg3 lm-sensors-detect qemu-ga snmpd
 	"
-	# [[ $(awk -F= '/PKG_VERSION:/{print $2}' feeds/*/*/netdata/Makefile) == "1.30.1" ]] && {
-		# rm feeds/*/*/netdata/patches/*web*
-		# wget -qO feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch git.io/JoNoj
-	# }
 	# wget -qO feeds/luci/applications/luci-app-qbittorrent/Makefile raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06/applications/luci-app-qbittorrent/Makefile
 	# sed -i 's/-Enhanced-Edition/-static/' feeds/luci/applications/luci-app-qbittorrent/Makefile
-	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.3.9_v2.0.5/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
-	# wget -qO feeds/packages/lang/node-yarn/Makefile raw.githubusercontent.com/coolsnowwolf/packages/master/lang/node-yarn/Makefile
+	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.0_v2.0.5/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	# rm -rf feeds/luci/applications/luci-app-transmission
-	wget -qO package/base-files/files/bin/bpm https://git.io/bpm
-	wget -qO package/base-files/files/bin/ansi https://git.io/ansi
+	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
+	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	;;
 "armvirt_64_Default")
 	DEVICE_NAME="armvirt-64-default"
 	FIRMWARE_TYPE="armvirt-64-default"
 	sed -i '/easymesh/d' .config
 	sed -i "s/192.168.1.1/192.168.2.110/" $config_generate
-	# clone_url "https://github.com/tuanqing/install-program" && rm -rf package/A/install-program/tools
 	_packages "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
 	btrfs-progs cfdisk chattr curl dosfstools e2fsprogs f2fs-tools f2fsck fdisk getopt
 	hostpad-common htop install-program iperf3 kmod-brcmfmac kmod-brcmutil kmod-cfg80211
