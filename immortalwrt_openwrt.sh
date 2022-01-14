@@ -324,6 +324,7 @@ case "$TARGET_DEVICE" in
 	FIRMWARE_TYPE="sysupgrade"
 	sed -i '/openclash/d' .config
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
+	echo 'CONFIG_PACKAGE_deluge-ui-web=m' >> .config
 	;;
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
