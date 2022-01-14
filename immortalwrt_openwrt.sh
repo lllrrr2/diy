@@ -145,6 +145,8 @@ case "$TARGET_DEVICE" in
 	CONFIG_TARGET_ramips=y
 	CONFIG_TARGET_ramips_mt7621=y
 	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+	CONFIG_PACKAGE_deluge-ui-web=m
+	CONFIG_PACKAGE_deluge=m
 	EOF
 	;;
 	"phicomm_k2p")
@@ -324,7 +326,6 @@ case "$TARGET_DEVICE" in
 	FIRMWARE_TYPE="sysupgrade"
 	sed -i '/openclash/d' .config
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
-	echo 'CONFIG_PACKAGE_deluge-ui-web=m' >> .config
 	;;
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
