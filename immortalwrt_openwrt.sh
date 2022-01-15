@@ -214,6 +214,8 @@ cat >>.config<<-EOF
 	CONFIG_LUCI_LANG_en=y
 	CONFIG_LUCI_LANG_zh_Hans=y
 	CONFIG_DEFAULT_SETTINGS_OPTIMIZE_FOR_CHINESE=y
+	CONFIG_PACKAGE_deluge-ui-web=y
+	CONFIG_PACKAGE_deluge=y
 EOF
 
 config_generate="package/base-files/files/bin/config_generate"
