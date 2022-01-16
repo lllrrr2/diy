@@ -145,8 +145,6 @@ case "$TARGET_DEVICE" in
 	CONFIG_TARGET_ramips=y
 	CONFIG_TARGET_ramips_mt7621=y
 	CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
-	CONFIG_PACKAGE_deluge-ui-web=m
-	CONFIG_PACKAGE_deluge=m
 	EOF
 	;;
 	"phicomm_k2p")
@@ -214,8 +212,6 @@ cat >>.config<<-EOF
 	CONFIG_LUCI_LANG_en=y
 	CONFIG_LUCI_LANG_zh_Hans=y
 	CONFIG_DEFAULT_SETTINGS_OPTIMIZE_FOR_CHINESE=y
-	CONFIG_PACKAGE_deluge-ui-web=y
-	CONFIG_PACKAGE_deluge=y
 EOF
 
 config_generate="package/base-files/files/bin/config_generate"
@@ -353,6 +349,8 @@ case "$TARGET_DEVICE" in
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
+	deluge-ui-web
+	deluge
 	AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
