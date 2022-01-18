@@ -247,7 +247,7 @@ clone_url "
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qtbase
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qttools
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qBittorrent
-	https://github.com/coolsnowwolf/lede/trunk/package/lean/rblibtorrent
+	#https://github.com/coolsnowwolf/lede/trunk/package/lean/rblibtorrent
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/qBittorrent-static
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash #bash
 	https://github.com/lisaac/luci-lib-docker/trunk/collections/luci-lib-docker
