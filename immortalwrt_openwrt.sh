@@ -381,6 +381,7 @@ case "$TARGET_DEVICE" in
 	"
 	# wget -qO feeds/luci/applications/luci-app-qbittorrent/Makefile raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06/applications/luci-app-qbittorrent/Makefile
 	# sed -i 's/-Enhanced-Edition/-static/' feeds/luci/applications/luci-app-qbittorrent/Makefile
+	sed -i '/luci-app-transmission/d' .config
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.0_v2.0.5/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
