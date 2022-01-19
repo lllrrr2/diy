@@ -227,6 +227,11 @@ clone_url "
 	https://github.com/hong0980/build/trunk/axel
 	https://github.com/hong0980/build/trunk/lsscsi
 	https://github.com/hong0980/build/trunk/netdata
+	https://github.com/hong0980/build/trunk/deluge
+	https://github.com/hong0980/build/trunk/libtorrent-rasterbar
+	https://github.com/hong0980/build/trunk/python3-pyxdg
+	https://github.com/hong0980/build/trunk/python3-rencode
+	https://github.com/hong0980/build/trunk/python3-setproctitle
 	https://github.com/hong0980/build/trunk/luci-app-ddnsto
 	https://github.com/hong0980/build/trunk/luci-app-bridge
 	https://github.com/hong0980/build/trunk/luci-app-diskman
@@ -331,6 +336,8 @@ case $TARGET in
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
+	deluge-ui-web
+	deluge
 	AmuleWebUI-Reloaded ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
