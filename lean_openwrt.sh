@@ -387,8 +387,8 @@ case $TARGET in
 		# rm feeds/*/*/netdata/patches/*web*
 		# wget -qO feeds/packages/admin/netdata/patches/009-web_gui_index.html.patch git.io/JoNoj
 	# }
-	mkdir -p package/A/Mako
-	wget -qO package/A/Mako/Makefile raw.githubusercontent.com/immortalwrt/packages/openwrt-18.06/lang/python/Mako/Makefile
+	mkdir -p feeds/packages/lang/python/Mako
+	wget -qO feeds/packages/lang/python/Mako/Makefile raw.githubusercontent.com/immortalwrt/packages/openwrt-18.06/lang/python/Mako/Makefile
 	sed -i '/easymesh/d' .config
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.3.9_v2.0.5/' $(find package/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	;;
