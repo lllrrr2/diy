@@ -229,6 +229,7 @@ clone_url "
 	https://github.com/hong0980/build/trunk/netdata
 	https://github.com/hong0980/build/trunk/deluge
 	https://github.com/hong0980/build/trunk/libtorrent-rasterbar
+	https://github.com/immortalwrt/packages/trunk/lang/python/Mako
 	https://github.com/hong0980/build/trunk/python3-pyxdg
 	https://github.com/hong0980/build/trunk/python3-rencode
 	https://github.com/hong0980/build/trunk/python3-setproctitle
