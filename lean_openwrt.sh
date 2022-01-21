@@ -328,7 +328,7 @@ case $TARGET in
 	_packages "
 	luci-app-adbyby-plus
 	luci-app-adguardhome
-	luci-app-amule
+	#luci-app-amule
 	luci-app-dockerman
 	luci-app-netdata
 	luci-app-openclash
