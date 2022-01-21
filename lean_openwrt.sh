@@ -172,8 +172,7 @@ sed -i "{
 		s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 		s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua|
 		}" $(find package/ -type f -name "zzz-default-settings")
-wget -O include/package-defaults.mk raw.githubusercontent.com/Entware/Entware/master/include/package-defaults.mk && \
-sed -i 's|/opt|/usr|' include/package-defaults.mk
+sed -i 's|PKG_DEFAULT_DEPENDS =.*|PKG_DEFAULT_DEPENDS = +libc +GCC_LIBSSP:libssp +USE_GLIBC:librt +USE_GLIBC:libpthread|' include/package-defaults.mk
 
 [[ "$REPO_BRANCH" == "19.07" ]] || {
 	for d in $(find feeds/ package/ -type f -name "index.htm"); do
