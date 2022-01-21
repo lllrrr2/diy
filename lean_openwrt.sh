@@ -187,7 +187,7 @@ sed -i "{
 clone_url() {
 	for x in $@; do
 		if [[ "$(grep "^http" <<<$x)" ]]; then
-				g=$(find package/ feeds/ -maxdepth 3 -type d -name ${x##*/})
+				g=$(find package/ feeds/ -maxdepth 5 -type d -name ${x##*/})
 				if ([[ -d "$g" && ${g##*/} != "build" ]] && rm -rf $g); then
 					p="1"
 				else

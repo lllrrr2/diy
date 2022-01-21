@@ -86,7 +86,7 @@ clone_url() {
 			for w in $(grep "^https" <<<$x); do
 				if git clone -q $w ../${w##*/}; then
 					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*pulimit|*dump|*dtest|*Deny|*dog|*ding'`; do
-						g=$(find package/ feeds/ -maxdepth 3 -type d -name $x 2>/dev/null)
+						g=$(find package/ feeds/ -maxdepth 5 -type d -name $x 2>/dev/null)
 						if ([[ -d "$g" ]] && rm -rf $g); then
 							k="$g"
 						else
