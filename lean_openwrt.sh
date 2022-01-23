@@ -145,6 +145,8 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-theme-material=y
 	## remove
 	CONFIG_TARGET_IMAGES_GZIP=y
+	CONFIG_GRUB_IMAGES=y
+	# CONFIG_GRUB_EFI_IMAGES is not set
 	# CONFIG_VMDK_IMAGES is not set
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
 	# CONFIG_PACKAGE_luci-app-xlnetacc is not set
