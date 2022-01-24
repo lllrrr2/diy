@@ -340,8 +340,7 @@ case $TARGET in
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
-	deluge-ui-web
-	deluge
+	luci-app-deluge
 	#AmuleWebUI-Reloaded ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
