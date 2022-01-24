@@ -231,6 +231,7 @@ clone_url "
 	https://github.com/hong0980/build/trunk/lsscsi
 	https://github.com/hong0980/build/trunk/netdata
 	https://github.com/hong0980/build/trunk/deluge
+	https://github.com/hong0980/build/trunk/luci-app-deluge
 	https://github.com/hong0980/build/trunk/libtorrent-rasterbar
 	https://github.com/hong0980/build/trunk/Mako
 	https://github.com/hong0980/build/trunk/python3-pyxdg
