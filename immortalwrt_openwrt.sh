@@ -342,7 +342,7 @@ case "$TARGET_DEVICE" in
 	_packages "
 	luci-app-adbyby-plus
 	#luci-app-adguardhome
-	#luci-app-amule
+	luci-app-amule
 	luci-app-dockerman
 	luci-app-netdata
 	#luci-app-jd-dailybonus
@@ -351,7 +351,25 @@ case "$TARGET_DEVICE" in
 	luci-app-smartdns
 	luci-app-unblockmusic
 	luci-app-deluge
-	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
+	luci-app-passwall_INCLUDE_Brook=y
+	luci-app-passwall_INCLUDE_ChinaDNS_NG=y
+	luci-app-passwall_INCLUDE_Haproxy=y
+	luci-app-passwall_INCLUDE_Hysteria=y
+	luci-app-passwall_INCLUDE_Kcptun=y
+	luci-app-passwall_INCLUDE_NaiveProxy=y
+	luci-app-passwall_INCLUDE_PDNSD=y
+	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client=y
+	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Server=y
+	luci-app-passwall_INCLUDE_Shadowsocks_Rust_Client=y
+	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client=y
+	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Server=y
+	luci-app-passwall_INCLUDE_Simple_Obfs=y
+	luci-app-passwall_INCLUDE_Trojan_GO=y
+	luci-app-passwall_INCLUDE_Trojan_Plus=y
+	luci-app-passwall_INCLUDE_V2ray=y
+	luci-app-passwall_INCLUDE_V2ray_Plugin=y
+	luci-app-passwall_INCLUDE_Xray=y
+	AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
 	#USB3.0支持
