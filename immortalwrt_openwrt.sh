@@ -342,7 +342,7 @@ case "$TARGET_DEVICE" in
 	_packages "
 	luci-app-adbyby-plus
 	#luci-app-adguardhome
-	luci-app-amule
+	#luci-app-amule
 	luci-app-dockerman
 	luci-app-netdata
 	#luci-app-jd-dailybonus
@@ -369,7 +369,7 @@ case "$TARGET_DEVICE" in
 	luci-app-passwall_INCLUDE_V2ray=y
 	luci-app-passwall_INCLUDE_V2ray_Plugin=y
 	luci-app-passwall_INCLUDE_Xray=y
-	AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
+	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
 	#USB3.0支持
