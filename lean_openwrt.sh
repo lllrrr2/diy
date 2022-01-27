@@ -234,9 +234,9 @@ clone_url "
 	https://github.com/hong0980/build/trunk/luci-app-deluge
 	https://github.com/hong0980/build/trunk/libtorrent-rasterbar
 	https://github.com/hong0980/build/trunk/Mako
-	https://github.com/hong0980/build/trunk/python3-pyxdg
-	https://github.com/hong0980/build/trunk/python3-rencode
-	https://github.com/hong0980/build/trunk/python3-setproctitle
+	https://github.com/hong0980/build/trunk/python-pyxdg
+	https://github.com/hong0980/build/trunk/python-rencode
+	https://github.com/hong0980/build/trunk/python-setproctitle
 	https://github.com/hong0980/build/trunk/luci-app-ddnsto
 	https://github.com/hong0980/build/trunk/luci-app-bridge
 	https://github.com/hong0980/build/trunk/luci-app-diskman
@@ -412,6 +412,7 @@ case $TARGET in
 	sed -i '/easymesh/d' .config
 	# sed -i '/luci-app-transmission/d' .config
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.3.9_v2.0.5/' $(find package/ feeds/ -type d -name "qBittorrent-static")/Makefile
+	sed -i 's/||x86_64//' package/lean/luci-app-qbittorrent/Makefile
 	;;
 "armvirt")
 	DEVICE_NAME="armvirt-64-default"
