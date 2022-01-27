@@ -412,6 +412,7 @@ case $TARGET in
 	sed -i '/easymesh/d' .config
 	# sed -i '/luci-app-transmission/d' .config
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.3.9_v2.0.5/' $(find package/ feeds/ -type d -name "qBittorrent-static")/Makefile
+	rm -rf package/lean/rblibtorrent
 	sed -i 's/||x86_64//' package/lean/luci-app-qbittorrent/Makefile
 	;;
 "armvirt")
