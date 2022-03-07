@@ -5,8 +5,15 @@
 
 ## 上面版本号中，如果第2位数字有变化，那么代表增加了新的参数，如果只有第3位数字有变化，仅代表更新了注释，没有增加新的参数，可更新可不更新
 
-##更新面板时使用develop的开发分支，true 为使用
-R_branch=" "
+##更新版本develop，master，pre，v2.**.*
+QL_BRANCH="v2.11.3"
+
+# 运行code
+code=""
+
+## 清空购物车
+export gua_cleancart_Run="true"
+export gua_cleancart_products=""
 
 ## 在运行 ql repo 命令时，是否自动删除失效的脚本与定时任务
 AutoDelCron="true"
@@ -21,7 +28,7 @@ DefaultCronRule="37 0 * * *"
 RepoFileExtensions="js py sh ts"
 
 ## 由于github仓库拉取较慢，所以会默认添加代理前缀，如不需要请移除
-GithubProxyUrl=""
+GithubProxyUrl="https://github-do.panbaidu.cn//"
 
 ## 设置定时任务执行的超时时间，默认1h，后缀"s"代表秒(默认值), "m"代表分, "h"代表小时, "d"代表天
 CommandTimeoutTime="3h"
@@ -34,7 +41,7 @@ MaxConcurrentNum="20"
 RandomDelay=""
 
 ## 如果你自己会写shell脚本，并且希望在每次运行 ql update 命令时，额外运行你的 shell 脚本，请赋值为 "true"，默认为true
-EnableExtraShell=""
+EnableExtraShell=" "
 
 ## 是否自动启动bot，默认不启动，设置为true时自动启动，目前需要自行克隆bot仓库所需代码，存到ql/repo目录下，文件夹命名为dockerbot
 AutoStartBot=""
@@ -283,13 +290,13 @@ activity_env=(
 ## 12 自定义小工具 extra2.sh 环境变量
 ## 12.1 定义是否自动安装或修复缺失或损坏的 node 依赖
 ### 赋值要求：填 1 表示启用该功能；空值或填其他内容表示不启用该功能。
-FixDependType=""
+FixDependType="1"
 ## 12.2 定义是否自动安装或修复缺失或损坏的 node 依赖名称
 package_name="canvas png-js date-fns axios crypto-js ts-md5 tslib @types/node dotenv got md5 requests typescript fs require jsdom download js-base64 tough-cookie tunnel ws jieba prettytable form-data json5 global-agent"
 ## 12.3 基础 js 依赖文件的预先下载
 ### 释义：目前仅支持将 ql.js、sendNotify.js、JD_DailyBonus.js、JS_USER_AGENTS.js、USER_AGENTS.js 5 个文件下载至 /ql/config 路径
 ### 赋值要求：填 1 表示启用该功能；空值或填其他内容表示不启用该功能。
-DOWNLOAD_BASIC_JS=""
+DOWNLOAD_BASIC_JS="1"
 ## 12.4 基础 js 依赖文件的预先替换
 ### 释义：目前仅支持将 /ql/config 路径下的  ql.js、sendNotify.js、JD_DailyBonus.js、JS_USER_AGENTS.js、USER_AGENTS.js 5 个文件，在 task 命令启动时会自动替换到当前运行的脚本所在的文件夹。
 ### 赋值要求：例如：ql|JD_DailyBonus&sendNotify@JDHelloWorld_jd_scripts|ccwav_QLScript2。各个定义单元之间采用 & 连接。
@@ -848,7 +855,7 @@ export WSKEY_DISCHECK=""
 ### 2、各个 wskey 转换 Cookie 的间隔时间
 ### 赋值要求：正整数数字，（单位：秒）
 ###           空值表示默认值 10 秒。
-export WSKEY_SLEEP="0"
+export WSKEY_SLEEP="5"
 ### 3、wskey 转换 Cookie 的周期
 ### 赋值要求：正整数数字，（单位：小时）
 ###           空值表示默认值 23 小时。
@@ -859,7 +866,7 @@ export WSKEY_UPDATE_HOUR=""
 export WSKEY_TRY_COUNT=""
 ### 4、调试模式
 ### 赋值要求：任意赋值开启调试模式，空值表示不启用该功能
-export WSKEY_DEBUG=""
+# export WSKEY_DEBUG=""
 
 # passerby-b
 ## 1、滴滴橙心果园
