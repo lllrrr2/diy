@@ -2,11 +2,88 @@
 dir_shell=/ql/shell
 . $dir_shell/share.sh
 . $dir_shell/api.sh
+
+#青龙添加环境变量API
+ql_add_env_api() {
+    local currentTimeStamp=$(date +%s) name=$1 value=$2 remarks=$3
+
+    if [[ $remarks ]]; then
+        local api=$(
+            curl -s --noproxy "*" "http://0.0.0.0:5600/api/envs?t=$currentTimeStamp" \
+                -X 'POST' \
+                -H "Accept: application/json" \
+                -H "Authorization: Bearer $token" \
+                -H "Content-Type: application/json;charset=UTF-8" \
+                --data-raw "[{\"name\":\"$name\",\"value\":\"$value\",\"remarks\":\"$remarks\"}]"
+        )
+    else
+        local api=$(
+            curl -s --noproxy "*" "$url?t=$currentTimeStamp" \
+                -X 'POST' \
+                -H "Accept: application/json" \
+                -H "Authorization: Bearer $token" \
+                -H "Content-Type: application/json;charset=UTF-8" \
+                --data-raw "[{\"name\":\"$name\",\"value\":\"$value\"}]"
+        )
+    fi
+
+    code=$(echo $api | jq -r .code)
+    message=$(echo $api | jq -r .message)
+    if [[ $code == 200 ]]; then
+        echo -n "$name -> 添加成功"
+    else
+        egrep -q "$value|$name|$remarks" $file_env && {
+			echo -e "$name 已在环境变量中"
+		} || {
+			echo -n "$name -> 添加失败(${message})"
+		}
+    fi
+}
+
+#青龙更新环境变量API
+ql_update_env_api() {
+    local currentTimeStamp=$(date +%s) name=$1 value=$2 id=$3 remarks=$4
+
+    if [[ $remarks ]]; then
+        local api=$(
+            curl -s --noproxy "*" "http://0.0.0.0:5600/api/envs?t=$currentTimeStamp" \
+                -X 'PUT' \
+                -H "Accept: application/json" \
+                -H "Authorization: Bearer $token" \
+                -H "Content-Type: application/json;charset=UTF-8" \
+                --data-raw "{\"name\":\"$name\",\"value\":\"$value\",\"$tmp_id\":\"$id\",\"remarks\":\"$remarks\"}"
+        )
+    else
+        local api=$(
+            curl -s --noproxy "*" "$url?t=$currentTimeStamp" \
+                -X 'PUT' \
+                -H "Accept: application/json" \
+                -H "Authorization: Bearer $token" \
+                -H "Content-Type: application/json;charset=UTF-8" \
+                --data-raw "{\"name\":\"$name\",\"value\":\"$value\",\"$tmp_id\":\"$id\"}"
+        )
+    fi
+
+    code=$(echo $api | jq -r .code)
+    message=$(echo $api | jq -r .message)
+    if [[ $code == 200 ]]; then
+        echo -n "$name -> 更新成功"
+    else
+        echo -n "$name -> 更新失败(${message})"
+    fi
+}
+
 grep -q "token" $file_auth_user || { echo "请先登入，数据初始化后运行！" && exit; }
+
+grep -q 'find $dir_config' $dir_shell/task.sh || {
+	sed -i '{
+	/$first_param $cmd/i\\t[[ -f $first_param ]] || local first_param=$(find $dir_config $dir_scripts $dir_dep $dir_shell -type f -name "$first_param")
+	}' $dir_shell/task.sh
+}
 
 grep -q '已在定时任务中' $dir_shell/api.sh || {
 	sed -i '{
-	/添加失败/i\        grep -q "$name" $list_crontab_user && echo -e "$name 已在定时任务中" || \\
+	/添加失败/i\        egrep -q "$command|$name|$schedule" $list_crontab_user && echo -e "$name 已在定时任务中" || \\
 	}' $dir_shell/api.sh
 }
 
@@ -38,39 +115,39 @@ echo -e "9) 小埋yyds          https://github.com/okyyds/yyds(带助力池)"
 echo -e "10) 小埋yydspure     https://github.com/okyyds/yydspure(不带助力池)"
 
 echo -e "输入你想拉取的仓库编号，多个仓库用空格分开\c"
-read -t 20 -p "( 20秒后不输入选取默认值 9 ):" hg
+read -t 20 -p "( 20秒后不输入选取默认值 9 ): " hg
 [[ x$hg = x ]] && hg=9
 for i in $hg; do
 	case $i in
 		1)
-		add_cron_api '10 0-23/4 * * *' "ql repo https://github.com/Aaron-lv/sync.git 'jd_|jx_|getJDCookie' 'activity|backUp|Coupon' '^jd[^_]|USER|utils' 'jd_scripts'" "Aaron-lv"
+		add_cron_api "10 0-23/4 * * *" "ql repo https://github.com/Aaron-lv/sync.git 'jd_|jx_|getJDCookie' 'activity|backUp|Coupon' '^jd[^_]|USER|utils' 'jd_scripts'" "Aaron-lv"
 		;;
 		2)
-		add_cron_api '20 0-23/4 * * *' "ql repo https://github.com/JDHelloWorld/jd_scripts.git 'jd_|jx_|getJDCookie' 'activity|backUp|Coupon|enen|update|test' '^jd[^_]|USER|^TS|utils|notify|env|package|ken.js'" "JDHelloWorld"
+		add_cron_api "20 0-23/4 * * *" "ql repo https://github.com/JDHelloWorld/jd_scripts.git 'jd_|jx_|getJDCookie' 'activity|backUp|Coupon|enen|update|test' '^jd[^_]|USER|^TS|utils|notify|env|package|ken.js'" "JDHelloWorld"
 		;;
 		3)
-		add_cron_api '30 0-23/4 * * *' "ql repo https://github.com/he1pu/JDHelp.git 'jd_|jx_|getJDCookie' 'activity|backUp|jd_delCoupon' '^jd[^_]|USER|utils'" "he1pu"
+		add_cron_api "30 0-23/4 * * *" "ql repo https://github.com/he1pu/JDHelp.git 'jd_|jx_|getJDCookie' 'activity|backUp|jd_delCoupon' '^jd[^_]|USER|utils'" "he1pu"
 		;;
 		4)
-		add_cron_api '40 0-23/4 * * *' "ql repo 'https://github.com/shufflewzc/faker2.git' 'jd_|jx_|gua_|jddj_|getJDCookie' 'activity|backUp|Coupon|update' '^jd[^_]|USER|utils|function|^JS|^TS|^JDJRValidator_Pure|^ZooFaker|^sign|ql|sendNotify' 'main'" "shufflewzc"
+		add_cron_api "40 0-23/4 * * *" "ql repo 'https://github.com/shufflewzc/faker2.git' 'jd_|jx_|gua_|jddj_|getJDCookie' 'activity|backUp|Coupon|update' '^jd[^_]|USER|utils|function|^JS|^TS|^JDJRValidator_Pure|^ZooFaker|^sign|ql|sendNotify' 'main'" "shufflewzc"
 		;;
 		5)
-		add_cron_api '50 0-23/4 * * *' "ql repo https://github.com/yuannian1112/jd_scripts.git 'jd_|jx_|getJDCookie' 'activity|backUp' '^jd[^_]|USER|utils'" "yuannian1112"
+		add_cron_api "50 0-23/4 * * *" "ql repo https://github.com/yuannian1112/jd_scripts.git 'jd_|jx_|getJDCookie' 'activity|backUp' '^jd[^_]|USER|utils'" "yuannian1112"
 		;;
 		6)
-		add_cron_api '25 0-23/4 * * *' "ql repo https://github.com/zero205/JD_tencent_scf.git 'jd_|jx_|getJDCookie' 'backUp|icon' '^jd[^_]|USER|sendNotify|sign_graphics_validate|JDJR|JDSign' 'main'" "zero205"
+		add_cron_api "25 0-23/4 * * *" "ql repo https://github.com/zero205/JD_tencent_scf.git 'jd_|jx_|getJDCookie' 'backUp|icon' '^jd[^_]|USER|sendNotify|sign_graphics_validate|JDJR|JDSign' 'main'" "zero205"
 		;;
 		7)
-		add_cron_api '5 0-23/4 * * *' "ql repo https://github.com/ccwav/QLScript2.git 'jd_' 'NoUsed' 'ql|sendNotify|utils|USER_AGENTS|jdCookie|JS_USER_AGENTS'" "ccwav"
+		add_cron_api "5 0-23/4 * * *" "ql repo https://github.com/ccwav/QLScript2.git 'jd_' 'NoUsed' 'ql|sendNotify|utils|USER_AGENTS|jdCookie|JS_USER_AGENTS'" "ccwav"
 		;;
 		8)
-		add_cron_api '35 0-23/4 * * *' "ql repo https://github.com/okyyds/duck.git 'jd_|jx_|gua_|jddj_' 'activity|backUp' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "duck"
+		add_cron_api "35 0-23/4 * * *" "ql repo https://github.com/okyyds/duck.git 'jd_|jx_|gua_|jddj_' 'activity|backUp' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "duck"
 		;;
 		9)
-		add_cron_api '55 0-23/4 * * *' "ql repo https://github.com/okyyds/yyds.git 'jd_|jx_|gua_|jddj_' 'activity|backUp|delCoupon' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "yyds"
+		add_cron_api "55 0-23/4 * * *" "ql repo https://github.com/okyyds/yyds.git 'jd_|jx_|gua_|jddj_' 'activity|backUp|delCoupon' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "yyds"
 		;;
 		10)
-		add_cron_api '15 0-23/4 * * *' "ql repo https://github.com/okyyds/yydspure.git 'jd_|jx_|gua_|jddj_' 'activity|backUp|delCoupon' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "yydspure"
+		add_cron_api "15 0-23/4 * * *" "ql repo https://github.com/okyyds/yydspure.git 'jd_|jx_|gua_|jddj_' 'activity|backUp|delCoupon' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "yydspure"
 		;;
 		*)
 		break
@@ -79,21 +156,69 @@ for i in $hg; do
 done
 
 # 将 wskey 添加到定时任务
-grep -q "Zy143L" $list_crontab_user || \
-add_cron_api '20 */3 * * *' "ql repo https://github.com/Zy143L/wskey 'wskey'" "拉取wskey"
+# grep -q "Zy143L" $list_crontab_user || \
+# add_cron_api "20 */3 * * *" "ql repo https://github.com/Zy143L/wskey.git 'wskey'" "拉取wskey"
 
 # 将 diy 添加到定时任务
-grep -q 'diy.sh' $list_crontab_user || \
-add_cron_api '0 5 */15 * *' "task /ql/config/diy.sh" "运行diy"
+grep -q "diy.sh" $list_crontab_user || \
+add_cron_api "0 5 */15 * *" "task diy.sh" "运行diy"
 
 # 将 bot 添加到定时任务
 grep -q "ql bot" $list_crontab_user || \
-add_cron_api '13 14 * 2 *' "ql bot" "安装bot"
+add_cron_api "13 14 * 2 *" "ql bot" "安装bot"
+
+# 将删除旧日志添加到定时任务
+grep -q "ql rmlog 3" $list_crontab_user || \
+add_cron_api "20 4 */3 * *" "ql rmlog 3" "除旧日志"
+
+# 将更新青龙添加到定时任务
+grep -q "ql update" $list_crontab_user || \
+add_cron_api "20 5 */3 2 *" "ql update" "更新并重启青龙"
+
+## 将 task_before.sh 添加到定时任务
+([ -s $file_task_before ] || wget -qO $file_task_before hk1.monika.love/hong0980/diy/master/task_before.sh) && {
+	grep -q "task_before.sh" $list_crontab_user || \
+	add_cron_api "23 */3 */3 * *" "task task_before.sh" "运行task_before"
+}
+
+## 将 ckck2.sh 添加到定时任务
+([ -s $dir_config/ckck2.sh ] || wget -qO $dir_config/ckck2.sh hk1.monika.love/hong0980/diy/master/ckck2.sh) && {
+	grep -q "ckck2.sh" $list_crontab_user || \
+	add_cron_api "23 */12 * * *" "task ckck2.sh" "运行ckck2"
+}
+
+# 将 extra2.sh 添加到定时任务
+([ -s $dir_config/extra2.sh ] || wget -qO $dir_config/extra2.sh hk1.monika.love/hong0980/diy/master/extra2.sh) && {
+	grep -q "task extra2" $list_crontab_user || \
+	add_cron_api "15 0-23/4 */2 * *" "task extra2.sh" "运行extra2"
+}
+
+# 下载 code.sh
+code_shell_path=$dir_config/code.sh
+if [[ ! -e $code_shell_path ]] || [[ "$(grep -c '调用仓库设置' $code_shell_path)" -eq "0" ]]; then
+	wget -qO $code_shell_path hk1.monika.love/hong0980/diy/master/code.sh && {
+		echo -e "code.sh 下载完成"
+		## 将 code.sh 添加到定时任务
+		grep -q "task code.sh" $list_crontab_user || \
+		add_cron_api "10 */3 */3 * *" "task code.sh" "助力码管理"
+
+		echo -e "\n===设置提取互助码仓库==="
+		kk=$(awk '/repo/{print $9,$13}' $list_crontab_user|sed "s/'//g;s/ /\//g;s/\/$//;s/\.git//")
+		i=0; for x in $kk; do echo "$((i+1))) $x"; i=$((i+1)); done
+		echo -e "输入你想调用互助码仓库\c"
+		read -t 20 -p "( 20秒后不输入选取默认值 1 ):" xx
+		[[ m$xx = m ]] && xx=1
+		op=`awk '/repo/{print $9,$13}' $list_crontab_user|sed "s/'//g;s/ /\//g;s/\/$//;s/\.git//"|awk -F/ '{print $4,$5,$6}'|sed 's/ /_/g;s/_$//'|sed -n ${xx}p`
+		sed -i "/^repo.=/d;s/^repo=.*/repo='$op'/g" $code_shell_path
+	} || {
+		echo "code.sh 下载失败"
+	}
+fi
 
 # 下载 config.sh
 grep -q "wskey" $file_config_user || {
 	mv $file_config_user $dir_config/config.sh.bk
-	wget -qO $file_config_user https://hk1.monika.love/hong0980/diy/master/config.sample.sh && \
+	wget -qO $file_config_user hk1.monika.love/hong0980/diy/master/config.sample.sh && \
 	echo "config.sh 下载完成" || \
 	echo "config.sh 下载失败"
 }
@@ -101,52 +226,10 @@ grep -q "wskey" $file_config_user || {
 # 下载 extra.sh
 grep -q "shufflewzc" $file_extra_shell || {
 	mv $file_extra_shell $dir_config/extra.sh.bk
-	wget -qO $file_extra_shell https://hk1.monika.love/hong0980/diy/master/extra.sh && \
+	wget -qO $file_extra_shell hk1.monika.love/hong0980/diy/master/extra.sh && \
 	echo "extra.sh 下载完成" || \
 	echo "extra.sh 下载失败"
 }
-
-# 下载 task_before.sh
-grep -q "互助码" $file_task_before || {
-	mv $file_task_before $dir_config/task_before.sh.bk
-	wget -qO $file_task_before https://hk1.monika.love/hong0980/diy/master/task_before.sh && \
-	echo "task_before.sh 下载完成" || \
-	echo "task_before.sh 下载失败"
-}
-
-## 将 ckck2.sh 添加到定时任务
-([ -s $dir_config/ckck2.sh ] || wget -qO $dir_config/ckck2.sh https://hk1.monika.love/hong0980/diy/master/ckck2.sh) && {
-	grep -q 'ckck2.sh' $list_crontab_user || \
-	add_cron_api '23 */3 * * *' "task /ql/config/ckck2.sh" "运行ckck2"
-}
-
-# 将 extra2.sh 添加到定时任务
-([ -s $dir_config/extra2.sh ] || wget -qO $dir_config/extra2.sh https://hk1.monika.love/hong0980/diy/master/extra2.sh) && {
-	grep -q "task.*extra2" $list_crontab_user || \
-	add_cron_api '15 0-23/4 * * *' "task /ql/config/extra2.sh" "运行extra2"
-}
-
-# 下载 code.sh
-code_shell_path=$dir_config/code.sh
-if [[ ! -e $code_shell_path ]] || [[ "$(grep -c '调用仓库设置' $code_shell_path)" -eq "0" ]]; then
-	wget -qO $code_shell_path https://hk1.monika.love/hong0980/diy/master/code.sh && {
-		echo -e "code.sh 下载完成"
-		## 将 code.sh 添加到定时任务
-		grep -q "task /ql/config/code.sh" $list_crontab_user || {
-			add_cron_api '10 */3 * * *' "task /ql/config/code.sh" "助力码管理"
-			echo -e "\n===设置提取互助码仓库==="
-			kk=$(awk '/repo/{print $9,$13}' $list_crontab_user|sed "s/'//g;s/ /\//g;s/\/$//;s/\.git//")
-			i=0; for x in $kk; do echo "$((i+1))) $x"; i=$((i+1)); done
-			echo -e "输入你想调用互助码仓库\c"
-			read -t 20 -p "( 20秒后不输入选取默认值 1 ):" xx
-			[[ m$xx = m ]] && xx=1
-			op=`awk '/repo/{print $9,$13}' $list_crontab_user|sed "s/'//g;s/ /\//g;s/\/$//;s/\.git//"|awk -F/ '{print $4,$5,$6}'|sed 's/ /_/g;s/_$//'|sed -n ${xx}p`
-			sed -i "/^repo.=/d;s/^repo=.*/repo='$op'/g" $code_shell_path
-		}
-	} || {
-		echo "code.sh 下载失败"
-	}
-fi
 
 [[ -e $dir_config/auth ]] || ln -s $file_auth_user $dir_config/auth
 [[ -e $dir_config/crontab ]] || ln -s $list_crontab_user $dir_config/crontab
@@ -154,48 +237,54 @@ fi
 if [[ ! -s $dir_config/diy.sh ]]; then
 	cat <<-\EOF >"$dir_config/diy.sh"
 #!/usr/bin/env bash
-. /ql/shell/share.sh
+dir_shell=/ql/shell
+. $dir_shell/share.sh
 echo -e "## 开始运行diy脚本...\n"
-#sh="api share task update"
+sh="api share task update"
 [[ x$sh = x ]] || {
 for x in $sh; do
-  wget -qO $dir_shell/$x https://hk1.monika.love/whyour/qinglong/develop/shell/$x.sh && \
+  wget -qO $dir_shell/$x.sh hk1.monika.love/whyour/qinglong/$QL_BRANCH/shell/$x.sh && \
   echo "$x.sh 下载完成"
 done
 }
 
+grep -q 'find $dir_config' $dir_shell/task.sh || {
+  sed -i '{
+  /$first_param $cmd/i\\t[[ -f $first_param ]] || local first_param=$(find $dir_config $dir_scripts $dir_dep $dir_shell -type f -name "$first_param")
+  }' $dir_shell/task.sh
+}
+
 grep -q '已在定时任务中' $dir_shell/api.sh || {
   sed -i '{
-  /添加失败/i\        grep -q "$name" $list_crontab_user && echo -e "$name 已在定时任务中" || \\
+  /添加失败/i\        egrep -q "$command|$name|$schedule" $list_crontab_user && echo -e "$name 已在定时任务中" || \\
   }' $dir_shell/api.sh
 }
 
 grep -q 'GithubProxyUrl' $dir_shell/update.sh || {
   sed -i '{
-    /whyour/ {s/https/${GithubProxyUrl}https/g}
-    /update_qinglong "$2" $cmd/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
-    /local url="$1"/a\    [[ $GithubProxyUrl && $(grep "^https://github.com" <<<$url) ]] && url="$GithubProxyUrl$url" && echo -e "当前使用的网址：\\n$url"
+  /whyour/ {s/https/${GithubProxyUrl}https/g}
+  /update_qinglong "$2" $cmd/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
+  /local url="$1"/a\    [[ $GithubProxyUrl && $(grep "^https://github.com" <<<$url) ]] && url="$GithubProxyUrl$url" && echo -e "当前使用的网址：\\n$url"
   }' $dir_shell/update.sh
 }
 
 grep -q "log_info" $dir_shell/share.sh || {
   sed -i '{
-    /git_clone_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
-    s/git pull/git pull\n\t[[ $exit_status = "0" ]] \&\& log \$dir_work/
-    1,/exit_status/{s/exit_status=$?/exit_status=$?\n\t[[ $exit_status = "0" ]] \&\& log $dir/}
+  /git_clone_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
+  s/git pull/git pull\n\t[[ $exit_status = "0" ]] \&\& log \$dir_work/
+  1,/exit_status/{s/exit_status=$?/exit_status=$?\n\t[[ $exit_status = "0" ]] \&\& log $dir/}
   }' $dir_shell/share.sh
 }
-[[ -e $dir_static/WxPusherUid.json && ! -e $dir_config/WxPusherUid.json ]] || ln -s $dir_static/WxPusherUid.json $dir_config/WxPusherUid.json
+
 [[ -e $dir_config/auth ]] || ln -s $file_auth_user $dir_config/auth
 [[ -e $dir_config/crontab ]] || ln -s $list_crontab_user $dir_config/crontab
-grep -q '当前版本' $dep_notify_js || wget -qO $dep_notify_js https://hk1.monika.love/ccwav/QLScript2/main/sendNotify.js
-[ -s $dir_config/jdCookie.js ] || wget -qO $dir_config/jdCookie.js https://hk1.monika.love/hong0980/diy/master/jdCookie.js
+d="CK_WxPusherUid CK_Sign_UA CKName_cache"
+for g in $d; do
+  [[ -e $dir_scripts/$g.json && ! -e $dir_config/$g.json ]] && ln -s $dir_scripts/$g.json $dir_config/$g.json
+done
+grep -q '当前版本' $dep_notify_js || wget -qO $dep_notify_js hk1.monika.love/ccwav/QLScript2/main/sendNotify.js
+[ -s $dir_config/jdCookie.js ] || wget -qO $dir_config/jdCookie.js hk1.monika.love/hong0980/diy/master/jdCookie.js
 #kill $(ps | grep ql | awk '/diy/{print $1}')
 echo -e "## diy脚本运行完成...\n"
 	EOF
 fi
-
-# cat > "$dir_config/ql_diy" <<-\DIY
-
-# DIY
-# [[ $? -eq "0" ]] && . $dir_config/ql_diy

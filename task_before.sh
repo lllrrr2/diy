@@ -905,14 +905,14 @@ JS_Deps_Replace() {
             local tmp_script_array=($(echo ${tmp_task_array[0]} | perl -pe "{s/\|/ /g}"))
             local tmp_skip_repo=($(echo ${tmp_task_array[1]} | perl -pe "{s/\|/ /g}"))
             for j in "${tmp_script_array[@]}"; do
-                [[ ! $repo_dir ]] || [[ $repo_dir && ! ${tmp_skip_repo[@]} =~ $repo_dir ]] && [[ -f $dir_config/$j.js && $local_scr_dir ]] && cp -rf $dir_config/$j.js $local_scr_dir/$j.js
+                [[ ! $repo_dir ]] || [[ $repo_dir && ! ${tmp_skip_repo[@]} =~ $repo_dir ]] && [[ -f $dir_config/$j.js && $local_scr_dir ]] && cp -vrf $dir_config/$j.js $local_scr_dir/$j.js
             done
         done
     fi
 }
 
-[[ -f $dir_config/jdCookie.js && $local_scr_dir ]] && cp -rf $dir_config/jdCookie.js $local_scr_dir/jdCookie.js
-[[ -f $dir_scripts/CK_WxPusherUid.json && $local_scr_dir && $local_scr_dir != $dir_scripts ]] && cp -rf $dir_scripts/CK_WxPusherUid.json $local_scr_dir/CK_WxPusherUid.json 
+[[ -f $dir_config/jdCookie.js && $local_scr_dir ]] && cp -vrf $dir_config/jdCookie.js $local_scr_dir/jdCookie.js
+[[ -f $dir_scripts/CK_WxPusherUid.json && $local_scr_dir && $local_scr_dir != $dir_scripts ]] && cp -vrf $dir_scripts/CK_WxPusherUid.json $local_scr_dir/CK_WxPusherUid.json 
 #source $file_env
 gen_pt_pin_array
 JS_Deps_Replace

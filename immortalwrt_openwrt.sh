@@ -249,6 +249,7 @@ clone_url "
 	https://github.com/coolsnowwolf/packages/trunk/libs/qtbase
 	https://github.com/coolsnowwolf/packages/trunk/libs/qttools
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
+	https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic
 	https://github.com/coolsnowwolf/packages/trunk/utils/btrfs-progs
 	#https://github.com/coolsnowwolf/packages/trunk/libs/rblibtorrent
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent-static
@@ -496,19 +497,13 @@ case "$TARGET_DEVICE" in
 	kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb2 kmod-usb3 lm-sensors losetup
 	lsattr lsblk lscpu lsscsi luci-app-adguardhome luci-app-cpufreq luci-app-dockerman
 	luci-app-qbittorrent mkf2fs ntfs-3g parted pv python3 resize2fs tune2fs unzip
-	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkf"
+	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkfs bsdtar pigz gawk perl perl-http-date
+	perlbase-getopt perlbase-time perlbase-unicode perlbase-utf8 luci-app-amlogic"
+	echo "CONFIG_PERL_NOCOMMENT=y" >>.config
 
 	sed -i "s/default 160/default $PARTSIZE/" config/Config-images.in
 	sed -i 's/@arm/@TARGET_armvirt_64/g' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/Makefile
 	sed -e 's/services/system/; s/00//' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/luasrc/controller/cpufreq.lua -i
-	[ -d ../opt/openwrt_packit ] && {
-		sed -i '{
-		s|mv |mv -v |
-		s|openwrt-armvirt-64-default-rootfs.tar.gz|$(ls *default-rootfs.tar.gz)|
-		s|TGT_IMG=.*|TGT_IMG="${WORK_DIR}/unifreq-openwrt-${SOC}_${BOARD}_k${KERNEL_VERSION}${SUBVER}-$(date "+%Y-%m%d-%H%M").img"|
-		}' ../opt/openwrt_packit/mk*.sh
-		sed -i '/ KERNEL_VERSION.*flippy/ {s/KERNEL_VERSION.*/KERNEL_VERSION="5.15.4-flippy-67+"/}' ../opt/openwrt_packit/make.env
-	}
 	}
 	;;
 esac
