@@ -214,7 +214,7 @@ ql_add_env_api() {
     local value=$2
     local remarks=$3
     local url="http://0.0.0.0:5600/api/envs"
-  
+
     if [[ $remarks ]]; then
         local api=$(
             curl -s --noproxy "*" "$url?t=$currentTimeStamp" \
@@ -252,7 +252,7 @@ ql_update_env_api() {
     local id=$3
     local remarks=$4
     local url="http://0.0.0.0:5600/api/envs"
-   
+
     if [[ $remarks ]]; then
         local api=$(
             curl -s --noproxy "*" "$url?t=$currentTimeStamp" \

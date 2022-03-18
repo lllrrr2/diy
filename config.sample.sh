@@ -63,7 +63,7 @@ export BARK_SOUND=""
 ## 下方填写推送消息分组，默认为"QingLong"
 export BARK_GROUP="QingLong"
 
-## 3. Telegram 
+## 3. Telegram
 ## 下方填写自己申请@BotFather的Token，如10xxx4:AAFcqxxxxgER5uw
 export TG_BOT_TOKEN=""
 ## 下方填写 @getuseridbot 中获取到的纯数字ID
@@ -84,7 +84,7 @@ export TG_PROXY_AUTH=""
 ## 如需使用，请赋值代理地址链接，并自行解除下一行的注释
 export TG_API_HOST=""
 
-## 4. 钉钉 
+## 4. 钉钉
 ## 官方文档：https://developers.dingtalk.com/document/app/custom-robot-access
 ## 下方填写token后面的内容，只需 https://oapi.dingtalk.com/robot/send?access_token=XXX 等于=符号后面的XXX即可
 export DD_BOT_TOKEN=""
@@ -127,9 +127,9 @@ export PUSH_PLUS_USER=""
 ## esac
 
 ## 9. go-cqhttp
-## gobot_url 推送到个人QQ: http://127.0.0.1/send_private_msg  群：http://127.0.0.1/send_group_msg 
+## gobot_url 推送到个人QQ: http://127.0.0.1/send_private_msg  群：http://127.0.0.1/send_group_msg
 ## gobot_token 填写在go-cqhttp文件设置的访问密钥
-## gobot_qq 如果GOBOT_URL设置 /send_private_msg 则需要填入 user_id=个人QQ 相反如果是 /send_group_msg 则需要填入 group_id=QQ群 
+## gobot_qq 如果GOBOT_URL设置 /send_private_msg 则需要填入 user_id=个人QQ 相反如果是 /send_group_msg 则需要填入 group_id=QQ群
 ## go-cqhttp相关API https://docs.go-cqhttp.org/api
 export GOBOT_URL=""
 export GOBOT_TOKEN=""
@@ -493,7 +493,7 @@ export FRUIT_BEAN_CARD="true"
 ## 12、是否取关商品。环境变量内容的意思依次是是否取关全部商品(0表示一个都不),是否取关全部店铺数(0表示一个都不),遇到此商品不再进行取关,遇到此店铺不再进行取关
 export UN_SUBSCRIBES="300,300,,"
 ## 12、jd_unsubscribe这个任务是用来取关每天做任务关注的商品和店铺，默认在每次运行时取关20个商品和20个店铺
-### 如果取关数量不够，可以根据情况增加，还可以设置 jdUnsubscribeStopGoods 和 jdUnsubscribeStopShop 
+### 如果取关数量不够，可以根据情况增加，还可以设置 jdUnsubscribeStopGoods 和 jdUnsubscribeStopShop
 ### 商品取关数量
 export goodPageSize="30"
 ### 店铺取关数量
@@ -540,7 +540,7 @@ export cash_zlzh="$(echo $JD_COOKIE | perl -pe "{s|&| |g; s|\S*pt_pin=([^; ]+)(?
 export jxgc_kaituan="$(echo $JD_COOKIE | perl -pe "{s|&| |g; s|\S*pt_pin=([^; ]+)(?=;?)\S*|\1|g; s| |&|g;}" | awk 'BEGIN{for(i=0;i<10;i++)hex[i]=i;hex["A"]=hex["a"]=10;hex["B"]=hex["b"]=11;hex["C"]=hex["c"]=12;hex["D"]=hex["d"]=13;hex["E"]=hex["e"]=14;hex["F"]=hex["f"]=15;}{gsub(/\+/," ");i=$0;while(match(i,/%../)){;if(RSTART>1);printf"%s",substr(i,1,RSTART-1);printf"%c",hex[substr(i,RSTART+1,1)]*16+hex[substr(i,RSTART+2,1)];i=substr(i,RSTART+RLENGTH);}print i;}')"  ## 支持中文用户名
 ## 5、城城分现金内部助力
 ### 指定助力账号，默认按ck顺序助力
-export ccfxj_isOrder="true" 
+export ccfxj_isOrder="true"
 ### 助力账号pin名称
 export ccfxj_help="$(echo $JD_COOKIE | perl -pe "{s|&| |g; s|\S*pt_pin=([^; ]+)(?=;?)\S*|\1|g; s| |&|g;}" | awk 'BEGIN{for(i=0;i<10;i++)hex[i]=i;hex["A"]=hex["a"]=10;hex["B"]=hex["b"]=11;hex["C"]=hex["c"]=12;hex["D"]=hex["d"]=13;hex["E"]=hex["e"]=14;hex["F"]=hex["f"]=15;}{gsub(/\+/," ");i=$0;while(match(i,/%../)){;if(RSTART>1);printf"%s",substr(i,1,RSTART-1);printf"%c",hex[substr(i,RSTART+1,1)]*16+hex[substr(i,RSTART+2,1)];i=substr(i,RSTART+RLENGTH);}print i;}')"  ## 支持中文用户名
 ## 6、入会开卡
@@ -586,7 +586,7 @@ export JDJR_validator_Count="25"
 ### 新增热气球接客 默认每次运行执行10次
 export gua_wealth_island_serviceNum="500"
 ## 4、修复点点券
-### 新增显示有多少个非法请求 可以开通知 
+### 新增显示有多少个非法请求 可以开通知
 export DDQ_NOTIFY_CONTROL="" ##不填或false为通知，true为不通知
 ## 5、24 及之后的开卡变量
 export guaopencard_All="true"
@@ -692,19 +692,19 @@ export CleanUsers=""
 ### 例：export BEANCHANGE_PERSENT="10"总共有22个账号,结果会分成3条推送通知，1~10为第一条推送，11~20为第二条推送，剩余的为第三条推送
 export BEANCHANGE_PERSENT="" ##10合1
 ### 2. BEANCHANGE_USERGP2 BEANCHANGE_USERGP3 BEANCHANGE_USERGP4  根据Pt_Pin的值进行分组通知
-### 注意：分组通知会强制禁用BEANCHANGE_PERSENT变量!	
+### 注意：分组通知会强制禁用BEANCHANGE_PERSENT变量!
 ### 分组通知的通知标题为 脚本名+"#"+分组数值
 ### 主要用于搭配通知脚本的分组通知使用.
 ### 3.BEANCHANGE_ALLNOTIFY
 ### 设置推送置顶公告，&表示换行，公告会出现在资产通知中(包括一对一).
-### 	例子 :  export BEANCHANGE_ALLNOTIFY="你好&今天天气不错...&&哥斯拉大战金刚...."  
+### 	例子 :  export BEANCHANGE_ALLNOTIFY="你好&今天天气不错...&&哥斯拉大战金刚...."
 ### 	显示:
-### 	
+###
 ### 	【✨✨✨✨公告✨✨✨✨】
 ### 	 你好
 ### 	 今天天气不错...
-### 	 
-### 	 哥斯拉大战金刚.... 
+###
+### 	 哥斯拉大战金刚....
 # export BEANCHANGE_ALLNOTIFY='因为加了购物车抽奖脚本，所有人早上8点半会自动清理购物车。
 # 活动1：<a href="http://mtw.so/6dtM4K">京东会员权益</a>
 # 活动2：<a href="https://u.jd.com/YMlLsvu">晚上12点下拉页面签到得20豆</a>
@@ -721,7 +721,7 @@ export BEANCHANGE_CheckJxBeans="true"
 ### 京东CK检测,不正常的自动禁用，正常的如果是禁用状态则自动启用。
 ### 配合通知脚本CK触发使用，也可以直接task。
 ### 兼容jd_bean_change的BEANCHANGE_USERGP2 BEANCHANGE_USERGP3 BEANCHANGE_USERGP4变量。
-### BEANCHANGE_USERGP2 BEANCHANGE_USERGP3 BEANCHANGE_USERGP4  根据Pt_Pin的值进行分组通知        
+### BEANCHANGE_USERGP2 BEANCHANGE_USERGP3 BEANCHANGE_USERGP4  根据Pt_Pin的值进行分组通知
 ### 分组通知的通知标题为 脚本名+"#"+分组数值
 ### 主要用于搭配通知脚本的分组通知使用.
 ### 2021-11-14增加CHECKCK_ALLNOTIFY设置温馨提示，&表示换行，推送时在内容末尾添加显示
@@ -750,7 +750,7 @@ export TG_USER_ID2=""
 ### 例：账号名:ccwav  别名:ccwav的别名  Remark:代码玩家
 #export NOTIFY_SHOWNAMETYPE="1"    ##效果: 账号名称：代码玩家
 export NOTIFY_SHOWNAMETYPE="2"     ##效果: 账号名称：ccwav的别名(代码玩家)
-#export NOTIFY_SHOWNAMETYPE="3"    ##不做处理，效果: 账号名称：ccwav   
+#export NOTIFY_SHOWNAMETYPE="3"    ##不做处理，效果: 账号名称：ccwav
 #export NOTIFY_SHOWNAMETYPE="4"    ##不做处理，效果: 账号名称：ccwav(代码玩家)
 ### 4. NOTIFY_SKIP_NAMETYPELIST
 ### 单独指定某些脚本不做NOTIFY_SHOWNAMETYPE变量处理。例：export NOTIFY_SKIP_NAMETYPELIST="东东农场&东东工厂"

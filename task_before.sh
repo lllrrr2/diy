@@ -912,7 +912,7 @@ JS_Deps_Replace() {
 }
 
 [[ -f $dir_config/jdCookie.js && $local_scr_dir ]] && cp -vrf $dir_config/jdCookie.js $local_scr_dir/jdCookie.js
-[[ -f $dir_scripts/CK_WxPusherUid.json && $local_scr_dir && $local_scr_dir != $dir_scripts ]] && cp -vrf $dir_scripts/CK_WxPusherUid.json $local_scr_dir/CK_WxPusherUid.json 
+[[ -f $dir_scripts/CK_WxPusherUid.json && $local_scr_dir && $local_scr_dir != $dir_scripts ]] && cp -vrf $dir_scripts/CK_WxPusherUid.json $local_scr_dir/CK_WxPusherUid.json
 #source $file_env
 gen_pt_pin_array
 JS_Deps_Replace
