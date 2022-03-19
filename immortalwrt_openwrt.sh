@@ -161,6 +161,7 @@ case "$TARGET_DEVICE" in
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
 		EOF
+	;;
 	"newifi-d2")
 		cat >.config<<-EOF
 		CONFIG_TARGET_ramips=y
