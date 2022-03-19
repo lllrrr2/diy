@@ -65,7 +65,7 @@ clone_url() {
 					f="1"
 				fi
 			fi
-			[[ $f = "" ]] && echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
+			[[ x$f = x ]] && echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
 			[[ $f -lt $p ]] && echo -e "$(color cr 替换) ${x##*/} [ $(color cr ✕) ]" | _printf
 			[[ $f = $p ]] && \
 				echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf || \
@@ -117,7 +117,7 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 status
 
 : >.config
-[ $PARTSIZE ] || PARTSIZE=950
+[ $PARTSIZE ] || PARTSIZE=900
 case "$TARGET_DEVICE" in
 	"x86_64")
 		cat >.config<<-EOF
@@ -129,7 +129,7 @@ case "$TARGET_DEVICE" in
 		EOF
 	;;
 	"r4s"|"r2c"|"r2r")
-		cat >.config<<-EOF
+		cat<<-EOF >.config
 		CONFIG_TARGET_rockchip=y
 		CONFIG_TARGET_rockchip_armv8=y
 		CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y
@@ -137,6 +137,16 @@ case "$TARGET_DEVICE" in
 		# CONFIG_TARGET_rockchip_armv8_DEVICE_radxa_rock-pi-4 is not set
 		# CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus is not set
 		# CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus-lts is not set
+		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
+		CONFIG_BUILD_NLS=y
+		CONFIG_BUILD_PATENTED=y
+		EOF
+	;;
+	"r1-plus-lts")
+		cat<<-EOF >.config
+		CONFIG_TARGET_rockchip=y
+		CONFIG_TARGET_rockchip_armv8=y
+		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus-lts=y
 		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
@@ -246,8 +256,10 @@ clone_url "
 	https://github.com/zzsj0928/luci-app-pushbot
 	https://github.com/small-5/luci-app-adblock-plus
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
-	https://github.com/coolsnowwolf/packages/trunk/libs/qtbase
-	https://github.com/coolsnowwolf/packages/trunk/libs/qttools
+	https://github.com/hong0980/openwrt-packages/trunk/qtbase
+	https://github.com/hong0980/openwrt-packages/trunk/qttools
+	https://github.com/hong0980/openwrt-packages/trunk/ikoolproxy
+	https://github.com/hong0980/openwrt-packages/trunk/luci-app-ikoolproxy
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic
 	https://github.com/coolsnowwolf/packages/trunk/utils/btrfs-progs
@@ -340,12 +352,16 @@ case "$TARGET_DEVICE" in
 	DEVICE_NAME="Newifi-D2"
 	FIRMWARE_TYPE="sysupgrade"
 	sed -i '/openclash/d' .config
-	[ $IP ] && sed -i "s/192.168.1.1/$IP/" $config_generate || \
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
-"r4s"|"r2c"|"r2r")
+"r4s"|"r2c"|"r2r"|"r1-plus-lts")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
+	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	[[  $VERSION = plus ]] && {
 	_packages "
 	luci-app-adbyby-plus
@@ -402,18 +418,23 @@ case "$TARGET_DEVICE" in
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
 	FIRMWARE_TYPE="sysupgrade"
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
+	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
 	FIRMWARE_TYPE="n16"
-	[ $IP ] && sed -i "s/192.168.1.1/$IP/" $config_generate || \
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.130/" $config_generate
 	sed -i '/openclash/d' .config
 	;;
 "x86_64")
 	DEVICE_NAME="x86_64"
 	FIRMWARE_TYPE="squashfs-combined"
-	[ $IP ] && sed -i "s/192.168.1.1/$IP/" $config_generate || \
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 	[[  $VERSION = plus ]] && {
 	_packages "
@@ -427,6 +448,7 @@ case "$TARGET_DEVICE" in
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
+	luci-app-ikoolproxy
 	luci-app-deluge
 	luci-app-passwall_INCLUDE_Brook
 	luci-app-passwall_INCLUDE_ChinaDNS_NG
@@ -486,7 +508,8 @@ case "$TARGET_DEVICE" in
 	DEVICE_NAME="armvirt-64-default"
 	FIRMWARE_TYPE="armvirt-64-default-rootfs"
 	sed -i '/easymesh/d' .config
-	[ $IP ] && sed -i "s/192.168.1.1/$IP/" $config_generate || \
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.110/" $config_generate
 	[[  $VERSION = plus ]] && {
 	_packages "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
