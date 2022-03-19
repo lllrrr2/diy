@@ -152,6 +152,15 @@ case "$TARGET_DEVICE" in
 		CONFIG_BUILD_PATENTED=y
 		EOF
 	;;
+	"r1-plus")
+		cat<<-EOF >.config
+		CONFIG_TARGET_rockchip=y
+		CONFIG_TARGET_rockchip_armv8=y
+		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus=y
+		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
+		CONFIG_BUILD_NLS=y
+		CONFIG_BUILD_PATENTED=y
+		EOF
 	"newifi-d2")
 		cat >.config<<-EOF
 		CONFIG_TARGET_ramips=y
@@ -356,7 +365,7 @@ case "$TARGET_DEVICE" in
 	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
-"r4s"|"r2c"|"r2r"|"r1-plus-lts")
+"r4s"|"r2c"|"r2r"|"r1-plus-lts"|"r1-plus")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
 	[ $IP ] && \
