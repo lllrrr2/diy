@@ -156,8 +156,8 @@ for i in $hg; do
 done
 
 # 将 wskey 添加到定时任务
-# grep -q "Zy143L" $list_crontab_user || \
-# add_cron_api "20 */3 * * *" "ql repo https://github.com/Zy143L/wskey.git 'wskey'" "拉取wskey"
+grep -q "Zy143L" $list_crontab_user || \
+add_cron_api "20 */3 * * *" "ql repo https://github.com/Zy143L/wskey.git 'wskey'" "拉取wskey"
 
 # 将 diy 添加到定时任务
 grep -q "diy.sh" $list_crontab_user || \
