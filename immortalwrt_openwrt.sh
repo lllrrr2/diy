@@ -266,10 +266,10 @@ clone_url "
 	https://github.com/zzsj0928/luci-app-pushbot
 	https://github.com/small-5/luci-app-adblock-plus
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
-	https://github.com/hong0980/openwrt-packages/trunk/qtbase
-	https://github.com/hong0980/openwrt-packages/trunk/qttools
-	https://github.com/hong0980/openwrt-packages/trunk/ikoolproxy
-	https://github.com/hong0980/openwrt-packages/trunk/luci-app-ikoolproxy
+	https://github.com/kiddin9/openwrt-packages/trunk/qtbase
+	https://github.com/kiddin9/openwrt-packages/trunk/qttools
+	https://github.com/kiddin9/openwrt-packages/trunk/ikoolproxy
+	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic
 	https://github.com/coolsnowwolf/packages/trunk/utils/btrfs-progs
@@ -422,7 +422,6 @@ case "$TARGET_DEVICE" in
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	grep CONFIG_TARGET_ROOTFS_PARTSIZE .config
 	}
 	;;
 "phicomm_k2p")
@@ -511,7 +510,6 @@ case "$TARGET_DEVICE" in
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	grep CONFIG_TARGET_ROOTFS_PARTSIZE .config
 	}
 	;;
 "armvirt_64_Default")
@@ -522,21 +520,22 @@ case "$TARGET_DEVICE" in
 	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.110/" $config_generate
 	[[  $VERSION = plus ]] && {
-	_packages "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
-	btrfs-progs cfdisk chattr curl dosfstools e2fsprogs f2fs-tools f2fsck fdisk getopt
-	hostpad-common htop install-program iperf3 kmod-brcmfmac kmod-brcmutil kmod-cfg80211
-	kmod-fs-ext4 kmod-fs-vfat kmod-mac80211 kmod-rt2800-usb kmod-usb-net
-	kmod-usb-net-asix-ax88179 kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 kmod-usb-storage
-	kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb2 kmod-usb3 lm-sensors losetup
-	lsattr lsblk lscpu lsscsi luci-app-adguardhome luci-app-cpufreq luci-app-dockerman
-	luci-app-qbittorrent mkf2fs ntfs-3g parted pv python3 resize2fs tune2fs unzip
-	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkfs bsdtar pigz gawk perl perl-http-date
-	perlbase-getopt perlbase-time perlbase-unicode perlbase-utf8 luci-app-amlogic"
-	echo "CONFIG_PERL_NOCOMMENT=y" >>.config
+		_packages "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
+		bsdtar btrfs-progs cfdisk chattr curl dosfstools e2fsprogs f2fs-tools f2fsck fdisk
+		gawk getopt hostpad-common htop install-program iperf3 kmod-brcmfmac kmod-brcmutil
+		kmod-cfg80211 kmod-fs-ext4 kmod-fs-vfat kmod-mac80211 kmod-rt2800-usb kmod-usb-net
+		kmod-usb-net-asix-ax88179 kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 kmod-usb-storage
+		kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb2 kmod-usb3 lm-sensors losetup
+		lsattr lsblk lscpu lsscsi luci-app-adguardhome luci-app-amlogic luci-app-cpufreq
+		luci-app-dockerman luci-app-ikoolproxy luci-app-qbittorrent mkf2fs ntfs-3g parted
+		perl perl-http-date perlbase-getopt perlbase-time perlbase-unicode perlbase-utf8
+		pigz pv python3 resize2fs tune2fs unzip uuidgen wpa-cli wpad wpad-basic xfs-fsck
+		xfs-mkfs"
+		echo "CONFIG_PERL_NOCOMMENT=y" >>.config
 
-	sed -i "s/default 160/default $PARTSIZE/" config/Config-images.in
-	sed -i 's/@arm/@TARGET_armvirt_64/g' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/Makefile
-	sed -e 's/services/system/; s/00//' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/luasrc/controller/cpufreq.lua -i
+		sed -i "s/default 160/default $PARTSIZE/" config/Config-images.in
+		sed -i 's/@arm/@TARGET_armvirt_64/g' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/Makefile
+		sed -e 's/services/system/; s/00//' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq")/luasrc/controller/cpufreq.lua -i
 	}
 	;;
 esac
