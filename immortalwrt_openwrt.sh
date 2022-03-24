@@ -264,11 +264,10 @@ clone_url "
 	https://github.com/kiddin9/openwrt-bypass
 	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
-	https://github.com/small-5/luci-app-adblock-plus
+	#https://github.com/small-5/luci-app-adblock-plus
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/kiddin9/openwrt-packages/trunk/qtbase
 	https://github.com/kiddin9/openwrt-packages/trunk/qttools
-	https://github.com/kiddin9/openwrt-packages/trunk/ikoolproxy
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic
