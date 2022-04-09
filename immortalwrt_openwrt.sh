@@ -3,7 +3,8 @@
 
 [[ x$REPO_FLODER = x ]] && \
 (REPO_FLODER="openwrt" && echo "REPO_FLODER=openwrt" >>$GITHUB_ENV)
-[[ $TARGET_DEVICE = phicomm_k2p ]] &&  VERSION=pure
+[[ $TARGET_DEVICE = phicomm_k2p ]] && VERSION=pure
+[[ $VERSION ]] || VERSION=plus
 
 color() {
 	case $1 in
@@ -133,33 +134,17 @@ case "$TARGET_DEVICE" in
 		CONFIG_TARGET_rockchip=y
 		CONFIG_TARGET_rockchip_armv8=y
 		CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y
-		# CONFIG_TARGET_rockchip_armv8_DEVICE_pine64_rockpro64 is not set
-		# CONFIG_TARGET_rockchip_armv8_DEVICE_radxa_rock-pi-4 is not set
-		# CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus is not set
-		# CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus-lts is not set
 		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
 		EOF
 	;;
-	"r1-plus-lts")
+	"r1-plus-lts"|"r1-plus")
 		cat<<-EOF >.config
 		CONFIG_TARGET_rockchip=y
 		CONFIG_TARGET_rockchip_armv8=y
-		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus-lts=y
+		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
 		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-		CONFIG_BUILD_NLS=y
-		CONFIG_BUILD_PATENTED=y
-		EOF
-	;;
-	"r1-plus")
-		cat<<-EOF >.config
-		CONFIG_TARGET_rockchip=y
-		CONFIG_TARGET_rockchip_armv8=y
-		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus=y
-		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-		CONFIG_BUILD_NLS=y
-		CONFIG_BUILD_PATENTED=y
 		EOF
 	;;
 	"newifi-d2")
@@ -205,7 +190,7 @@ cat >>.config<<-EOF
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 	## luci app
 	CONFIG_PACKAGE_luci-app-accesscontrol=y
-	CONFIG_PACKAGE_luci-app-adblock-plus=y
+	CONFIG_PACKAGE_luci-app-ikoolproxy=y
 	CONFIG_PACKAGE_luci-app-bridge=y
 	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
 	CONFIG_PACKAGE_luci-app-cowbping=y
@@ -258,6 +243,7 @@ clone_url "
 	https://github.com/hong0980/build
 	https://github.com/fw876/helloworld
 	#https://github.com/kiddin9/openwrt-packages
+	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/destan19/OpenAppFilter
 	https://github.com/jerrykuku/luci-app-vssr #bash
@@ -269,6 +255,7 @@ clone_url "
 	https://github.com/kiddin9/openwrt-packages/trunk/qtbase
 	https://github.com/kiddin9/openwrt-packages/trunk/qttools
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
+	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-unblockneteasemusic
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic
 	https://github.com/coolsnowwolf/packages/trunk/utils/btrfs-progs
@@ -300,7 +287,7 @@ EOF
 
 sed -i 's/option dports.*/option dports 2/' feeds/luci/applications/luci-app-vssr/root/etc/config/vssr
 
-[[ $TARGET_DEVICE = phicomm_k2p || $VERSION = pure ]] || {
+[[ $TARGET_DEVICE = phicomm_k2p ]] || {
 	_packages "
 	automount autosamba axel kmod-rt2500-usb kmod-rtl8187
 	luci-app-aria2
@@ -330,9 +317,9 @@ sed -i 's/option dports.*/option dports 2/' feeds/luci/applications/luci-app-vss
 	for d in $(find feeds/ package/ -type f -name "index.htm"); do
 		if grep -q "Kernel Version" $d; then
 			sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' $d
-			# if ! grep -q "admin_status/index/" $d; then
-				# sed -i '/<%+footer%>/i<fieldset class="cbi-section">\n\t<legend><%:天气%></legend>\n\t<table width="100%" cellspacing="10">\n\t\t<tr><td width="10%"><%:本地天气%></td><td > <iframe width="900" height="120" frameborder="0" scrolling="no" hspace="0" src="//i.tianqi.com/?c=code&a=getcode&id=22&py=xiaoshan&icon=1"></iframe>\n\t\t<tr><td width="10%"><%:柯桥天气%></td><td > <iframe width="900" height="120" frameborder="0" scrolling="no" hspace="0" src="//i.tianqi.com/?c=code&a=getcode&id=22&py=keqiaoqv&icon=1"></iframe>\n\t\t<tr><td width="10%"><%:指数%></td><td > <iframe width="400" height="270" frameborder="0" scrolling="no" hspace="0" src="https://i.tianqi.com/?c=code&a=getcode&id=27&py=xiaoshan&icon=1"></iframe><iframe width="400" height="270" frameborder="0" scrolling="no" hspace="0" src="https://i.tianqi.com/?c=code&a=getcode&id=27&py=keqiaoqv&icon=1"></iframe>\n\t</table>\n</fieldset>\n\n<%-\n\tlocal incdir = util.libpath() .. "/view/admin_status/index/"\n\tif fs.access(incdir) then\n\t\tlocal inc\n\t\tfor inc in fs.dir(incdir) do\n\t\t\tif inc:match("%.htm$") then\n\t\t\t\tinclude("admin_status/index/" .. inc:gsub("%.htm$", ""))\n\t\t\tend\n\t\tend\n\t\end\n-%>\n' $d
-			# fi
+			if ! grep -q "admin_status/index/" $d; then
+				sed -i '/<%+footer%>/i<fieldset class="cbi-section">\n\t<legend><%:天气%></legend>\n\t<table width="100%" cellspacing="10">\n\t\t<tr><td width="10%"><%:本地天气%></td><td > <iframe width="900" height="120" frameborder="0" scrolling="no" hspace="0" src="//i.tianqi.com/?c=code&a=getcode&id=22&py=xiaoshan&icon=1"></iframe>\n\t\t<tr><td width="10%"><%:柯桥天气%></td><td > <iframe width="900" height="120" frameborder="0" scrolling="no" hspace="0" src="//i.tianqi.com/?c=code&a=getcode&id=22&py=keqiaoqv&icon=1"></iframe>\n\t\t<tr><td width="10%"><%:指数%></td><td > <iframe width="400" height="270" frameborder="0" scrolling="no" hspace="0" src="https://i.tianqi.com/?c=code&a=getcode&id=27&py=xiaoshan&icon=1"></iframe><iframe width="400" height="270" frameborder="0" scrolling="no" hspace="0" src="https://i.tianqi.com/?c=code&a=getcode&id=27&py=keqiaoqv&icon=1"></iframe>\n\t</table>\n</fieldset>\n\n<%-\n\tlocal incdir = util.libpath() .. "/view/admin_status/index/"\n\tif fs.access(incdir) then\n\t\tlocal inc\n\t\tfor inc in fs.dir(incdir) do\n\t\t\tif inc:match("%.htm$") then\n\t\t\t\tinclude("admin_status/index/" .. inc:gsub("%.htm$", ""))\n\t\t\tend\n\t\tend\n\t\end\n-%>\n' $d
+			fi
 		fi
 	done
 }
@@ -371,9 +358,9 @@ case "$TARGET_DEVICE" in
 	[ $IP ] && \
 	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
-	[[  $VERSION = plus ]] && {
+	[[ $VERSION = plus ]] && {
 	_packages "
-	luci-app-adbyby-plus
+	#luci-app-adbyby-plus
 	#luci-app-adguardhome
 	#luci-app-amule
 	luci-app-dockerman
@@ -383,25 +370,7 @@ case "$TARGET_DEVICE" in
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
-	luci-app-deluge
-	luci-app-passwall_INCLUDE_Brook
-	luci-app-passwall_INCLUDE_ChinaDNS_NG
-	luci-app-passwall_INCLUDE_Haproxy
-	luci-app-passwall_INCLUDE_Hysteria
-	luci-app-passwall_INCLUDE_Kcptun
-	luci-app-passwall_INCLUDE_NaiveProxy
-	luci-app-passwall_INCLUDE_PDNSD
-	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client
-	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Server
-	luci-app-passwall_INCLUDE_Shadowsocks_Rust_Client
-	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client
-	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Server
-	luci-app-passwall_INCLUDE_Simple_Obfs
-	luci-app-passwall_INCLUDE_Trojan_GO
-	luci-app-passwall_INCLUDE_Trojan_Plus
-	luci-app-passwall_INCLUDE_V2ray
-	luci-app-passwall_INCLUDE_V2ray_Plugin
-	luci-app-passwall_INCLUDE_Xray
+	#luci-app-deluge
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
@@ -419,8 +388,6 @@ case "$TARGET_DEVICE" in
 	"
 	# sed -i 's/qbittorrent_dynamic:qbittorrent/qbittorrent_dynamic:qBittorrent-Enhanced-Edition/g' package/feeds/luci/luci-app-qbittorrent/Makefile
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
-	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
-	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	}
 	;;
 "phicomm_k2p")
@@ -444,7 +411,7 @@ case "$TARGET_DEVICE" in
 	[ $IP ] && \
 	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
-	[[  $VERSION = plus ]] && {
+	[[ $VERSION = plus ]] && {
 	_packages "
 	luci-app-adbyby-plus
 	#luci-app-adguardhome
@@ -455,27 +422,9 @@ case "$TARGET_DEVICE" in
 	luci-app-poweroff
 	luci-app-qbittorrent
 	luci-app-smartdns
-	luci-app-unblockmusic
+	luci-app-unblockneteasemusic
 	luci-app-ikoolproxy
 	luci-app-deluge
-	luci-app-passwall_INCLUDE_Brook
-	luci-app-passwall_INCLUDE_ChinaDNS_NG
-	luci-app-passwall_INCLUDE_Haproxy
-	luci-app-passwall_INCLUDE_Hysteria
-	luci-app-passwall_INCLUDE_Kcptun
-	luci-app-passwall_INCLUDE_NaiveProxy
-	luci-app-passwall_INCLUDE_PDNSD
-	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client
-	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Server
-	luci-app-passwall_INCLUDE_Shadowsocks_Rust_Client
-	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client
-	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Server
-	luci-app-passwall_INCLUDE_Simple_Obfs
-	luci-app-passwall_INCLUDE_Trojan_GO
-	luci-app-passwall_INCLUDE_Trojan_Plus
-	luci-app-passwall_INCLUDE_V2ray
-	luci-app-passwall_INCLUDE_V2ray_Plugin
-	luci-app-passwall_INCLUDE_Xray
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
@@ -518,7 +467,7 @@ case "$TARGET_DEVICE" in
 	[ $IP ] && \
 	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.110/" $config_generate
-	[[  $VERSION = plus ]] && {
+	[[ $VERSION = plus ]] && {
 		_packages "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
 		bsdtar btrfs-progs cfdisk chattr curl dosfstools e2fsprogs f2fs-tools f2fsck fdisk
 		gawk getopt hostpad-common htop install-program iperf3 kmod-brcmfmac kmod-brcmutil

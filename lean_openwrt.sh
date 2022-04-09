@@ -70,25 +70,46 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 status
 
 : >.config
-PARTSIZE=`echo $[$RANDOM%5+6]`
+[ $PARTSIZE ] || PARTSIZE=600
 case $TARGET_DEVICE in
 	"x86_64")
 		cat >.config<<-EOF
 		CONFIG_TARGET_x86=y
 		CONFIG_TARGET_x86_64=y
-		CONFIG_TARGET_ROOTFS_PARTSIZE=${PARTSIZE}00
+		CONFIG_TARGET_ROOTFS_PARTSIZE=${PARTSIZE}
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
 		EOF
 	;;
 	"r4s"|"r2c"|"r2r")
-		cat >.config<<-EOF
+		cat<<-EOF >.config
 		CONFIG_TARGET_rockchip=y
 		CONFIG_TARGET_rockchip_armv8=y
 		CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y
-		CONFIG_TARGET_ROOTFS_PARTSIZE=750
+		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
+		EOF
+	;;
+	"r1-plus-lts"|"r1-plus")
+		cat<<-EOF >.config
+		CONFIG_TARGET_rockchip=y
+		CONFIG_TARGET_rockchip_armv8=y
+		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
+		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
+		CONFIG_PACKAGE_kmod-gpu-lima=y
+		CONFIG_PACKAGE_kmod-ath9k-htc=y
+		CONFIG_PACKAGE_kmod-mt76x0u=y
+		CONFIG_PACKAGE_kmod-mt76x2u=y
+		CONFIG_PACKAGE_kmod-r8125=y
+		CONFIG_PACKAGE_kmod-rtl8821cu=y
+		CONFIG_PACKAGE_kmod-rtl8812au-ac=y
+		CONFIG_PACKAGE_iw=y
+		CONFIG_PACKAGE_iwinfo=y
+		CONFIG_PACKAGE_wpad-wolfssl=y
+		CONFIG_DRIVER_11AC_SUPPORT=y
+		CONFIG_DRIVER_11N_SUPPORT=y
+		CONFIG_DRIVER_11W_SUPPORT=y
 		EOF
 	;;
 	"newifi-d2")
@@ -227,7 +248,7 @@ clone_url() {
 						f="1"
 					fi
 				fi
-				[[ $f = "" ]] && echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
+				[[ x$f = x ]] && echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
 				[[ $f -lt $p ]] && echo -e "$(color cr 替换) ${x##*/} [ $(color cr ✕) ]" | _printf
 				[[ $f = $p ]] && \
 					echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf || \
@@ -236,7 +257,8 @@ clone_url() {
 		fi
 	done
 }
-packages_url="axel lsscsi netdata deluge luci-app-deluge libtorrent-rasterbar Mako python-pyxdg python-rencode python-setproctitle  luci-app-ddnsto luci-app-bridge luci-app-diskman luci-app-poweroff luci-app-cowbping luci-app-dockerman luci-app-smartinfo luci-app-filebrowser AmuleWebUI-Reloaded luci-app-qbittorrent luci-app-softwarecenter luci-app-rebootschedule luci-app-cowb-speedlimit luci-app-network-settings luci-lib-docker"
+packages_url="axel lsscsi netdata luci-app-ddnsto luci-app-bridge luci-app-diskman luci-app-poweroff luci-app-cowbping luci-app-dockerman luci-app-smartinfo luci-app-filebrowser AmuleWebUI-Reloaded luci-app-qbittorrent luci-app-softwarecenter luci-app-rebootschedule luci-app-cowb-speedlimit luci-app-network-settings luci-lib-docker"
+#packages_url="deluge luci-app-deluge libtorrent-rasterbar Mako python-pyxdg python-rencode python-setproctitle"
 for k in $packages_url; do
 	clone_url "https://github.com/hong0980/build/trunk/$k"
 done
@@ -250,9 +272,11 @@ clone_url "
 	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
 	https://github.com/xiaorouji/openwrt-passwall
-	https://github.com/small-5/luci-app-adblock-plus
+	#https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/kiddin9/openwrt-bypass/trunk/luci-app-bypass
+	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-passwall
+	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
 "
@@ -285,7 +309,6 @@ sed -i 's/option dports.*/option dports 2/' package/A/luci-app-vssr/root/etc/con
 	luci-app-openclash
 	luci-app-diskman
 	luci-app-hd-idle
-	luci-app-kickass
 	luci-app-pushbot
 	luci-app-smartinfo
 	luci-app-softwarecenter
@@ -293,6 +316,7 @@ sed -i 's/option dports.*/option dports 2/' package/A/luci-app-vssr/root/etc/con
 	luci-app-usb-printer
 	luci-app-vssr
 	luci-app-bypass
+	luci-app-ikoolproxy
 	"
 }
 x=$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)
@@ -308,7 +332,7 @@ case $TARGET_DEVICE in
 	FIRMWARE_TYPE="sysupgrade"
 	DEVICE_NAME="Phicomm-K2P"
 	;;
-"r4s"|"r2c"|"r2r")
+"r1-plus-lts"|"r4s"|"r2c"|"r2r")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "
@@ -322,25 +346,7 @@ case $TARGET_DEVICE in
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
-	luci-app-deluge
-	luci-app-passwall_INCLUDE_Brook
-	luci-app-passwall_INCLUDE_ChinaDNS_NG
-	luci-app-passwall_INCLUDE_Haproxy
-	luci-app-passwall_INCLUDE_Hysteria
-	luci-app-passwall_INCLUDE_Kcptun
-	luci-app-passwall_INCLUDE_NaiveProxy
-	luci-app-passwall_INCLUDE_PDNSD
-	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client
-	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Server
-	luci-app-passwall_INCLUDE_Shadowsocks_Rust_Client
-	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client
-	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Server
-	luci-app-passwall_INCLUDE_Simple_Obfs
-	luci-app-passwall_INCLUDE_Trojan_GO
-	luci-app-passwall_INCLUDE_Trojan_Plus
-	luci-app-passwall_INCLUDE_V2ray
-	luci-app-passwall_INCLUDE_V2ray_Plugin
-	luci-app-passwall_INCLUDE_Xray
+	#luci-app-deluge
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
@@ -350,16 +356,12 @@ case $TARGET_DEVICE in
 
 	#3G/4G_Support
 	kmod-usb-acm kmod-usb-serial kmod-usb-ohci-pci kmod-sound-core
-
-	#USB_net_driver
-	kmod-mt76 kmod-mt76x2u kmod-rtl8821cu kmod-rtl8192cu kmod-rtl8812au-ac
-	kmod-usb-net-asix-ax88179 kmod-usb-net-cdc-ether kmod-usb-net-rndis
-	usb-modeswitch kmod-usb-net-rtl8152-vendor
 	"
+
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
+	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	grep CONFIG_TARGET_ROOTFS_PARTSIZE .config
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
@@ -383,24 +385,6 @@ case $TARGET_DEVICE in
 	luci-app-smartdns
 	luci-app-unblockmusic
 	luci-app-deluge
-	luci-app-passwall_INCLUDE_Brook
-	luci-app-passwall_INCLUDE_ChinaDNS_NG
-	luci-app-passwall_INCLUDE_Haproxy
-	luci-app-passwall_INCLUDE_Hysteria
-	luci-app-passwall_INCLUDE_Kcptun
-	luci-app-passwall_INCLUDE_NaiveProxy
-	luci-app-passwall_INCLUDE_PDNSD
-	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Client
-	luci-app-passwall_INCLUDE_Shadowsocks_Libev_Server
-	luci-app-passwall_INCLUDE_Shadowsocks_Rust_Client
-	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client
-	luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Server
-	luci-app-passwall_INCLUDE_Simple_Obfs
-	luci-app-passwall_INCLUDE_Trojan_GO
-	luci-app-passwall_INCLUDE_Trojan_Plus
-	luci-app-passwall_INCLUDE_V2ray
-	luci-app-passwall_INCLUDE_V2ray_Plugin
-	luci-app-passwall_INCLUDE_Xray
 	#AmuleWebUI-Reloaded ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
