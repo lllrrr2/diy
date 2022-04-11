@@ -264,7 +264,14 @@ clone_url "
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash #bash
 	https://github.com/lisaac/luci-lib-docker/trunk/collections/luci-lib-docker
 	https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
-"
+	https://github.com/project-lede/luci-app-godproxy
+	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
+	https://github.com/kuoruan/luci-app-frpc
+	https://github.com/messense/aliyundrive-webdav/trunk/openwrt/aliyundrive-webdav
+	https://github.com/messense/aliyundrive-webdav/trunk/openwrt/luci-app-aliyundrive-webdav
+	https://github.com/NateLol/luci-app-oled
+	"
+
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
 tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or -name "direct_host" | grep "ss") >/dev/null
@@ -424,7 +431,11 @@ case "$TARGET_DEVICE" in
 	luci-app-smartdns
 	luci-app-unblockneteasemusic
 	luci-app-ikoolproxy
-	luci-app-deluge
+	luci-app-deluge	luci-app-godproxy
+	luci-app-wolplus
+	luci-app-frpc
+	luci-app-aliyundrive-webdav
+	luci-app-oled
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
