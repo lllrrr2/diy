@@ -279,6 +279,7 @@ clone_url "
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
+	https://github.com/kiddin9/openwrt-packages/trunk/ppp
 "
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
