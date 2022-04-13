@@ -196,7 +196,6 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-cowbping=y
 	CONFIG_PACKAGE_luci-app-cpulimit=y
 	CONFIG_PACKAGE_luci-app-ddnsto=y
-	CONFIG_PACKAGE_luci-app-easymesh=y
 	CONFIG_PACKAGE_luci-app-filebrowser=y
 	CONFIG_PACKAGE_luci-app-filetransfer=y
 	CONFIG_PACKAGE_luci-app-network-settings=y
@@ -353,6 +352,7 @@ x=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/
 case "$TARGET_DEVICE" in
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
+	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
 	sed -i '/openclash/d' .config
 	[ $IP ] && \
@@ -377,6 +377,7 @@ case "$TARGET_DEVICE" in
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
+	luci-app-cpufreq
 	#luci-app-deluge
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
@@ -399,6 +400,7 @@ case "$TARGET_DEVICE" in
 	;;
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
+	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
 	[ $IP ] && \
 	sed -i "s/192.168.1.1/$IP/" $config_generate || \
@@ -473,6 +475,7 @@ case "$TARGET_DEVICE" in
 	;;
 "armvirt_64_Default")
 	DEVICE_NAME="armvirt-64-default"
+	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="armvirt-64-default-rootfs"
 	sed -i '/easymesh/d' .config
 	[ $IP ] && \
@@ -489,7 +492,7 @@ case "$TARGET_DEVICE" in
 		luci-app-dockerman luci-app-ikoolproxy luci-app-qbittorrent mkf2fs ntfs-3g parted
 		perl perl-http-date perlbase-getopt perlbase-time perlbase-unicode perlbase-utf8
 		pigz pv python3 resize2fs tune2fs unzip uuidgen wpa-cli wpad wpad-basic xfs-fsck
-		xfs-mkfs"
+		xfs-mkfs luci-app-easymesh"
 		echo "CONFIG_PERL_NOCOMMENT=y" >>.config
 
 		sed -i "s/default 160/default $PARTSIZE/" config/Config-images.in

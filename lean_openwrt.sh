@@ -160,7 +160,6 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-app-cowbping=y
 	CONFIG_PACKAGE_luci-app-cpulimit=y
 	CONFIG_PACKAGE_luci-app-ddnsto=y
-	CONFIG_PACKAGE_luci-app-easymesh=y
 	CONFIG_PACKAGE_luci-app-filebrowser=y
 	CONFIG_PACKAGE_luci-app-filetransfer=y
 	CONFIG_PACKAGE_luci-app-network-settings=y
@@ -179,6 +178,7 @@ cat >> .config <<-EOF
 	# CONFIG_VMDK_IMAGES is not set
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
 	# CONFIG_PACKAGE_luci-app-wireguard is not set
+	# CONFIG_PACKAGE_luci-app-ddns is not set
 	# CONFIG_PACKAGE_luci-app-zerotier is not set
 	# CONFIG_PACKAGE_luci-app-ipsec-vpnd is not set
 	# CONFIG_PACKAGE_luci-app-xlnetacc is not set
@@ -282,7 +282,7 @@ clone_url "
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
-	https://github.com/kiddin9/openwrt-packages/trunk/ppp
+	#https://github.com/kiddin9/openwrt-packages/trunk/ppp
 "
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
@@ -330,10 +330,12 @@ case $TARGET_DEVICE in
 "newifi-d2")
 	FIRMWARE_TYPE="sysupgrade"
 	DEVICE_NAME="Newifi-D2"
+	_packages "luci-app-easymesh"
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
 "phicomm_k2p")
 	FIRMWARE_TYPE="sysupgrade"
+	_packages "luci-app-easymesh"
 	DEVICE_NAME="Phicomm-K2P"
 	;;
 "r1-plus-lts"|"r4s"|"r2c"|"r2r")
@@ -461,7 +463,7 @@ case $TARGET_DEVICE in
 	kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb2 kmod-usb3 lm-sensors losetup
 	lsattr lsblk lscpu lsscsi luci-app-adguardhome luci-app-cpufreq luci-app-dockerman
 	luci-app-qbittorrent mkf2fs ntfs-3g parted pv python3 resize2fs tune2fs unzip
-	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkf"
+	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkf luci-app-easymesh"
 
 	# wget -qO feeds/luci/applications/luci-app-qbittorrent/Makefile https://raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06/applications/luci-app-qbittorrent/Makefile
 	# sed -i 's/-Enhanced-Edition//' feeds/luci/applications/luci-app-qbittorrent/Makefile
