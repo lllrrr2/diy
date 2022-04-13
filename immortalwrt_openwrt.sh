@@ -50,7 +50,7 @@ _printf() {
 clone_url() {
 	for x in $@; do
 		if [[ "$(grep "^https" <<<$x | grep -Ev "helloworld|pass|build")" ]]; then
-			g=$(find package/ feeds/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
+			g=$(find package/ feeds/ -maxdepth 6 -type d -name ${x##*/} 2>/dev/null)
 			if ([[ -d "$g" ]] && rm -rf $g); then
 				p="1"; k="$g"
 			else
