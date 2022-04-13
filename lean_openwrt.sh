@@ -178,6 +178,9 @@ cat >> .config <<-EOF
 	# CONFIG_GRUB_EFI_IMAGES is not set
 	# CONFIG_VMDK_IMAGES is not set
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
+	# CONFIG_PACKAGE_luci-app-wireguard is not set
+	# CONFIG_PACKAGE_luci-app-zerotier is not set
+	# CONFIG_PACKAGE_luci-app-ipsec-vpnd is not set
 	# CONFIG_PACKAGE_luci-app-xlnetacc is not set
 	# CONFIG_PACKAGE_luci-app-uugamebooster is not set
 	# Libraries
