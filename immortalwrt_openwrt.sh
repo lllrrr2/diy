@@ -371,7 +371,6 @@ case "$TARGET_DEVICE" in
 	luci-app-dockerman
 	luci-app-netdata
 	#luci-app-jd-dailybonus
-	luci-app-poweroff
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
@@ -392,6 +391,7 @@ case "$TARGET_DEVICE" in
 	kmod-usb-net-asix-ax88179 kmod-usb-net-cdc-ether kmod-usb-net-rndis
 	usb-modeswitch kmod-usb-net-rtl8152-vendor
 	"
+	clone_url "https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-cpufreq"
 	# sed -i 's/qbittorrent_dynamic:qbittorrent/qbittorrent_dynamic:qBittorrent-Enhanced-Edition/g' package/feeds/luci/luci-app-qbittorrent/Makefile
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	}

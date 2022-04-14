@@ -346,7 +346,6 @@ case $TARGET_DEVICE in
 	luci-app-dockerman
 	luci-app-netdata
 	#luci-app-jd-dailybonus
-	luci-app-poweroff
 	luci-app-qbittorrent
 	luci-app-smartdns
 	luci-app-unblockmusic
