@@ -277,25 +277,25 @@ tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or
 # echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
 # tee -a {$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/*/*/*/status_top.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ssr-plus")/*/*/*/status.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")/*/*/*/status.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-passwall")/*/*/*/global/status.htm} >/dev/null
 
-[[ -f feeds/luci/applications/luci-app-openclash/luasrc/view/openclash/myip.htm ]] || {
+[[ -e feeds/luci/applications/luci-app-openclash/luasrc/view/openclash/myip.htm ]] || {
 	mkdir -p feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/openclash
 	wget -qO feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/openclash/myip.htm \
 	raw.githubusercontent.com/vernesong/OpenClash/master/luci-app-openclash/luasrc/view/openclash/myip.htm
 }
 
-[[ -f `$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua` ]] && {
+[[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua" ]] && {
 	sed -i '/vssr\/status/am:section(SimpleSection).template  = "openclash\/myip"' \
 	$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua
 }
-[[ -f `$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua` ]] && {
+[[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua" ]] && {
 	sed -i '/shadowsocksr\/status/am:section(SimpleSection).template  = "openclash\/myip"' \
 	$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua
 }
-[[ -f `$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua` ]] && {
+[[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua" ]] && {
 	sed -i '/bypass\/status/am:section(SimpleSection).template  = "openclash\/myip"' \
 	$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua
 }
-[[ -f `$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua` ]] && {
+[[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua" ]] && {
 	sed -i '/global\/status/am:section(SimpleSection).template  = "openclash\/myip"' \
 	$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua
 }
