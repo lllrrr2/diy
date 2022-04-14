@@ -398,7 +398,7 @@ case "$TARGET_DEVICE" in
 	luci-app-unblockmusic
 	luci-app-cpufreq
 	#luci-app-deluge
-	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
+	#AmuleWebUI-Reloaded htop lscpu nano screen webui-aria2 zstd pv
 	#subversion-server #unixodbc #git-http
 
 	#USB3.0支持
