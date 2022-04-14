@@ -268,7 +268,6 @@ clone_url "
 	https://github.com/kuoruan/luci-app-frpc
 	https://github.com/messense/aliyundrive-webdav/trunk/openwrt/aliyundrive-webdav
 	https://github.com/messense/aliyundrive-webdav/trunk/openwrt/luci-app-aliyundrive-webdav
-	https://github.com/NateLol/luci-app-oled
 	"
 
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
@@ -435,7 +434,6 @@ case "$TARGET_DEVICE" in
 	luci-app-wolplus
 	luci-app-frpc
 	luci-app-aliyundrive-webdav
-	luci-app-oled
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 
