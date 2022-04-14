@@ -242,7 +242,7 @@ clone_url "
 	https://github.com/hong0980/build
 	https://github.com/fw876/helloworld
 	#https://github.com/kiddin9/openwrt-packages
-	https://github.com/xiaorouji/openwrt-passwall2
+	#https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/destan19/OpenAppFilter
 	https://github.com/jerrykuku/luci-app-vssr #bash
@@ -257,7 +257,7 @@ clone_url "
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-unblockneteasemusic
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic
-	https://github.com/coolsnowwolf/packages/trunk/utils/btrfs-progs
+	#https://github.com/coolsnowwolf/packages/trunk/utils/btrfs-progs
 	#https://github.com/coolsnowwolf/packages/trunk/libs/rblibtorrent
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent-static
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash #bash
