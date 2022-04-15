@@ -284,7 +284,7 @@ tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or
 }
 
 [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua" ]] && {
-	sed -i '/vssr\/status/am:section(SimpleSection).template  = "openclash\/myip"' \
+	sed -i '/vssr\/status_top/am:section(SimpleSection).template  = "openclash\/myip"' \
 	$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua
 }
 [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua" ]] && {
@@ -292,7 +292,7 @@ tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or
 	$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua
 }
 [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua" ]] && {
-	sed -i '/bypass\/status/am:section(SimpleSection).template  = "openclash\/myip"' \
+	sed -i '/bypass\/status"/am:section(SimpleSection).template  = "openclash\/myip"' \
 	$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua
 }
 [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua" ]] && {
