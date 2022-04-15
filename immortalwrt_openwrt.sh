@@ -418,7 +418,7 @@ case "$TARGET_DEVICE" in
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 		kk=$(find package/A/ feeds/luci/ -type d -name "luci-app-cpufreq")
 		[[ -e "$kk/po/zh-cn/cpufreq.po" ]] && {
-		sed -i '/"performance/d'$kk/po/*/cpufreq.po
+		sed -i '/"performance/d' $kk/po/*/cpufreq.po
 		echo -e '
 		msgid "powersave"
 		msgstr "powersave 最低频率模式"
