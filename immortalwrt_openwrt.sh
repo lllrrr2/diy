@@ -280,7 +280,7 @@ tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or
 [[ -e feeds/luci/applications/luci-app-openclash/luasrc/view/openclash/myip.htm ]] || {
 	mkdir -p feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/openclash
 	wget -qO feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/openclash/myip.htm \
-	raw.githubusercontent.com/vernesong/OpenClash/master/luci-app-openclash/luasrc/view/openclash/myip.htm
+	raw.githubusercontent.com/hong0980/diy/master/myip.htm
 }
 
 [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua" ]] && {
