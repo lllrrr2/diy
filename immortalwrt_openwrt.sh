@@ -416,6 +416,21 @@ case "$TARGET_DEVICE" in
 	clone_url "https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-cpufreq"
 	# sed -i 's/qbittorrent_dynamic:qbittorrent/qbittorrent_dynamic:qBittorrent-Enhanced-Edition/g' package/feeds/luci/luci-app-qbittorrent/Makefile
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
+		kk=$(find package/A/ feeds/luci/ -type d -name "luci-app-cpufreq")
+		[[ -e "$kk/po/zh-cn/cpufreq.po" ]] && {
+		sed -i '/"performance/d'$kk/po/*/cpufreq.po
+		echo -e '
+		msgid "powersave"
+		msgstr "powersave 最低频率模式"
+
+		msgid "performance"
+		msgstr "performance 最高频率模式"
+
+		msgid "schedutil"
+		msgstr "schedutil 自动平衡模式"
+		' | tee -a $kk/po/*/cpufreq.po >/dev/null
+		sed -i '/governor/ s/ondemand/schedutil/' $kk/root/etc/config/cpufreq
+		}
 	}
 	;;
 "phicomm_k2p")
