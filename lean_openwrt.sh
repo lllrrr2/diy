@@ -70,7 +70,7 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 status
 
 : >.config
-[ $PARTSIZE ] || PARTSIZE=600
+[[ $PARTSIZE ]] || PARTSIZE=600
 case $TARGET_DEVICE in
 	"x86_64")
 		cat >.config<<-EOF
@@ -79,6 +79,11 @@ case $TARGET_DEVICE in
 		CONFIG_TARGET_ROOTFS_PARTSIZE=${PARTSIZE}
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
+		## remove
+		CONFIG_TARGET_IMAGES_GZIP=y
+		CONFIG_GRUB_IMAGES=y
+		# CONFIG_GRUB_EFI_IMAGES is not set
+		# CONFIG_VMDK_IMAGES is not set
 		EOF
 	;;
 	"r4s"|"r2c"|"r2r")
@@ -97,19 +102,18 @@ case $TARGET_DEVICE in
 		CONFIG_TARGET_rockchip_armv8=y
 		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
 		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-		CONFIG_PACKAGE_kmod-gpu-lima=y
-		CONFIG_PACKAGE_kmod-ath9k-htc=y
 		CONFIG_PACKAGE_kmod-mt76x0u=y
 		CONFIG_PACKAGE_kmod-mt76x2u=y
 		CONFIG_PACKAGE_kmod-r8125=y
 		CONFIG_PACKAGE_kmod-rtl8821cu=y
 		CONFIG_PACKAGE_kmod-rtl8812au-ac=y
-		CONFIG_PACKAGE_iw=y
-		CONFIG_PACKAGE_iwinfo=y
-		CONFIG_PACKAGE_wpad-wolfssl=y
 		CONFIG_DRIVER_11AC_SUPPORT=y
 		CONFIG_DRIVER_11N_SUPPORT=y
 		CONFIG_DRIVER_11W_SUPPORT=y
+		CONFIG_LINUX_5_4=y
+		# CONFIG_PACKAGE_luci-app-wol is not set
+		# CONFIG_PACKAGE_luci-app-turboacc is not set
+		# CONFIG_PACKAGE_luci-app-adbyby-plus is not set
 		EOF
 	;;
 	"newifi-d2")
@@ -171,11 +175,6 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-app-upnp=y
 	## luci theme
 	CONFIG_PACKAGE_luci-theme-material=y
-	## remove
-	CONFIG_TARGET_IMAGES_GZIP=y
-	CONFIG_GRUB_IMAGES=y
-	# CONFIG_GRUB_EFI_IMAGES is not set
-	# CONFIG_VMDK_IMAGES is not set
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
 	# CONFIG_PACKAGE_luci-app-wireguard is not set
 	# CONFIG_PACKAGE_luci-app-ddns is not set
@@ -205,7 +204,7 @@ sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 sed -i "{
 		/upnp/d;/banner/d;/openwrt_release/d;/shadow/d
 		s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-		s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/ Mod by Lienol//g' /usr/lib/lua/luci/version.lua|
+		s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow|
 		}" $(find package/ -type f -name "zzz-default-settings")
 	
 cat <<-\EOF >feeds/packages/lang/python/python3/files/python3-package-uuid.mk
@@ -258,7 +257,7 @@ clone_url() {
 		fi
 	done
 }
-packages_url="axel lsscsi netdata luci-app-ddnsto luci-app-bridge luci-app-diskman luci-app-poweroff luci-app-cowbping luci-app-dockerman luci-app-smartinfo luci-app-filebrowser AmuleWebUI-Reloaded luci-app-qbittorrent luci-app-softwarecenter luci-app-rebootschedule luci-app-cowb-speedlimit luci-app-network-settings luci-lib-docker"
+packages_url="axel lsscsi netdata luci-app-ddnsto luci-app-bridge luci-app-diskman luci-app-poweroff luci-app-cowbping luci-app-dockerman luci-app-smartinfo luci-app-filebrowser AmuleWebUI-Reloaded luci-app-qbittorrent luci-app-softwarecenter luci-app-rebootschedule luci-app-cowb-speedlimit luci-app-network-settings luci-lib-docker luci-app-aria2"
 #packages_url="deluge luci-app-deluge libtorrent-rasterbar Mako python-pyxdg python-rencode python-setproctitle"
 for k in $packages_url; do
 	clone_url "https://github.com/hong0980/build/trunk/$k"
@@ -273,7 +272,7 @@ clone_url "
 	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
 	https://github.com/xiaorouji/openwrt-passwall
-	#https://github.com/xiaorouji/openwrt-passwall2
+	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/kiddin9/openwrt-bypass/trunk/luci-app-bypass
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-passwall
@@ -286,9 +285,29 @@ clone_url "
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
 tee -a $(find package/ feeds/luci/applications/ -type f -name "white.list" -or -name "direct_host" | grep "ss") >/dev/null
 
-echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
-tee -a {$(find package/ feeds/luci/applications/ -type d -name "luci-app-vssr")/*/*/*/status_top.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-ssr-plus")/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass")/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-passwall")/*/*/*/global/status.htm} >/dev/null
+# echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
+# tee -a {$(find package/ feeds/luci/applications/ -type d -name "luci-app-vssr")/*/*/*/status_top.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-ssr-plus")/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass")/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-passwall")/*/*/*/global/status.htm} >/dev/null
 sed -i 's/option dports.*/option dports 2/' package/A/luci-app-vssr/root/etc/config/vssr
+
+# if wget -qO feeds/luci/modules/luci-mod-admin-full/luasrc/view/myip.htm \
+# raw.githubusercontent.com/hong0980/diy/master/myip.htm; then
+	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua" ]] && {
+		# sed -i '/vssr\/status_top/am:section(SimpleSection).template  = "myip"' \
+		# $(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua
+	# }
+	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua" ]] && {
+		# sed -i '/shadowsocksr\/status/am:section(SimpleSection).template  = "myip"' \
+		# $(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua
+	# }
+	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua" ]] && {
+		# sed -i '/bypass\/status"/am:section(SimpleSection).template  = "myip"' \
+		# $(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua
+	# }
+	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua" ]] && {
+		# sed -i '/global\/status/am:section(SimpleSection).template  = "myip"' \
+		# $(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua
+	# }
+# fi
 
 [[ "$TARGET_DEVICE" != "phicomm_k2p" ]] && {
 	clone_url "
@@ -312,7 +331,7 @@ sed -i 's/option dports.*/option dports 2/' package/A/luci-app-vssr/root/etc/con
 	luci-app-diskman
 	luci-app-hd-idle
 	luci-app-pushbot
-	luci-app-smartinfo
+	#luci-app-smartinfo
 	luci-app-softwarecenter
 	luci-app-transmission
 	luci-app-usb-printer
@@ -336,7 +355,7 @@ case $TARGET_DEVICE in
 	_packages "luci-app-easymesh"
 	DEVICE_NAME="Phicomm-K2P"
 	;;
-"r1-plus-lts"|"r4s"|"r2c"|"r2r")
+"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2r")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "
@@ -345,28 +364,27 @@ case $TARGET_DEVICE in
 	#luci-app-amule
 	luci-app-dockerman
 	luci-app-netdata
-	#luci-app-jd-dailybonus
 	luci-app-qbittorrent
 	luci-app-smartdns
-	luci-app-unblockmusic
-	luci-app-cpufreq
 	luci-app-aliyundrive-webdav
 	#luci-app-deluge
+	#luci-app-passwall2
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
-
-	#USB3.0支持
-	kmod-usb2 kmod-usb2-pci kmod-usb3
-	kmod-fs-nfsd kmod-fs-nfs kmod-fs-nfs-v4
-
-	#3G/4G_Support
-	kmod-usb-acm kmod-usb-serial kmod-usb-ohci-pci kmod-sound-core
 	"
-
+	_packages "luci-app-cpufreq"
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
+	[[ $TARGET_DEVICE == "r1-plus-lts" ]] && {
+	sed -i "s/PATCHVER=5.15/PATCHVER=5.4/g" target/linux/rockchip/Makefile
+	sed -i '/bridge=y/d' .config
+	mkdir patches && \
+	wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
+	wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0005-1.5g.patch && \
+	git apply --reject --ignore-whitespace patches/*.patch
+	}
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"

@@ -242,7 +242,7 @@ clone_url "
 	https://github.com/hong0980/build
 	https://github.com/fw876/helloworld
 	#https://github.com/kiddin9/openwrt-packages
-	#https://github.com/xiaorouji/openwrt-passwall2
+	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/destan19/OpenAppFilter
 	https://github.com/jerrykuku/luci-app-vssr #bash
@@ -254,6 +254,8 @@ clone_url "
 	https://github.com/kiddin9/openwrt-packages/trunk/qtbase
 	https://github.com/kiddin9/openwrt-packages/trunk/qttools
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
+	https://github.com/kiddin9/openwrt-packages/trunk/aliyundrive-webdav
+	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-aliyundrive-webdav
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-unblockneteasemusic
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic
@@ -266,8 +268,6 @@ clone_url "
 	https://github.com/project-lede/luci-app-godproxy
 	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
 	https://github.com/kuoruan/luci-app-frpc
-	https://github.com/messense/aliyundrive-webdav/trunk/openwrt/aliyundrive-webdav
-	https://github.com/messense/aliyundrive-webdav/trunk/openwrt/luci-app-aliyundrive-webdav
 	"
 
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
@@ -277,28 +277,25 @@ tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or
 # echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
 # tee -a {$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/*/*/*/status_top.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ssr-plus")/*/*/*/status.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")/*/*/*/status.htm,$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-passwall")/*/*/*/global/status.htm} >/dev/null
 
-[[ -e feeds/luci/applications/luci-app-openclash/luasrc/view/openclash/myip.htm ]] || {
-	mkdir -p feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/openclash
-	wget -qO feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/openclash/myip.htm \
-	raw.githubusercontent.com/hong0980/diy/master/myip.htm
-}
-
-[[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua" ]] && {
-	sed -i '/vssr\/status_top/am:section(SimpleSection).template  = "openclash\/myip"' \
-	$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua
-}
-[[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua" ]] && {
-	sed -i '/shadowsocksr\/status/am:section(SimpleSection).template  = "openclash\/myip"' \
-	$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua
-}
-[[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua" ]] && {
-	sed -i '/bypass\/status"/am:section(SimpleSection).template  = "openclash\/myip"' \
-	$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua
-}
-[[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua" ]] && {
-	sed -i '/global\/status/am:section(SimpleSection).template  = "openclash\/myip"' \
-	$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua
-}
+# if wget -qO feeds/luci/modules/luci-mod-admin-full/luasrc/view/myip.htm \
+# raw.githubusercontent.com/hong0980/diy/master/myip.htm; then
+	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua" ]] && {
+		# sed -i '/vssr\/status_top/am:section(SimpleSection).template  = "myip"' \
+		# $(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua
+	# }
+	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua" ]] && {
+		# sed -i '/shadowsocksr\/status/am:section(SimpleSection).template  = "myip"' \
+		# $(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus")/luasrc/model/cbi/shadowsocksr/client.lua
+	# }
+	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua" ]] && {
+		# sed -i '/bypass\/status"/am:section(SimpleSection).template  = "myip"' \
+		# $(find package/A/ feeds/luci/ -type d -name "luci-app-bypass")/luasrc/model/cbi/bypass/base.lua
+	# }
+	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua" ]] && {
+		# sed -i '/global\/status/am:section(SimpleSection).template  = "myip"' \
+		# $(find package/A/ feeds/luci/ -type d -name "luci-app-passwall")/luasrc/model/cbi/passwall/client/global.lua
+	# }
+# fi
 
 cat <<-\EOF >feeds/packages/lang/python/python3/files/python3-package-uuid.mk
 	define Package/python3-uuid
@@ -327,8 +324,8 @@ sed -i 's/option dports.*/option dports 2/' feeds/luci/applications/luci-app-vss
 	luci-app-softwarecenter
 	luci-app-transmission
 	luci-app-usb-printer
-	luci-app-vssr
-	luci-app-bypass
+	#luci-app-vssr
+	#luci-app-bypass
 	luci-app-openclash
 	luci-theme-material
 	"
@@ -394,43 +391,23 @@ case "$TARGET_DEVICE" in
 	luci-app-netdata
 	#luci-app-jd-dailybonus
 	luci-app-qbittorrent
-	luci-app-smartdns
-	luci-app-unblockmusic
+	#luci-app-smartdns
+	#luci-app-unblockneteasemusic
+	#luci-app-passwall2
 	luci-app-cpufreq
 	#luci-app-deluge
 	#AmuleWebUI-Reloaded htop lscpu nano screen webui-aria2 zstd pv
-	#subversion-server #unixodbc #git-http
-
-	#USB3.0支持
-	kmod-usb2 kmod-usb2-pci kmod-usb3
-	kmod-fs-nfsd kmod-fs-nfs kmod-fs-nfs-v4
-
-	#3G/4G_Support
-	kmod-usb-acm kmod-usb-serial kmod-usb-ohci-pci kmod-sound-core
-
-	#USB_net_driver
-	kmod-mt76 kmod-mt76x2u kmod-rtl8821cu kmod-rtl8192cu kmod-rtl8812au-ac
-	kmod-usb-net-asix-ax88179 kmod-usb-net-cdc-ether kmod-usb-net-rndis
-	usb-modeswitch kmod-usb-net-rtl8152-vendor
 	"
-	clone_url "https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-cpufreq"
 	# sed -i 's/qbittorrent_dynamic:qbittorrent/qbittorrent_dynamic:qBittorrent-Enhanced-Edition/g' package/feeds/luci/luci-app-qbittorrent/Makefile
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
-		kk=$(find package/A/ feeds/luci/ -type d -name "luci-app-cpufreq")
-		[[ -e "$kk/po/zh-cn/cpufreq.po" ]] && {
-		sed -i '/"performance/d' $kk/po/*/cpufreq.po
-		echo -e '
-		msgid "powersave"
-		msgstr "powersave 最低频率模式"
-
-		msgid "performance"
-		msgstr "performance 最高频率模式"
-
-		msgid "schedutil"
-		msgstr "schedutil 自动平衡模式"
-		' | tee -a $kk/po/*/cpufreq.po >/dev/null
-		sed -i '/governor/ s/ondemand/schedutil/' $kk/root/etc/config/cpufreq
-		}
+	}
+	[[ $TARGET_DEVICE == "r1-plus-lts" ]] && {
+	# sed -i "s/ucidef_set_interfaces_lan_wan 'eth1' 'eth0'/ucidef_set_interfaces_lan_wan 'eth0' 'eth1'/" target/linux/rockchip/armv8/base-files/etc/board.d/02_network
+	sed -i '/bridge=y/d' .config
+	mkdir patches && \
+	wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
+	wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0005-1.5g.patch && \
+	git apply --reject --ignore-whitespace patches/*.patch
 	}
 	;;
 "phicomm_k2p")
