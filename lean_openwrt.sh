@@ -76,7 +76,7 @@ case $TARGET_DEVICE in
 		cat >.config<<-EOF
 		CONFIG_TARGET_x86=y
 		CONFIG_TARGET_x86_64=y
-		CONFIG_TARGET_ROOTFS_PARTSIZE=${PARTSIZE}
+		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
 		## remove
@@ -348,12 +348,17 @@ case $TARGET_DEVICE in
 	FIRMWARE_TYPE="sysupgrade"
 	DEVICE_NAME="Newifi-D2"
 	_packages "luci-app-easymesh"
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
 "phicomm_k2p")
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "luci-app-easymesh"
 	DEVICE_NAME="Phicomm-K2P"
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
+	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	;;
 "r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2r")
 	DEVICE_NAME="$TARGET_DEVICE"
@@ -372,9 +377,11 @@ case $TARGET_DEVICE in
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 	"
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
+	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	_packages "luci-app-cpufreq"
 	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
-	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	[[ $TARGET_DEVICE == "r1-plus-lts" ]] && {
@@ -382,18 +389,21 @@ case $TARGET_DEVICE in
 	sed -i '/bridge=y/d' .config
 	mkdir patches && \
 	wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
-	wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0005-1.5g.patch && \
 	git apply --reject --ignore-whitespace patches/*.patch
 	}
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
 	FIRMWARE_TYPE="n16"
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.130/" $config_generate
 	;;
 "x86_64")
 	DEVICE_NAME="x86_64"
 	FIRMWARE_TYPE="squashfs-combined"
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
 	_packages "
 	luci-app-adbyby-plus
@@ -468,6 +478,8 @@ case $TARGET_DEVICE in
 	DEVICE_NAME="armvirt-64-default"
 	FIRMWARE_TYPE="armvirt-64-default"
 	sed -i '/easymesh/d' .config
+	[ $IP ] && \
+	sed -i "s/192.168.1.1/$IP/" $config_generate || \
 	sed -i "s/192.168.1.1/192.168.2.110/" $config_generate
 	# clone_url "https://github.com/tuanqing/install-program" && rm -rf package/A/install-program/tools
 	_packages "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
@@ -483,7 +495,7 @@ case $TARGET_DEVICE in
 	# wget -qO feeds/luci/applications/luci-app-qbittorrent/Makefile https://raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06/applications/luci-app-qbittorrent/Makefile
 	# sed -i 's/-Enhanced-Edition//' feeds/luci/applications/luci-app-qbittorrent/Makefile
 	sed -i 's/@arm/@TARGET_armvirt_64/g' $(find . -type d -name "luci-app-cpufreq")/Makefile
-	sed -i 's/default 160/default 600/' config/Config-images.in
+	sed -i "s/default 160/default $PARTSIZE/" config/Config-images.in
 	sed -e 's/services/system/; s/00//' $(find . -type d -name "luci-app-cpufreq")/luasrc/controller/cpufreq.lua -i
 	[ -d ../opt/openwrt_packit ] && {
 		sed -i '{
