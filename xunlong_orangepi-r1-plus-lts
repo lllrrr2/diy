@@ -69,34 +69,55 @@ clone_url() {
 }
 sudo -E apt-get -qq update
 sudo -E apt-get -qq install rsync
-# curl -fsSL https://raw.githubusercontent.com/hong0980/Actions-OpenWrt/master/init_build_environment.sh | sudo /bin/bash
-# curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-# sudo chmod +x /usr/bin/zstd
-# for i in {1..20}; do
-	# curl -sL --fail https://github.com/klever1988/sshactions/releases/download/cache/lede.r1p-lts.img.zst.0$i
-# done | zstd -d -o lede.img || (truncate -s 30g lede.img && mkfs.btrfs -M lede.img)
-# LOOP_DEVICE=$(losetup -f)
-# sudo losetup -P --direct-io $LOOP_DEVICE lede.img
-# mkdir lede && sudo mount -o nossd,compress=zstd $LOOP_DEVICE lede
-# [ $BRANCH != 'master' ] && BRANCH='openwrt-18.06-k5.4'
-# if [ -d 'lede/.git' ]; then
-	# cd lede && rm -f zerospace && git config --local user.email "action@github.com" && git config --local user.name "GitHub Action"
-	# git fetch && git reset --hard origin/$BRANCH && git clean -df
-# else
-	# sudo chown $USER:$(id -gn) lede && git clone -b $BRANCH --single-branch https://github.com/coolsnowwolf/lede lede
-# fi
+#LOOP_DEVICE="r1p-lts"
+#curl -fsSL https://raw.githubusercontent.com/hong0980/Actions-OpenWrt/master/init_build_environment.sh | sudo /bin/bash
+#curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
+#sudo chmod +x /usr/bin/zstd
+#for i in {1..20}; do
+#	curl -sL --fail https://github.com/klever1988/sshactions/releases/download/cache/lede.$LOOP_DEVICE.img.zst.0$i
+#done | zstd -d -o lede.img || (truncate -s 30g lede.img && mkfs.btrfs -M lede.img)
+#LOOP_DEVICE=$(losetup -f)
+#sudo losetup -P --direct-io $LOOP_DEVICE lede.img
+#mkdir lede && sudo mount -o nossd,compress=zstd $LOOP_DEVICE lede
+#[ $BRANCH != 'master' ] && BRANCH='openwrt-18.06-k5.4'
+#if [ -d 'lede/.git' ]; then
+#	cd lede && rm -f zerospace && git config --local user.email "action@github.com" && git config --local user.name "GitHub Action"
+#	git fetch && git reset --hard origin/$BRANCH && git clean -df
+#else
+#	sudo chown $USER:$(id -gn) lede && git clone -b $BRANCH --single-branch https://github.com/coolsnowwolf/lede lede
+#fi
+#cd lede
+#if [ -d 'feeds' ]; then
+#	pushd feeds/packages; git restore .; popd
+#	pushd feeds/luci; git restore .; popd
+#	pushd feeds/routing; git restore .; popd
+#	pushd feeds/telephony; git restore .; popd
+#	echo -e "$(color cy '更新软件....')\c"
+#	BEGIN_TIME=$(date '+%H:%M:%S')
+#	./scripts/feeds update -a 1>/dev/null 2>&1
+#	status
+#	echo -e "$(color cy '安装软件....')\c"
+#	BEGIN_TIME=$(date '+%H:%M:%S')
+#	./scripts/feeds install -a 1>/dev/null 2>&1
+#	status
+#fi
+#[ $BRANCH != 'master' ] && BRANCH='openwrt-18.06'
+#svn export https://github.com/openwrt/luci/branches/$BRANCH luci
+#pushd luci
+#ls -d */ | xargs -n1 -i diff -q {} ../lede/feeds/luci/{} | grep Only | grep lede | grep -E applications\|themes | awk '{print $4}' | xargs -n1 -i echo CONFIG_PACKAGE_{}=m > more_luci.txt
+#popd
 
-[[ -d openwrt ]] && {
-	cd openwrt
+[[ -d 'lede/.git' ]] && {
+	cd lede
 	git fetch --all
 	git reset --hard origin/master
 	rm -rf feeds/* package/A dl
 } || {
 	echo -e "$(color cy '拉取源码....')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
-	git clone https://github.com/coolsnowwolf/lede openwrt
+	git clone https://github.com/coolsnowwolf/lede
 	status
-	cd openwrt
+	cd lede
 }
 
 echo -e "$(color cy '更新软件....')\c"
