@@ -359,8 +359,6 @@ x=$(find package/ feeds/ -type d -name "luci-app-vssr" 2>/dev/null)
 	luci-app-vssr
 	luci-app-bypass
 	luci-app-ikoolproxy
-	luci-theme-argon
-	luci-app-argon-config
 	"
 }
 x=$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)
@@ -408,7 +406,7 @@ case $TARGET_DEVICE in
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	if [[ $TARGET_DEVICE == "r1-plus-lts" && $REPOSITORY = "lean" ]]; then
-		sed -i "s/PATCHVER=5.15/PATCHVER=5.4/g" target/linux/rockchip/Makefile
+		sed -i "s/PATCHVER=5.15/PATCHVER=5.10/" target/linux/rockchip/Makefile
 		sed -i '/bridge=y/d' .config
 		mkdir patches && \
 		wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
@@ -593,6 +591,8 @@ esac
 #	sed -i '/qbittorrent/d;/vssr/d' .config
 	sed -i 's|\.\./\.\.|\$(TOPDIR)/feeds/luci|' package/A/*/Makefile
 }
+
+	[[ $TARGET_DEVICE == "r1-plus-lts" ]] && _packages "luci-theme-argon luci-app-argon-config"
 
 for p in $(find package/A/ feeds/luci/applications/ -maxdepth 2 -type d -name "po" 2>/dev/null); do
 	if [[ "${REPO_BRANCH#*-}" == "21.02" ]]; then
