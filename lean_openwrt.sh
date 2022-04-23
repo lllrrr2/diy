@@ -547,7 +547,8 @@ case $TARGET_DEVICE in
 esac
 
 [[ $REPOSITORY != "lean" && $TARGET_DEVICE == "r1-plus-lts" ]] && {
-	_packages "autocore-arm default-settings default-settings-chn fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl kmod-mt76x2u usbutils"
+	# _packages "autocore-arm default-settings default-settings-chn fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl kmod-mt76x2u usbutils"
+	_packages "fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl kmod-mt76x2u usbutils"
 	clone_url "
 	https://github.com/immortalwrt/immortalwrt/trunk/package/emortal/autosamba
 	https://github.com/immortalwrt/immortalwrt/trunk/package/emortal/automount
