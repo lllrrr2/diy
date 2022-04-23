@@ -263,7 +263,7 @@ if [[ $REPOSITORY = "lean" ]]; then
 			s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow|
 			}" $(find package/ -type f -name "zzz-default-settings")
 else
-	packages_url="adbyby aliyundrive-webdav luci-app-adbyby-plus luci-app-aliyundrive-webdav luci-app-cifs-mount luci-app-cpufreq luci-app-passwall luci-app-usb-printer luci-lib-fs ntfs3-mount ntfs3-oot pdnsd-alt qBittorrent-static r8125 redsocks2 qtbase luci-app-bypass"
+	packages_url="adbyby aliyundrive-webdav luci-app-adbyby-plus luci-app-aliyundrive-webdav luci-app-cifs-mount luci-app-cpufreq luci-app-usb-printer luci-lib-fs ntfs3-mount ntfs3-oot pdnsd-alt qBittorrent-static r8125 redsocks2 qtbase"
 	for k in $packages_url; do
 		clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
 	done
@@ -304,6 +304,11 @@ clone_url "
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
 "
+
+packages_url="luci-app-passwall luci-app-ikoolproxy luci-app-bypass"
+for k in $packages_url; do
+	clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
+done
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
 tee -a $(find package/ feeds/luci/applications/ -type f -name "white.list" -or -name "direct_host" | grep "ss") >/dev/null
