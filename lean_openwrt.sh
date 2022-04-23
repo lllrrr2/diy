@@ -229,6 +229,7 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	## luci theme
+	CONFIG_PACKAGE_luci-theme-bootstrap=y
 	CONFIG_PACKAGE_luci-theme-material=y
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
 	# CONFIG_PACKAGE_luci-app-wireguard is not set
