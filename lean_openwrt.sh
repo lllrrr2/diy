@@ -406,7 +406,7 @@ case $TARGET_DEVICE in
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	if [[ $TARGET_DEVICE == "r1-plus-lts" && $REPOSITORY = "lean" ]]; then
-		sed -i "s/PATCHVER=5.15/PATCHVER=5.10/" target/linux/rockchip/Makefile
+		sed -i "s/KERNEL_PATCHVER=5.15/KERNEL_PATCHVER=5.10/" target/linux/rockchip/Makefile
 		sed -i '/bridge=y/d' .config
 		mkdir patches && \
 		wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
