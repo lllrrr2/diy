@@ -165,7 +165,6 @@ case $TARGET_DEVICE in
 		CONFIG_DRIVER_11AC_SUPPORT=y
 		CONFIG_DRIVER_11N_SUPPORT=y
 		CONFIG_DRIVER_11W_SUPPORT=y
-		CONFIG_LINUX_5_4=y
 		# CONFIG_PACKAGE_luci-app-wol is not set
 		# CONFIG_PACKAGE_luci-app-turboacc is not set
 		# CONFIG_PACKAGE_luci-app-adbyby-plus is not set
@@ -303,6 +302,8 @@ clone_url "
 	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
+	https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
+	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config
 	https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
 "
 
@@ -358,6 +359,8 @@ x=$(find package/ feeds/ -type d -name "luci-app-vssr" 2>/dev/null)
 	luci-app-vssr
 	luci-app-bypass
 	luci-app-ikoolproxy
+	luci-theme-argon
+	luci-app-argon-config
 	"
 }
 x=$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)
