@@ -253,7 +253,7 @@ DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*
 color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 if [[ $REPOSITORY = "lean" ]]; then
-	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$m-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$m-$REPO_BRANCH-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 	sed -i "/IMG_PREFIX:/ {s/=/=$m-$REPO_BRANCH-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 	sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
@@ -548,7 +548,37 @@ esac
 
 [[ $REPOSITORY != "lean" && $TARGET_DEVICE == "r1-plus-lts" ]] && {
 	# _packages "autocore-arm default-settings default-settings-chn fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl kmod-mt76x2u usbutils"
-	_packages "fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl kmod-mt76x2u usbutils"
+	cat<<-EOF >.config
+	CONFIG_TARGET_rockchip=y
+	CONFIG_TARGET_rockchip_armv8=y
+	CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
+	CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
+	CONFIG_KERNEL_BUILD_USER="win3gp"
+	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
+	CONFIG_PACKAGE_luci-app-accesscontrol=y
+	CONFIG_PACKAGE_luci-app-adblock-plus=y
+	CONFIG_PACKAGE_luci-app-bridge=y
+	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
+	CONFIG_PACKAGE_luci-app-cowbping=y
+	CONFIG_PACKAGE_luci-app-cpulimit=y
+	CONFIG_PACKAGE_luci-app-ddnsto=y
+	CONFIG_PACKAGE_luci-app-filebrowser=y
+	CONFIG_PACKAGE_luci-app-filetransfer=y
+	CONFIG_PACKAGE_luci-app-network-settings=y
+	CONFIG_PACKAGE_luci-app-oaf=y
+	CONFIG_PACKAGE_luci-app-passwall=y
+	CONFIG_PACKAGE_luci-app-rebootschedule=y
+	CONFIG_PACKAGE_luci-app-ssr-plus=y
+	CONFIG_PACKAGE_luci-app-ttyd=y
+	CONFIG_PACKAGE_luci-app-upnp=y
+	CONFIG_PACKAGE_luci-theme-bootstrap=y
+	EOF
+	_packages "fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl kmod-mt76x2u usbutils
+	luci-app-aria2 luci-app-cifs-mount luci-app-control-weburl luci-app-openclash
+	luci-app-diskman luci-app-hd-idle luci-app-pushbot luci-app-softwarecenter
+	luci-app-transmission luci-app-usb-printer luci-app-vssr luci-app-bypass
+	default-settings automount autosamba
+	"
 	clone_url "
 	https://github.com/immortalwrt/immortalwrt/trunk/package/emortal/autosamba
 	https://github.com/immortalwrt/immortalwrt/trunk/package/emortal/automount
