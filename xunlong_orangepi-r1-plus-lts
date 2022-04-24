@@ -115,7 +115,9 @@ sudo -E apt-get -qq install rsync
 } || {
 	echo -e "$(color cy '拉取源码....')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
-	git clone https://github.com/coolsnowwolf/lede
+#	git clone https://github.com/coolsnowwolf/lede
+#	git clone https://github.com/orangepi-xunlong/openwrt
+	git clone https://github.com/baiywt/openwrt
 	status
 	cd lede
 }
