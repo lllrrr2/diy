@@ -66,11 +66,16 @@ clone_url() {
 					f="1"
 				fi
 			fi
-			[[ x$f = x ]] && echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
-			[[ $f -lt $p ]] && echo -e "$(color cr 替换) ${x##*/} [ $(color cr ✕) ]" | _printf
-			[[ $f = $p ]] && \
-				echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf || \
-				echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
+
+			if [[ $f -eq 1 ]]; then
+				if [[ $p -eq 1 ]]; then
+					echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf
+				else
+					echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
+				fi
+			else
+				echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
+			fi
 			unset -v p f k
 		else
 			for w in $(grep "^https" <<<$x); do
@@ -99,7 +104,6 @@ clone_url() {
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH" || cmd="-b openwrt-18.06-k5.4"
-
 echo -e "$(color cy 当前的机型) $(color cb ${REPO_BRANCH}-${TARGET_DEVICE}-${VERSION})"
 echo -e "$(color cy '拉取源码....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
@@ -215,7 +219,6 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_default-settings=y
 	CONFIG_TARGET_IMAGES_GZIP=y
 	CONFIG_BRCMFMAC_SDIO=y
-	CONFIG_LUCI_LANG_en=y
 	CONFIG_LUCI_LANG_zh_Hans=y
 	CONFIG_DEFAULT_SETTINGS_OPTIMIZE_FOR_CHINESE=y
 EOF
@@ -224,7 +227,7 @@ config_generate="package/base-files/files/bin/config_generate"
 color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-immortalwrt-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
-sed -i "/IMG_PREFIX:/ {s/=/=Immortal-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
+sed -i "/IMG_PREFIX:/ {s/=/=immortalwrt-${REPO_BRANCH#*-}-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 sed -i 's/option dports.*/option enabled 2/' feeds/*/*/*/*/upnpd.config
 sed -i "s/ImmortalWrt/OpenWrt/" {$config_generate,include/version.mk}
@@ -245,6 +248,7 @@ clone_url "
 	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/destan19/OpenAppFilter
+	https://github.com/messense/aliyundrive-webdav
 	https://github.com/jerrykuku/luci-app-vssr #bash
 	https://github.com/kiddin9/openwrt-bypass
 	https://github.com/ntlf9t/luci-app-easymesh
@@ -254,8 +258,6 @@ clone_url "
 	https://github.com/kiddin9/openwrt-packages/trunk/qtbase
 	https://github.com/kiddin9/openwrt-packages/trunk/qttools
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
-	https://github.com/kiddin9/openwrt-packages/trunk/aliyundrive-webdav
-	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-aliyundrive-webdav
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-unblockneteasemusic
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic
@@ -324,8 +326,8 @@ sed -i 's/option dports.*/option dports 2/' feeds/luci/applications/luci-app-vss
 	luci-app-softwarecenter
 	luci-app-transmission
 	luci-app-usb-printer
-	#luci-app-vssr
-	#luci-app-bypass
+	luci-app-vssr
+	luci-app-bypass
 	luci-app-openclash
 	luci-theme-material
 	"
@@ -334,7 +336,7 @@ sed -i 's/option dports.*/option dports 2/' feeds/luci/applications/luci-app-vss
 	[[ -d package/A/qtbase ]] && rm -rf feeds/packages/libs/qt5
 }
 
-[[ "$REPO_BRANCH" == "openwrt-21.02" ]] && {
+[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
 	# sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
 	sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
 } || {
@@ -347,7 +349,7 @@ sed -i 's/option dports.*/option dports 2/' feeds/luci/applications/luci-app-vss
 	done
 }
 
-for p in $(find package/A/ feeds/luci/applications/ -maxdepth 2 -type d -name "po" 2>/dev/null); do
+for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/null); do
 	if [[ "${REPO_BRANCH#*-}" == "21.02" ]]; then
 		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
 			ln -s zh-cn $p/zh_Hans 2>/dev/null
@@ -372,16 +374,16 @@ case "$TARGET_DEVICE" in
 	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
 	sed -i '/openclash/d' .config
-	[ $IP ] && \
-	sed -i "s/192.168.1.1/$IP/" $config_generate || \
-	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
+	[[ $IP ]] && \
+	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
+	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	;;
 "r4s"|"r2c"|"r2r"|"r1-plus-lts"|"r1-plus")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
-	[ $IP ] && \
-	sed -i "s/192.168.1.1/$IP/" $config_generate || \
-	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
+	[[ $IP ]] && \
+	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
+	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	[[ $VERSION = plus ]] && {
 	_packages "
 	#luci-app-adbyby-plus
@@ -393,20 +395,19 @@ case "$TARGET_DEVICE" in
 	luci-app-qbittorrent
 	#luci-app-smartdns
 	#luci-app-unblockneteasemusic
-	#luci-app-passwall2
+	luci-app-passwall2
 	luci-app-cpufreq
 	#luci-app-deluge
 	#AmuleWebUI-Reloaded htop lscpu nano screen webui-aria2 zstd pv
 	"
 	# sed -i 's/qbittorrent_dynamic:qbittorrent/qbittorrent_dynamic:qBittorrent-Enhanced-Edition/g' package/feeds/luci/luci-app-qbittorrent/Makefile
-	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.1_v1.2.15/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
+	sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.2_v1.2.16/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 	}
 	[[ $TARGET_DEVICE == "r1-plus-lts" ]] && {
 	# sed -i "s/ucidef_set_interfaces_lan_wan 'eth1' 'eth0'/ucidef_set_interfaces_lan_wan 'eth0' 'eth1'/" target/linux/rockchip/armv8/base-files/etc/board.d/02_network
 	sed -i '/bridge=y/d' .config
 	mkdir patches && \
 	wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
-	wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0005-1.5g.patch && \
 	git apply --reject --ignore-whitespace patches/*.patch
 	}
 	;;
@@ -414,24 +415,24 @@ case "$TARGET_DEVICE" in
 	DEVICE_NAME="Phicomm-K2P"
 	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
-	[ $IP ] && \
-	sed -i "s/192.168.1.1/$IP/" $config_generate || \
-	sed -i "s/192.168.1.1/192.168.2.1/" $config_generate
+	[[ $IP ]] && \
+	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
+	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
 	FIRMWARE_TYPE="n16"
-	[ $IP ] && \
-	sed -i "s/192.168.1.1/$IP/" $config_generate || \
-	sed -i "s/192.168.1.1/192.168.2.130/" $config_generate
+	[[ $IP ]] && \
+	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
+	sed -i '/n) ipad/s/".*"/"192.168.2.130"/' $config_generate
 	sed -i '/openclash/d' .config
 	;;
 "x86_64")
 	DEVICE_NAME="x86_64"
 	FIRMWARE_TYPE="squashfs-combined"
-	[ $IP ] && \
-	sed -i "s/192.168.1.1/$IP/" $config_generate || \
-	sed -i "s/192.168.1.1/192.168.2.150/" $config_generate
+	[[ $IP ]] && \
+	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
+	sed -i '/n) ipad/s/".*"/"192.168.2.150"/' $config_generate
 	[[ $VERSION = plus ]] && {
 	_packages "
 	luci-app-adbyby-plus
@@ -489,9 +490,9 @@ case "$TARGET_DEVICE" in
 	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="armvirt-64-default-rootfs"
 	sed -i '/easymesh/d' .config
-	[ $IP ] && \
-	sed -i "s/192.168.1.1/$IP/" $config_generate || \
-	sed -i "s/192.168.1.1/192.168.2.110/" $config_generate
+	[[ $IP ]] && \
+	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
+	sed -i '/n) ipad/s/".*"/"192.168.2.110"/' $config_generate
 	[[ $VERSION = plus ]] && {
 		_packages "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
 		bsdtar btrfs-progs cfdisk chattr curl dosfstools e2fsprogs f2fs-tools f2fsck fdisk
