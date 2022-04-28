@@ -69,7 +69,7 @@ clone_url() {
 			else
 				echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
 			fi
-			unset -v p f k
+			unset -v p f
 		else
 			for w in $(grep "^https" <<<$x); do
 				if git clone -q $w ../${w##*/}; then
@@ -86,7 +86,7 @@ clone_url() {
 							echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf || \
 							echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
 						fi
-						unset -v p k
+						unset -v k g
 					done
 				fi
 				rm -rf ../${w##*/}
