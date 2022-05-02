@@ -48,14 +48,14 @@ clone_url() {
 	for x in $@; do
 		if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|xiaorouji|hong")" ]]; then
 			g=$(find package/ feeds/ -type d -name ${x##*/} 2>/dev/null)
-			if ([[ -d "$g" ]] && rm -rf $g); then
+			if ([[ -d "$g" ]] && mv -f $g ../); then
 				p="1"; k="$g"
 			else
 				p="0"; k="package/A/${x##*/}"
 			fi
 
 			if [[ "$(grep -E "trunk|branches" <<<$x)" ]]; then
-				svn export -q --force $x $k && f="1"
+				svn export --force $x $k 1>/dev/null 2>&1 && f="1"
 			else
 				git clone -q $x $k && f="1"
 			fi
@@ -68,12 +68,13 @@ clone_url() {
 				fi
 			else
 				echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
+				[[ $p -eq 1 && -d ../${g##*/} ]] && mv -f ../${g##*/} ${g%/*}/
 			fi
 			unset -v p f
 		else
 			for w in $(grep "^https" <<<$x); do
 				if git clone -q $w ../${w##*/}; then
-					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*pulimit|*dump|*dtest|*Deny|*dog|*ding'`; do
+					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding'`; do
 						g=$(find package/ feeds/ -maxdepth 5 -type d -name $x 2>/dev/null)
 						if ([[ -d "$g" ]] && rm -rf $g); then
 							k="$g"
@@ -260,10 +261,8 @@ color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 if [[ $REPOSITORY = "lean" && ${REPO_BRANCH#*-} != "21.02" ]]; then
 	REPO_BRANCH="18.06"
-	sed -i "{
-	/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/
-	/VERSION_CODE/ s/if.*/if \$(VERSION_CODE),\$(VERSION_CODE),\$(REVISION),${REPOSITORY}-\$(shell TZ=UTC-8 date +%Y年%m月%d日))/
-	}" include/version.mk
+	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-${REPO_BRANCH#*-}-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 	sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 	sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
@@ -277,7 +276,7 @@ if [[ $REPOSITORY = "lean" && ${REPO_BRANCH#*-} != "21.02" ]]; then
 	https://github.com/liuran001/openwrt-packages/trunk/luci-app-clash
 	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config"
 else
-	packages_url="adbyby luci-app-adbyby-plus luci-app-cifs-mount luci-app-cpufreq luci-app-usb-printer luci-lib-fs ntfs3-mount ntfs3-oot pdnsd-alt qBittorrent-static r8125 redsocks2 qtbase"
+	packages_url="adbyby luci-app-adbyby-plus luci-app-cifs-mount luci-app-cpufreq luci-app-usb-printer ntfs3-mount ntfs3-oot pdnsd-alt qBittorrent-static r8125 redsocks2 qtbase"
 	for k in $packages_url; do
 		clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
 	done
@@ -353,14 +352,10 @@ tee -a $(find package/ feeds/luci/applications/ -type f -name "white.list" -or -
 	"
 }
 
-xa='$(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile'
-[[ -e $xa ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.2_v1.2.16/' $xa
-xd='$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)/Makefile'
-[[ -e $xd ]] && sed -i 's/default y/default n/g' $xd
-xs='$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr" 2>/dev/null)/root/etc/config/vssr'
-[[ -e $xs ]] && sed -i 's/option dports.*/option dports 2/' $xs
-xe='$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc" 2>/dev/null)/root/etc/config/turboacc'
-[[ -e $xe ]] && sed -i "/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/" $xe
+sed -i '/dports/s/1/2/' $(find feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
+sed -i 's/default y/default n/g' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")/Makefile
+sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.2_v1.2.16/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
+sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $(find feeds/luci/applications/ -type d -name "luci-app-turboacc")/root/etc/config/turboacc
 
 case $TARGET_DEVICE in
 "newifi-d2")
@@ -402,8 +397,8 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	if [[ $TARGET_DEVICE =~ lts && $REPOSITORY = "lean" ]]; then
-		sed -i "s/KERNEL_PATCHVER=5.10/KERNEL_PATCHVER=5.15/" target/linux/rockchip/Makefile
+	if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
+		sed -i "s/\(KERNEL_PATCHVER\).*/\1:=5.4/" target/linux/rockchip/Makefile
 		mkdir patches && \
 		wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
 		git apply --reject --ignore-whitespace patches/*.patch
@@ -554,14 +549,14 @@ if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE 
 	EOF
 	rm -rf package/A/{AmuleWebUI-Reloaded,luci-app-amule}
 	sed -i 's,-mcpu=generic,-march=armv8-a+crypto+crc -mabi=lp64,g' include/target.mk
-	sed -i "{
-	/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/
-	/VERSION_CODE/ s/if.*/if \$(VERSION_CODE),\$(VERSION_CODE),\$(REVISION),${REPOSITORY}-\$(shell TZ=UTC-8 date +%Y年%m月%d日))/
-	}" include/version.mk
+	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 	sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-${REPO_BRANCH#*-}-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 	sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 	echo -e "# CONFIG_PACKAGE_dnsmasq is not set\nCONFIG_LUCI_LANG_zh_Hans=y" >> .config
+	cpuinfo="$(find package/ -type d -name "autocore")" && \
+	sed -i 's/"?"/"ARMv8 Processor"/' $cpuinfo/files/generic/cpuinfo
 	sed -i "{
 		/upnp/d;/banner/d
 		s|auto|auto\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
