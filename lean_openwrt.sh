@@ -153,7 +153,7 @@ case $TARGET_DEVICE in
 		# CONFIG_VMDK_IMAGES is not set
 		EOF
 	;;
-	"r4s"|"r2c"|"r2r")
+	"r4s"|"r2s"|"r2c")
 		cat<<-EOF >.config
 		CONFIG_TARGET_rockchip=y
 		CONFIG_TARGET_rockchip_armv8=y
@@ -178,6 +178,8 @@ case $TARGET_DEVICE in
 		CONFIG_DRIVER_11N_SUPPORT=y
 		CONFIG_DRIVER_11W_SUPPORT=y
 		# CONFIG_PACKAGE_luci-app-wol is not set
+		CONFIG_BUILD_NLS=y
+		CONFIG_BUILD_PATENTED=y
 		EOF
 	;;
 	"newifi-d2")
@@ -311,15 +313,17 @@ clone_url "
 	https://github.com/jerrykuku/lua-maxminddb
 	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
-	https://github.com/xiaorouji/openwrt-passwall
+	https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-passwall
 	https://github.com/fw876/helloworld
-	https://github.com/xiaorouji/openwrt-passwall2
+	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
+	https://github.com/project-lede/luci-app-godproxy
+	https://github.com/yaof2/luci-app-ikoolproxy
 "
 
-packages_url="luci-app-passwall luci-app-ikoolproxy luci-app-bypass luci-app-filetransfer"
+packages_url="luci-app-bypass luci-app-filetransfer"
 for k in $packages_url; do
 	clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
 done
@@ -352,10 +356,12 @@ tee -a $(find package/ feeds/luci/applications/ -type f -name "white.list" -or -
 	"
 }
 
-sed -i '/dports/s/1/2/' $(find feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
+sed -i '/dports/s/1/2/' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
 sed -i 's/default y/default n/g' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")/Makefile
 sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.2_v1.2.16/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
-sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $(find feeds/luci/applications/ -type d -name "luci-app-turboacc")/root/etc/config/turboacc
+sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")/root/etc/config/turboacc
+xd=$(find package/A/ feeds/ -type d -name "luci-app-ikoolproxy")
+[[ -d $xd ]] && sed -i '/echo.*root/ s/^/[[ $time =~ [0-9]+ ]] \&\&/' $xd/root/etc/init.d/koolproxy
 
 case $TARGET_DEVICE in
 "newifi-d2")
@@ -370,11 +376,13 @@ case $TARGET_DEVICE in
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "luci-app-easymesh"
 	DEVICE_NAME="Phicomm-K2P"
+	_packages "luci-app-wrtbwmon"
+	sed -i '/clash/d' .config
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	;;
-"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2r")
+"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "
@@ -387,7 +395,9 @@ case $TARGET_DEVICE in
 	#luci-app-smartdns
 	luci-app-cpufreq
 	luci-app-aliyundrive-webdav
-	#luci-app-deluge
+	luci-app-deluge
+	luci-app-wrtbwmon
+	luci-app-turboacc
 	#luci-app-passwall2
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
@@ -397,12 +407,13 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
-		sed -i "s/\(KERNEL_PATCHVER\).*/\1:=5.4/" target/linux/rockchip/Makefile
-		mkdir patches && \
-		wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
-		git apply --reject --ignore-whitespace patches/*.patch
-	fi
+	[[ $TARGET_DEVICE == 'r2s' || $TARGET_DEVICE == 'r2c' || $TARGET_DEVICE == 'r1-plus' || $TARGET_DEVICE == 'r1-plus-lts' ]] && \
+	sed -i 's/5.15/5.4/g' target/linux/rockchip/Makefile
+	# if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
+		# mkdir patches && \
+		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
+		# git apply --reject --ignore-whitespace patches/*.patch
+	# fi
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
@@ -520,6 +531,8 @@ esac
 if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE =~ lts ]]; then
 	_packages "autocore-arm default-settings default-settings-chn fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl usbutils losetup"
 	clone_url "
+	https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
+	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/emortal/autocore
 	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/emortal/autosamba
 	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/emortal/automount
@@ -552,7 +565,6 @@ if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE 
 	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 	sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-${REPO_BRANCH#*-}-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
-	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 	sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 	echo -e "# CONFIG_PACKAGE_dnsmasq is not set\nCONFIG_LUCI_LANG_zh_Hans=y" >> .config
 	cpuinfo="$(find package/ -type d -name "autocore")" && \
@@ -583,7 +595,39 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 	fi
 done
 
+grep -q "luci-app-deluge" .config && [[ $TARGET_DEVICE =~ lts ]] && {
+sed -i '/PKG_BUILD_DEPENDS/s/$/ !BUILD_NLS:gettext/' include/nls.mk
+}
 sed -i "s/\(PKG_HASH\|PKG_MD5SUM\|PKG_MIRROR_HASH\).*/\1:=skip/" feeds/packages/utils/containerd/Makefile
+
+[[ "$TARGET_DEVICE" == "phicomm_k2p" ]] && {
+	cat >.config<<-EOF
+	CONFIG_TARGET_ramips=y
+	CONFIG_TARGET_ramips_mt7621=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
+	CONFIG_KERNEL_BUILD_USER="win3gp"
+	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
+	CONFIG_PACKAGE_luci-app-accesscontrol=y
+	CONFIG_PACKAGE_luci-app-bridge=y
+	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
+	CONFIG_PACKAGE_luci-app-cowbping=y
+	CONFIG_PACKAGE_luci-app-cpulimit=y
+	CONFIG_PACKAGE_luci-app-ddnsto=y
+	CONFIG_PACKAGE_luci-app-filebrowser=y
+	CONFIG_PACKAGE_luci-app-filetransfer=y
+	CONFIG_PACKAGE_luci-app-network-settings=y
+	CONFIG_PACKAGE_luci-app-oaf=y
+	CONFIG_PACKAGE_luci-app-passwall=y
+	CONFIG_PACKAGE_luci-app-rebootschedule=y
+	CONFIG_PACKAGE_luci-app-ssr-plus=y
+	CONFIG_PACKAGE_luci-app-ttyd=y
+	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
+	# CONFIG_PACKAGE_luci-app-ddns is not set
+	# CONFIG_PACKAGE_luci-app-zerotier is not set
+	# CONFIG_PACKAGE_luci-app-ipsec-vpnd is not set
+	EOF
+}
+
 echo -e "$(color cy 当前的机型) $(color cb $m-${DEVICE_NAME})"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')

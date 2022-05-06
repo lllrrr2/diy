@@ -140,7 +140,7 @@ case "$TARGET_DEVICE" in
 		CONFIG_BUILD_PATENTED=y
 		EOF
 	;;
-	"r4s"|"r2c"|"r2r")
+	"r4s"|"r2c"|"r2s")
 		cat<<-EOF >.config
 		CONFIG_TARGET_rockchip=y
 		CONFIG_TARGET_rockchip_armv8=y
@@ -156,6 +156,8 @@ case "$TARGET_DEVICE" in
 		CONFIG_TARGET_rockchip_armv8=y
 		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
 		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
+		CONFIG_BUILD_NLS=y
+		CONFIG_BUILD_PATENTED=y
 		EOF
 	;;
 	"newifi-d2")
@@ -171,6 +173,7 @@ case "$TARGET_DEVICE" in
 		CONFIG_TARGET_ramips_mt7621=y
 		CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 		EOF
+		# clone_url "https://github.com/openwrt/routing/branches/openwrt-19.07/batman-adv"
 	;;
 	"asus_rt-n16")
 		if [[ "${REPO_BRANCH#*-}" = "18.06" || "${REPO_BRANCH#*-}" = "18.06-dev" ]]; then
@@ -246,7 +249,6 @@ sed -i "{
 		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
 		}" $(find package/ -type f -name "*default-settings")
-
 [[ -d "package/A" ]] || mkdir -m 755 -p package/A
 rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
 
@@ -255,7 +257,7 @@ clone_url "
 	https://github.com/fw876/helloworld
 	#https://github.com/kiddin9/openwrt-packages
 	https://github.com/xiaorouji/openwrt-passwall2
-	https://github.com/xiaorouji/openwrt-passwall
+	#https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/destan19/OpenAppFilter
 	https://github.com/messense/aliyundrive-webdav
 	https://github.com/jerrykuku/luci-app-vssr #bash
@@ -266,7 +268,7 @@ clone_url "
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/coolsnowwolf/packages/trunk/libs/qtbase
 	https://github.com/coolsnowwolf/packages/trunk/libs/qttools
-	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ikoolproxy
+	https://github.com/yaof2/luci-app-ikoolproxy
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-unblockneteasemusic
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent-static
@@ -278,6 +280,8 @@ clone_url "
 	https://github.com/brvphoenix/wrtbwmon
 	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
 	https://github.com/kuoruan/luci-app-frpc
+	https://github.com/coolsnowwolf/packages/trunk/utils/dockerd
+	https://github.com/coolsnowwolf/packages/trunk/utils/docker
 	"
 
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
@@ -356,13 +360,15 @@ EOF
 	done
 }
 
-sed -i '/dports/s/1/2/' $(find feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
+sed -i '/dports/s/1/2/' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
 sed -i 's/default y/default n/g' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")/Makefile
 sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.2_v1.2.16/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
-sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $(find feeds/luci/applications/ -type d -name "luci-app-turboacc")/root/etc/config/turboacc
+sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")/root/etc/config/turboacc
+xd=$(find package/A/ feeds/ -type d -name "luci-app-ikoolproxy")
+[[ -d $xd ]] && sed -i '/echo.*root/ s/^/[[ $time =~ [0-9]+ ]] \&\&/' $xd/root/etc/init.d/koolproxy
 
 case "$TARGET_DEVICE" in
-"r4s"|"r2c"|"r2r"|"r1-plus-lts"|"r1-plus")
+"r4s"|"r2c"|"r2s"|"r1-plus-lts"|"r1-plus")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
 	[[ $IP ]] && \
@@ -380,9 +386,10 @@ case "$TARGET_DEVICE" in
 		#luci-app-unblockneteasemusic
 		luci-app-passwall2
 		luci-app-cpufreq
-		#luci-app-deluge
+		luci-app-deluge
 		luci-app-wrtbwmon
 		luci-app-arpbind
+		luci-app-turboacc
 		luci-app-uhttpd
 		#AmuleWebUI-Reloaded htop lscpu nano screen webui-aria2 zstd pv
 		#subversion-server #unixodbc #git-http
@@ -390,18 +397,18 @@ case "$TARGET_DEVICE" in
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 		}
-		[[ $kk -eq 1 ]] && sed -i 's/5.4/5.10/' target/linux/rockchip/Makefile
-		[[ $TARGET_DEVICE == "r1-plus-lts" ]] && {
-		mkdir patches && \
-		wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
-		git apply --reject --ignore-whitespace patches/*.patch
-	}
+		[[ $kk -eq 1 ]] && sed -i "s/\(KERNEL_PATCHVER\).*/\1:=5.4" target/linux/rockchip/Makefile
+		# [[ $TARGET_DEVICE == "r1-plus-lts" ]] && {
+		# mkdir patches && \
+		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
+		# git apply --reject --ignore-whitespace patches/*.patch
+		# }
 	;;
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
 	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
-	sed -i '/openclash/d' .config
+	sed -i '/clash/d' .config
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
@@ -410,6 +417,8 @@ case "$TARGET_DEVICE" in
 	DEVICE_NAME="Phicomm-K2P"
 	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
+	_packages "luci-app-wrtbwmon"
+	sed -i '/clash/d' .config
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
@@ -516,6 +525,34 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 		fi
 	fi
 done
+
+[[ "$TARGET_DEVICE" == "phicomm_k2p" ]] && {
+	cat >.config<<-EOF
+	CONFIG_TARGET_ramips=y
+	CONFIG_TARGET_ramips_mt7621=y
+	CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
+	CONFIG_KERNEL_BUILD_USER="win3gp"
+	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
+	CONFIG_PACKAGE_luci-app-accesscontrol=y
+	CONFIG_PACKAGE_luci-app-bridge=y
+	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
+	CONFIG_PACKAGE_luci-app-cowbping=y
+	CONFIG_PACKAGE_luci-app-cpulimit=y
+	CONFIG_PACKAGE_luci-app-ddnsto=y
+	CONFIG_PACKAGE_luci-app-filebrowser=y
+	CONFIG_PACKAGE_luci-app-filetransfer=y
+	CONFIG_PACKAGE_luci-app-network-settings=y
+	CONFIG_PACKAGE_luci-app-oaf=y
+	CONFIG_PACKAGE_luci-app-passwall=y
+	CONFIG_PACKAGE_luci-app-rebootschedule=y
+	CONFIG_PACKAGE_luci-app-ssr-plus=y
+	CONFIG_PACKAGE_luci-app-ttyd=y
+	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
+	# CONFIG_PACKAGE_luci-app-ddns is not set
+	# CONFIG_PACKAGE_luci-app-zerotier is not set
+	# CONFIG_PACKAGE_luci-app-ipsec-vpnd is not set
+	EOF
+}
 
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
