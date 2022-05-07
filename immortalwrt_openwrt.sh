@@ -8,18 +8,10 @@
 
 color() {
 	case $1 in
-		cy)
-		echo -e "\033[1;33m$2\033[0m"
-		;;
-		cr)
-		echo -e "\033[1;31m$2\033[0m"
-		;;
-		cg)
-		echo -e "\033[1;32m$2\033[0m"
-		;;
-		cb)
-		echo -e "\033[1;34m$2\033[0m"
-		;;
+		cy) echo -e "\033[1;33m$2\033[0m" ;;
+		cr) echo -e "\033[1;31m$2\033[0m" ;;
+		cg) echo -e "\033[1;32m$2\033[0m" ;;
+		cb) echo -e "\033[1;34m$2\033[0m" ;;
 	esac
 }
 
@@ -202,7 +194,6 @@ esac
 cat >>.config<<-EOF
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
-	## luci app
 	CONFIG_PACKAGE_luci-app-accesscontrol=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
 	CONFIG_PACKAGE_luci-app-bridge=y
@@ -215,15 +206,15 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-oaf=y
 	CONFIG_PACKAGE_luci-app-passwall=y
+	CONFIG_PACKAGE_luci-app-wrtbwmon=y
 	CONFIG_PACKAGE_luci-app-rebootschedule=y
 	CONFIG_PACKAGE_luci-app-ssr-plus=y
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-opkg=y
-	## remove
+	CONFIG_PACKAGE_luci-app-syncdial=y
 	# CONFIG_VMDK_IMAGES is not set
 	## CONFIG_GRUB_EFI_IMAGES is not set
-	# Libraries
 	CONFIG_PACKAGE_patch=y
 	CONFIG_PACKAGE_diffutils=y
 	CONFIG_PACKAGE_default-settings=y
@@ -264,7 +255,6 @@ clone_url "
 	https://github.com/kiddin9/openwrt-bypass
 	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
-	#https://github.com/small-5/luci-app-adblock-plus
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/coolsnowwolf/packages/trunk/libs/qtbase
 	https://github.com/coolsnowwolf/packages/trunk/libs/qttools
@@ -280,8 +270,6 @@ clone_url "
 	https://github.com/brvphoenix/wrtbwmon
 	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
 	https://github.com/kuoruan/luci-app-frpc
-	https://github.com/coolsnowwolf/packages/trunk/utils/dockerd
-	https://github.com/coolsnowwolf/packages/trunk/utils/docker
 	"
 
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
@@ -387,7 +375,6 @@ case "$TARGET_DEVICE" in
 		luci-app-passwall2
 		luci-app-cpufreq
 		luci-app-deluge
-		luci-app-wrtbwmon
 		luci-app-arpbind
 		luci-app-turboacc
 		luci-app-uhttpd
@@ -417,7 +404,6 @@ case "$TARGET_DEVICE" in
 	DEVICE_NAME="Phicomm-K2P"
 	_packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
-	_packages "luci-app-wrtbwmon"
 	sed -i '/clash/d' .config
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
@@ -525,34 +511,7 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 		fi
 	fi
 done
-
-[[ "$TARGET_DEVICE" == "phicomm_k2p" ]] && {
-	cat >.config<<-EOF
-	CONFIG_TARGET_ramips=y
-	CONFIG_TARGET_ramips_mt7621=y
-	CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
-	CONFIG_KERNEL_BUILD_USER="win3gp"
-	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
-	CONFIG_PACKAGE_luci-app-accesscontrol=y
-	CONFIG_PACKAGE_luci-app-bridge=y
-	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
-	CONFIG_PACKAGE_luci-app-cowbping=y
-	CONFIG_PACKAGE_luci-app-cpulimit=y
-	CONFIG_PACKAGE_luci-app-ddnsto=y
-	CONFIG_PACKAGE_luci-app-filebrowser=y
-	CONFIG_PACKAGE_luci-app-filetransfer=y
-	CONFIG_PACKAGE_luci-app-network-settings=y
-	CONFIG_PACKAGE_luci-app-oaf=y
-	CONFIG_PACKAGE_luci-app-passwall=y
-	CONFIG_PACKAGE_luci-app-rebootschedule=y
-	CONFIG_PACKAGE_luci-app-ssr-plus=y
-	CONFIG_PACKAGE_luci-app-ttyd=y
-	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
-	# CONFIG_PACKAGE_luci-app-ddns is not set
-	# CONFIG_PACKAGE_luci-app-zerotier is not set
-	# CONFIG_PACKAGE_luci-app-ipsec-vpnd is not set
-	EOF
-}
+sed -i 's|\.\./\.\.|\$(TOPDIR)/feeds/luci|' package/A/*/Makefile
 
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
