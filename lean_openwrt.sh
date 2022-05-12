@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-[[ x$REPO_FLODER = x ]] && \
-(REPO_FLODER="lede" && echo "REPO_FLODER=lede" >>$GITHUB_ENV)
+sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+[[ $REPO_FLODER ]] || REPO_FLODER="lede"; echo "REPO_FLODER=lede" >>$GITHUB_ENV
 
 color() {
 	case $1 in
@@ -229,7 +229,7 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-app-wrtbwmon=y
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
-	CONFIG_PACKAGE_luci-app-syncdial=y
+	#CONFIG_PACKAGE_luci-app-syncdial=y
 	CONFIG_PACKAGE_luci-theme-bootstrap=y
 	CONFIG_PACKAGE_luci-theme-material=y
 	CONFIG_PACKAGE_patch=y
@@ -252,7 +252,7 @@ color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 if [[ $REPOSITORY = "lean" && ${REPO_BRANCH#*-} != "21.02" ]]; then
 	REPO_BRANCH="18.06"
-	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-${REPO_BRANCH#*-}-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 	sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
@@ -347,7 +347,7 @@ tee -a $(find package/ feeds/luci/applications/ -type f -name "white.list" -or -
 	"
 }
 
-sed -i '/dports/s/1/2/' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
+sed -i "/dports/s/1/2/;/ip_data_url/s|'.*'|'https://ispip.clang.cn/all_cn.txt'|" $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
 sed -i 's/default y/default n/g' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")/Makefile
 sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.2_v1.2.16/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")/root/etc/config/turboacc
@@ -391,6 +391,28 @@ case $TARGET_DEVICE in
 	#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#subversion-server #unixodbc #git-http
 	"
+	echo "
+	CONFIG_PACKAGE_collectd-mod-ping=y
+	CONFIG_PACKAGE_collectd-mod-thermal=y
+	CONFIG_PACKAGE_kmod-mt76x0u=y
+	CONFIG_PACKAGE_kmod-mt7601u=y
+	CONFIG_PACKAGE_kmod-mt76x2u=y
+	CONFIG_PACKAGE_kmod-rtl8821cu=y
+	CONFIG_PACKAGE_kmod-rtl8812au-ct=y
+	CONFIG_PACKAGE_kmod-rtl8821ae=y
+	CONFIG_PACKAGE_kmod-rtl8xxxu=y
+	CONFIG_PACKAGE_kmod-ipt-nat6=y
+	CONFIG_PACKAGE_kmod-nf-nat6=y
+	CONFIG_PACKAGE_kmod-usb-serial-option=y
+	CONFIG_PACKAGE_mt7601u-firmware=y
+	CONFIG_PACKAGE_rtl8188eu-firmware=y
+	CONFIG_PACKAGE_rtl8723au-firmware=y
+	CONFIG_PACKAGE_rtl8723bu-firmware=y
+	CONFIG_PACKAGE_rtl8821ae-firmware=y
+	CONFIG_PACKAGE_wpad-wolfssl=y
+	CONFIG_DRIVER_11AC_SUPPORT=y
+	CONFIG_DRIVER_11N_SUPPORT=y
+	" >> .config
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
@@ -519,17 +541,13 @@ case $TARGET_DEVICE in
 esac
 
 if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE =~ lts ]]; then
-	_packages "autocore-arm default-settings default-settings-chn fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl usbutils losetup"
+	_packages "autosamba automount autocore-arm default-settings default-settings-chn fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl usbutils losetup luci-theme-argon luci-theme-openwrt-2020 luci-theme-openwrt"
 	clone_url "
-	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/emortal/autocore
-	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/emortal/autosamba
-	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/emortal/automount
-	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/emortal/default-settings
 	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/utils/dtc
-	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/kernel/mt-drivers
-	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/kernel/shortcut-fe
-	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/kernel/fast-classifier
+	https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/emortal
 	"
+	rm -rf package/kernel && \
+	svn export -q --force https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/kernel package/kernel
 	cat >>package/kernel/linux/modules/fs.mk<<-\EOF
 	define KernelPackage/fs-ntfs3
 	  SUBMENU:=$(FS_MENU)
@@ -550,7 +568,7 @@ if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE 
 	EOF
 	rm -rf package/A/{AmuleWebUI-Reloaded,luci-app-amule}
 	sed -i 's,-mcpu=generic,-march=armv8-a+crypto+crc -mabi=lp64,g' include/target.mk
-	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 	sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-${REPO_BRANCH#*-}-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 	sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
@@ -568,6 +586,9 @@ if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE 
 	sed -i 's/+amule/+amule-dlp/' package/A/*/Makefile
 	sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
 	sed -i '/oaf/d' .config
+	echo \
+	raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/patches-5.4/991-arm64-dts-rockchip-add-more-cpu-operating-points-for.patch | \
+	xargs -n 1 wget -qP target/linux/rockchip/patches-5.4/
 fi
 
 for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/null); do

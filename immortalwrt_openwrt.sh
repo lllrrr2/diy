@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # set -x
 
-[[ x$REPO_FLODER = x ]] && \
-(REPO_FLODER="openwrt" && echo "REPO_FLODER=openwrt" >>$GITHUB_ENV)
+sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+[[ $REPO_FLODER ]] || REPO_FLODER="openwrt"; echo "REPO_FLODER=openwrt" >>$GITHUB_ENV
 [[ $TARGET_DEVICE == "phicomm_k2p" ]] && VERSION=pure
 [[ $VERSION ]] || VERSION=plus
 
@@ -50,7 +50,7 @@ clone_url() {
 			fi
 
 			if [[ "$(grep -E "trunk|branches" <<<$x)" ]]; then
-				svn export -q --force $x $k 1>/dev/null 2>&1 && f="1"
+				svn export --force $x $k 1>/dev/null 2>&1 && f="1"
 			else
 				git clone -q $x $k && f="1"
 			fi
@@ -150,6 +150,26 @@ case "$TARGET_DEVICE" in
 		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
+		CONFIG_PACKAGE_collectd-mod-ping=y
+		CONFIG_PACKAGE_collectd-mod-thermal=y
+		CONFIG_PACKAGE_kmod-mt76x0u=y
+		CONFIG_PACKAGE_kmod-mt7601u=y
+		CONFIG_PACKAGE_kmod-mt76x2u=y
+		CONFIG_PACKAGE_kmod-rtl8821cu=y
+		CONFIG_PACKAGE_kmod-rtl8812au-ct=y
+		CONFIG_PACKAGE_kmod-rtl8821ae=y
+		CONFIG_PACKAGE_kmod-rtl8xxxu=y
+		CONFIG_PACKAGE_kmod-ipt-nat6=y
+		CONFIG_PACKAGE_kmod-nf-nat6=y
+		CONFIG_PACKAGE_kmod-usb-serial-option=y
+		CONFIG_PACKAGE_mt7601u-firmware=y
+		CONFIG_PACKAGE_rtl8188eu-firmware=y
+		CONFIG_PACKAGE_rtl8723au-firmware=y
+		CONFIG_PACKAGE_rtl8723bu-firmware=y
+		CONFIG_PACKAGE_rtl8821ae-firmware=y
+		CONFIG_PACKAGE_wpad-wolfssl=y
+		CONFIG_DRIVER_11AC_SUPPORT=y
+		CONFIG_DRIVER_11N_SUPPORT=y
 		EOF
 	;;
 	"newifi-d2")
@@ -212,7 +232,8 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-opkg=y
-	CONFIG_PACKAGE_luci-app-syncdial=y
+	#CONFIG_PACKAGE_luci-app-syncdial=y
+	CONFIG_PACKAGE_luci-app-weburl=y
 	# CONFIG_VMDK_IMAGES is not set
 	## CONFIG_GRUB_EFI_IMAGES is not set
 	CONFIG_PACKAGE_patch=y
@@ -228,7 +249,7 @@ config_generate="package/base-files/files/bin/config_generate"
 color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 [[ $kk -eq 1 ]] && sed -i '/variant/s/$$branch/OpenWrt-18.06-k5.10/' feeds/luci/luci.mk
-sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-ImmortalWrt-$(date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-ImmortalWrt-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 sed -i "/IMG_PREFIX:/ {s/=/=ImmortalWrt-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
@@ -246,7 +267,6 @@ rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
 clone_url "
 	https://github.com/hong0980/build
 	https://github.com/fw876/helloworld
-	#https://github.com/kiddin9/openwrt-packages
 	https://github.com/xiaorouji/openwrt-passwall2
 	#https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/destan19/OpenAppFilter
@@ -314,7 +334,7 @@ EOF
 	automount autosamba axel kmod-rt2500-usb kmod-rtl8187
 	luci-app-aria2
 	luci-app-cifs-mount
-	luci-app-control-weburl
+	luci-app-commands
 	luci-app-diskman
 	luci-app-hd-idle
 	luci-app-pushbot
@@ -325,6 +345,7 @@ EOF
 	luci-app-bypass
 	luci-app-openclash
 	luci-theme-material
+	luci-theme-opentomato
 	"
 	trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile` && \
 	wget -qO feeds/packages/net/transmission/patches/tr$trv.patch raw.githubusercontent.com/hong0980/diy/master/files/transmission/tr$trv.patch
@@ -348,7 +369,7 @@ EOF
 	done
 }
 
-sed -i '/dports/s/1/2/' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
+sed -i "/dports/s/1/2/;/ip_data_url/s|'.*'|'https://ispip.clang.cn/all_cn.txt'|" $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")/root/etc/config/vssr
 sed -i 's/default y/default n/g' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")/Makefile
 sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.2_v1.2.16/' $(find package/A/ feeds/ -type d -name "qBittorrent-static")/Makefile
 sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")/root/etc/config/turboacc
@@ -390,6 +411,10 @@ case "$TARGET_DEVICE" in
 		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
 		# git apply --reject --ignore-whitespace patches/*.patch
 		# }
+		# rockchip swap wan and lan
+		# wget -qO rockchip-swap-wan-and-lan.patch \
+		# https://github.com/immortalwrt/immortalwrt/commit/ce3a4e957a32d5b0dd5f8929949a918fb35da0c6.patch && \
+		# git apply --reject --ignore-whitespace rockchip-swap-wan-and-lan.patch && rm rockchip-swap-wan-and-lan.patch
 	;;
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
