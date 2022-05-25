@@ -408,7 +408,7 @@ case "$TARGET_DEVICE" in
 	;;
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
-	_packages "luci-app-easymesh"
+	# _packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
 	sed -i '/clash/d' .config
 	[[ $IP ]] && \
@@ -417,7 +417,7 @@ case "$TARGET_DEVICE" in
 	;;
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
-	_packages "luci-app-easymesh"
+	# _packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
 	sed -i '/luci-app-diskman/d;/auto/d' .config
 	[[ $IP ]] && \
