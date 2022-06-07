@@ -297,7 +297,7 @@ xa=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")
 xb=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")
 [[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
 xc=$(find package/A/ feeds/ -type d -name "qBittorrent-static")
-[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.3_v2.0.6/' $xc/Makefile
+[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.3.1_v2.0.6/' $xc/Makefile
 xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")
 [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy")
@@ -333,7 +333,6 @@ xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy
 	trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile`
 	[[ $trv ]] && wget -qO feeds/packages/net/transmission/patches/tr$trv.patch \
 	raw.githubusercontent.com/hong0980/diy/master/files/transmission/tr$trv.patch
-	[[ -d package/A/qtbase ]] && rm -rf feeds/packages/libs/qt5
 
 	cat <<-\EOF >feeds/packages/lang/python/python3/files/python3-package-uuid.mk
 	define Package/python3-uuid
@@ -658,6 +657,7 @@ echo "REPO_BRANCH=${REPO_BRANCH#*-}" >> $GITHUB_ENV || \
 echo "REPO_BRANCH=18.06" >> $GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
+[[ $VERSION == pure ]] && echo "VERSION=pure" >>$GITHUB_ENV
 echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
 echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
 
