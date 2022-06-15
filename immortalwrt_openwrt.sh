@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 # set -x
-
-sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 [[ $REPO_FLODER ]] || REPO_FLODER="openwrt"; echo "REPO_FLODER=openwrt" >>$GITHUB_ENV
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
@@ -70,7 +68,7 @@ clone_url() {
 		else
 			for w in $(grep "^https" <<<$x); do
 				if git clone -q $w ../${w##*/}; then
-					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding'`; do
+					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding|netdata'`; do
 						g=$(find package/ feeds/ -maxdepth 5 -type d -name $x 2>/dev/null)
 						if ([[ -d $g ]] && ([[ -d ../${g##*/} ]] && rm -rf $g || mv -f $g ../)); then
 							k="$g"
@@ -183,7 +181,7 @@ esac
 cat >>.config<<-EOF
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
-	#CONFIG_PACKAGE_luci-app-ssr-plus=y
+	CONFIG_PACKAGE_luci-app-ssr-plus=y
 	CONFIG_PACKAGE_luci-app-ddnsto=y
 	CONFIG_PACKAGE_luci-app-accesscontrol=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
@@ -276,14 +274,14 @@ sed -i "{
 		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
 		}" $(find package/ -type f -name "*default-settings")
-rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
+# rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
 
 clone_url "
 	https://github.com/hong0980/build
 	https://github.com/xiaorouji/openwrt-passwall2
-	https://github.com/xiaorouji/openwrt-passwall
+	#https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/fw876/helloworld
-	https://github.com/destan19/OpenAppFilter
+	#https://github.com/destan19/OpenAppFilter
 	https://github.com/messense/aliyundrive-webdav
 	https://github.com/kiddin9/openwrt-bypass
 	https://github.com/jerrykuku/luci-app-vssr
@@ -307,14 +305,19 @@ clone_url "
 	https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
-	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-easyupdate
-	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-supervisord
-	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
+	#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-easyupdate
+	#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-supervisord
+	#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
+	https://github.com/coolsnowwolf/packages/trunk/admin/netdata
+	https://github.com/sirpdboy/luci-app-netdata
+	#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 	"
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
 tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or -name "direct_host" | grep "ss") >/dev/null
 
+grep -q "rblibtorrent" package/A/qBittorrent/Makefile && \
+sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
 # if wget -qO feeds/luci/modules/luci-mod-admin-full/luasrc/view/myip.htm \
 # raw.githubusercontent.com/hong0980/diy/master/myip.htm; then
 	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr")/luasrc/model/cbi/vssr/client.lua" ]] && {
@@ -403,16 +406,16 @@ case "$TARGET_DEVICE" in
 		#luci-app-amule
 		#luci-app-netdata
 		#luci-app-smartdns
+		luci-app-unblockneteasemusic
 		htop lscpu lsscsi nano screen webui-aria2 zstd pv ethtool
 		#AmuleWebUI-Reloaded #subversion-server #unixodbc #git-http
-		luci-app-easyupdate
-		luci-app-nginx-manager
 		luci-app-wolplus
-		luci-app-supervisord
 		"
 		[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
 		# _packages "odhcp6c odhcpd-ipv6only"
 		sed -i '/bridge/d' .config
+		# } || {
+		# _packages "luci-app-easyupdate luci-app-nginx-manager luci-app-supervisord"
 		}
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
@@ -483,10 +486,6 @@ case "$TARGET_DEVICE" in
 		luci-app-wolplus
 		luci-app-frpc
 		luci-app-aliyundrive-webdav
-		luci-app-easyupdate
-		luci-app-nginx-manager
-		luci-app-wolplus
-		luci-app-supervisord
 		#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 		#subversion-server #unixodbc #git-http
 		#USB3.0支持
@@ -509,7 +508,9 @@ case "$TARGET_DEVICE" in
 		kmod-fs-ntfs kmod-igbvf kmod-iwlwifi kmod-ixgbevf
 		kmod-mmc-spi kmod-rtl8xxxu kmod-sdhci
 		kmod-tg3 lm-sensors-detect qemu-ga snmpd
+		luci-app-wolplus
 		"
+		# [[ "${REPO_BRANCH#*-}" == "21.02" ]] || _packages "luci-app-easyupdate luci-app-nginx-manager luci-app-supervisord"
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	}

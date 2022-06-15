@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-
-sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 [[ $REPO_FLODER ]] || REPO_FLODER="lede"; echo "REPO_FLODER=lede" >>$GITHUB_ENV
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
@@ -70,7 +68,7 @@ clone_url() {
 		else
 			for w in $(grep "^https" <<<$x); do
 				if git clone -q $w ../${w##*/}; then
-					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding'`; do
+					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding|netdata'`; do
 						g=$(find package/ feeds/ -maxdepth 5 -type d -name $x 2>/dev/null)
 						if ([[ -d $g ]] && ([[ -d ../${g##*/} ]] && rm -rf $g || mv -f $g ../)); then
 							k="$g"
@@ -212,7 +210,7 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-app-oaf=y
 	CONFIG_PACKAGE_luci-app-passwall=y
 	CONFIG_PACKAGE_luci-app-rebootschedule=y
-	CONFIG_PACKAGE_luci-app-ssr-plus=y
+	#CONFIG_PACKAGE_luci-app-ssr-plus=y
 	CONFIG_PACKAGE_luci-app-wrtbwmon=y
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
@@ -227,6 +225,7 @@ cat >> .config <<-EOF
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
 	# CONFIG_PACKAGE_luci-app-wireguard is not set
 	# CONFIG_PACKAGE_luci-app-ddns is not set
+	## CONFIG_PACKAGE_luci-app-ssr-plus is not set
 	# CONFIG_PACKAGE_luci-app-zerotier is not set
 	# CONFIG_PACKAGE_luci-app-ipsec-vpnd is not set
 	# CONFIG_PACKAGE_luci-app-xlnetacc is not set
@@ -264,22 +263,27 @@ fi
 
 clone_url "
 	https://github.com/hong0980/build
+	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/fw876/helloworld
-	https://github.com/destan19/OpenAppFilter
+	#https://github.com/destan19/OpenAppFilter
 	https://github.com/jerrykuku/luci-app-vssr
 	https://github.com/jerrykuku/lua-maxminddb
 	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
 	https://github.com/yaof2/luci-app-ikoolproxy
-	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/project-lede/luci-app-godproxy
 	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
-	https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
+	#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
 	https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-passwall
-"
+	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
+	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-easyupdate
+	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-supervisord
+	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
+	https://github.com/sirpdboy/luci-app-netdata
+	"
 
 packages_url="luci-app-bypass luci-app-filetransfer"
 for k in $packages_url; do
@@ -322,6 +326,10 @@ xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy
 	luci-app-weburl
 	luci-theme-material
 	luci-theme-opentomato
+	#luci-app-easyupdate
+	#luci-app-nginx-manager
+	luci-app-wolplus
+	#luci-app-supervisord
 	axel patch diffutils collectd-mod-ping collectd-mod-thermal wpad-wolfssl
 	kmod-rtl8188eu kmod-rtl8723bs mt7601u-firmware rtl8188eu-firmware
 	rtl8723au-firmware rtl8723bu-firmware rtl8821ae-firmwarekmod-mt76x0u
@@ -402,7 +410,7 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	sed -i 's/5.15/5.4/g' target/linux/rockchip/Makefile
+	# sed -i 's/5.15/5.4/g' target/linux/rockchip/Makefile
 	# rockchip swap wan and lan
 	sed -i "/1' 'eth0/s/1.*0/0' 'eth1/" target/*/rockchip/*/*/*/*/02_network
 	# if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
@@ -578,47 +586,6 @@ done
 	echo \
 	raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/patches-5.4/991-arm64-dts-rockchip-add-more-cpu-operating-points-for.patch | \
 	xargs -n 1 wget -qP target/linux/rockchip/patches-5.4/
-fi
-
-if [[ $TARGET_DEVICE == "r1-plus-lts" && $REPOSITORY = "lean" ]]; then
-	git fetch --all && git reset --hard origin/master
-	rm -rf feeds
-	./scripts/feeds update -a 1>/dev/null 2>&1 && ./scripts/feeds install -a 1>/dev/null 2>&1
-	cat<<-EOF >.config
-	CONFIG_TARGET_rockchip=y
-	CONFIG_TARGET_rockchip_armv8=y
-	CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-	CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus-lts=y
-	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
-	# CONFIG_PACKAGE_luci-app-wireguard is not set
-	# CONFIG_PACKAGE_luci-app-ddns is not set
-	# CONFIG_PACKAGE_luci-app-zerotier is not set
-	# CONFIG_PACKAGE_luci-app-ipsec-vpnd is not set
-	# CONFIG_PACKAGE_luci-app-xlnetacc is not set
-	# CONFIG_PACKAGE_luci-app-uugamebooster is not set
-	EOF
-	[[ $IP ]] && \
-	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
-	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
-	sed -i "/1' 'eth0/s/1.*0/0' 'eth1/" target/*/rockchip/*/*/*/*/02_network
-	# sed -i '/KERNEL_PATCHVER/s/5.15/5.10/g' target/linux/rockchip/Makefile
-	REPO_BRANCH="18.06"
-	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
-	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-	sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
-	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
-	sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
-	sed -i "{
-			/upnp/d;/banner/d;/openwrt_release/d;/shadow/d
-			s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-			s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow|
-			}" $(find package/ -type f -name "*default-settings")
-	_packages "
-	luci-app-passwall
-	luci-app-cpufreq
-	luci-app-arpbind
-	luci-app-turboacc
-	"
 fi
 
 grep -q "luci-app-deluge" .config && [[ $TARGET_DEVICE =~ lts ]] && {
