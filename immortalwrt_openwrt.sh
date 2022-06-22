@@ -48,7 +48,7 @@ clone_url() {
 				p="0"; k="package/A/${x##*/}"
 			fi
 
-			if [[ "$(grep -E "trunk|branches" <<<$x)" ]]; then
+			if [[ "$(egrep "trunk|branches" <<<$x)" ]]; then
 				svn export --force $x $k 1>/dev/null 2>&1 && f="1"
 			else
 				git clone -q $x $k && f="1"
@@ -68,7 +68,7 @@ clone_url() {
 		else
 			for w in $(grep "^https" <<<$x); do
 				if git clone -q $w ../${w##*/}; then
-					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding|netdata'`; do
+					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding'`; do
 						g=$(find package/ feeds/ -maxdepth 5 -type d -name $x 2>/dev/null)
 						if ([[ -d $g ]] && ([[ -d ../${g##*/} ]] && rm -rf $g || mv -f $g ../)); then
 							k="$g"
@@ -186,6 +186,7 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-accesscontrol=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
 	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
+	CONFIG_PACKAGE_luci-app-diskman=y
 	CONFIG_PACKAGE_luci-app-cowbping=y
 	CONFIG_PACKAGE_luci-app-bridge=y
 	CONFIG_PACKAGE_luci-app-cpulimit=y
@@ -193,6 +194,7 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-filetransfer=y
 	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-oaf=y
+	CONFIG_PACKAGE_luci-app-appfilter=y
 	CONFIG_PACKAGE_luci-app-passwall=y
 	CONFIG_PACKAGE_luci-app-commands=y
 	CONFIG_PACKAGE_luci-app-rebootschedule=y
@@ -202,7 +204,6 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-vlmcsd=y
 	CONFIG_PACKAGE_automount=y
 	CONFIG_PACKAGE_autosamba=y
-	CONFIG_PACKAGE_luci-app-diskman=y
 	CONFIG_TARGET_IMAGES_GZIP=y
 	CONFIG_BRCMFMAC_SDIO=y
 	# CONFIG_VMDK_IMAGES is not set
@@ -229,7 +230,6 @@ EOF
 	luci-app-aria2
 	luci-app-bypass
 	luci-app-cifs-mount
-	#luci-app-clash
 	luci-app-hd-idle
 	luci-app-openclash
 	luci-app-pushbot
@@ -242,6 +242,7 @@ EOF
 	luci-app-wrtbwmon
 	luci-theme-material
 	luci-theme-opentomato
+	luci-app-argon-config
 	"
 	trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile`
 	[[ $trv ]] && wget -qO feeds/packages/net/transmission/patches/tr$trv.patch \
@@ -280,25 +281,21 @@ clone_url "
 	https://github.com/hong0980/build
 	https://github.com/xiaorouji/openwrt-passwall2
 	#https://github.com/xiaorouji/openwrt-passwall
-	https://github.com/fw876/helloworld
+	#https://github.com/fw876/helloworld
 	#https://github.com/destan19/OpenAppFilter
 	https://github.com/messense/aliyundrive-webdav
 	https://github.com/kiddin9/openwrt-bypass
 	https://github.com/jerrykuku/luci-app-vssr
 	https://github.com/jerrykuku/lua-maxminddb
-	https://github.com/ntlf9t/luci-app-easymesh
+	#https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/yaof2/luci-app-ikoolproxy
 	https://github.com/zzsj0928/luci-app-pushbot
-	https://github.com/jerrykuku/luci-app-jd-dailybonus
 	https://github.com/coolsnowwolf/packages/trunk/libs/qtbase
 	https://github.com/coolsnowwolf/packages/trunk/libs/qttools
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent-static
-	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash #bash
-	https://github.com/liuran001/openwrt-packages/trunk/luci-app-clash
-	https://github.com/lisaac/luci-lib-docker/trunk/collections/luci-lib-docker
+	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
-	https://github.com/project-lede/luci-app-godproxy
 	https://github.com/brvphoenix/wrtbwmon
 	https://github.com/brvphoenix/luci-app-wrtbwmon
 	https://github.com/kuoruan/luci-app-frpc
@@ -309,8 +306,9 @@ clone_url "
 	#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-supervisord
 	#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
 	https://github.com/coolsnowwolf/packages/trunk/admin/netdata
-	https://github.com/sirpdboy/luci-app-netdata
-	#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+	#https://github.com/sirpdboy/luci-app-netdata
+	https://github.com/coolsnowwolf/lede/trunk/package/utils/ucode
+	https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 	"
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
@@ -347,7 +345,6 @@ sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
 	"
 	sed -i 's/samba4/samba/' package/*/autosamba/Makefile
 } || {
-	_packages "luci-app-argon-config luci-theme-argon"
 	clone_url "https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
 	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config"
 	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
@@ -393,7 +390,6 @@ case "$TARGET_DEVICE" in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	[[ $VERSION = plus ]] && {
 		_packages "
-		#luci-app-adbyby-plus
 		luci-app-dockerman
 		luci-app-arpbind
 		luci-app-turboacc
@@ -401,21 +397,20 @@ case "$TARGET_DEVICE" in
 		luci-app-qbittorrent
 		luci-app-passwall2
 		luci-app-cpufreq
-		#luci-app-deluge
+		luci-app-wolplus
 		luci-app-adguardhome
 		#luci-app-amule
+		#luci-app-deluge
 		#luci-app-netdata
 		#luci-app-smartdns
+		#luci-app-adbyby-plus
 		luci-app-unblockneteasemusic
 		htop lscpu lsscsi nano screen webui-aria2 zstd pv ethtool
 		#AmuleWebUI-Reloaded #subversion-server #unixodbc #git-http
-		luci-app-wolplus
 		"
 		[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
 		# _packages "odhcp6c odhcpd-ipv6only"
 		sed -i '/bridge/d' .config
-		# } || {
-		# _packages "luci-app-easyupdate luci-app-nginx-manager luci-app-supervisord"
 		}
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
@@ -426,20 +421,11 @@ case "$TARGET_DEVICE" in
 		luci-app-cpufreq luci-app-uhttpd luci-app-pushbot luci-app-wrtbwmon luci-app-vssr"
 		echo -e "CONFIG_DRIVER_11AC_SUPPORT=y\nCONFIG_DRIVER_11N_SUPPORT=y\nCONFIG_DRIVER_11W_SUPPORT=y" >> .config
 	}
-	[[ $TARGET_DEVICE == "r1-plus-lts" ]] && {
-		# mkdir patches && \
-		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
-		# git apply --reject --ignore-whitespace patches/*.patch
-		# }
-		# echo "# CONFIG_PACKAGE_luci-app-turboacc is not set" >> .config
-		sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
-	}
+	[[ $TARGET_DEVICE =~ r1-plus-lts ]] && sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	;;
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
-	# _packages "luci-app-easymesh"
 	FIRMWARE_TYPE="sysupgrade"
-	sed -i '/clash/d' .config
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
@@ -459,7 +445,6 @@ case "$TARGET_DEVICE" in
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.130"/' $config_generate
-	sed -i '/clash/d' .config
 	;;
 "x86_64")
 	DEVICE_NAME="x86_64"

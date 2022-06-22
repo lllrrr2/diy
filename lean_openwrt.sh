@@ -68,7 +68,7 @@ clone_url() {
 		else
 			for w in $(grep "^https" <<<$x); do
 				if git clone -q $w ../${w##*/}; then
-					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding|netdata'`; do
+					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding'`; do
 						g=$(find package/ feeds/ -maxdepth 5 -type d -name $x 2>/dev/null)
 						if ([[ -d $g ]] && ([[ -d ../${g##*/} ]] && rm -rf $g || mv -f $g ../)); then
 							k="$g"
@@ -250,9 +250,8 @@ if [[ $REPOSITORY = "lean" && ${REPO_BRANCH#*-} != "21.02" ]]; then
 			s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 			s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow|
 			}" $(find package/ -type f -name "*default-settings")
-	_packages "luci-app-argon-config luci-theme-argon luci-app-clash"
+	_packages "luci-app-argon-config luci-theme-argon"
 	clone_url "https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
-	https://github.com/liuran001/openwrt-packages/trunk/luci-app-clash
 	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config"
 else
 	packages_url="adbyby luci-app-adbyby-plus luci-app-cifs-mount luci-app-cpufreq luci-app-usb-printer ntfs3-mount ntfs3-oot pdnsd-alt qBittorrent-static redsocks2 qtbase"
@@ -264,25 +263,24 @@ fi
 clone_url "
 	https://github.com/hong0980/build
 	https://github.com/xiaorouji/openwrt-passwall
+	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/fw876/helloworld
 	#https://github.com/destan19/OpenAppFilter
 	https://github.com/jerrykuku/luci-app-vssr
 	https://github.com/jerrykuku/lua-maxminddb
-	https://github.com/ntlf9t/luci-app-easymesh
 	https://github.com/zzsj0928/luci-app-pushbot
 	https://github.com/yaof2/luci-app-ikoolproxy
+	https://github.com/brvphoenix/wrtbwmon
+	https://github.com/brvphoenix/luci-app-wrtbwmon
 	https://github.com/project-lede/luci-app-godproxy
-	https://github.com/jerrykuku/luci-app-jd-dailybonus
-	https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 	#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
 	https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-passwall
 	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
-	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-easyupdate
-	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-supervisord
-	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
-	https://github.com/sirpdboy/luci-app-netdata
+	https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
+	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
+	#https://github.com/sirpdboy/luci-app-netdata
+	https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 	"
 
 packages_url="luci-app-bypass luci-app-filetransfer"
@@ -319,17 +317,14 @@ xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy
 	luci-app-usb-printer
 	luci-app-vssr
 	luci-app-bypass
-	luci-app-clash
+	luci-app-adguardhome
 	luci-app-openclash
 	luci-app-wrtbwmon
 	#luci-app-syncdial
 	luci-app-weburl
 	luci-theme-material
 	luci-theme-opentomato
-	#luci-app-easyupdate
-	#luci-app-nginx-manager
 	luci-app-wolplus
-	#luci-app-supervisord
 	axel patch diffutils collectd-mod-ping collectd-mod-thermal wpad-wolfssl
 	kmod-rtl8188eu kmod-rtl8723bs mt7601u-firmware rtl8188eu-firmware
 	rtl8723au-firmware rtl8723bu-firmware rtl8821ae-firmwarekmod-mt76x0u
@@ -390,18 +385,20 @@ case $TARGET_DEVICE in
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "
-	luci-app-adbyby-plus
-	#luci-app-adguardhome
-	#luci-app-amule
-	luci-app-dockerman
-	luci-app-netdata
-	luci-app-qbittorrent
-	#luci-app-smartdns
 	luci-app-cpufreq
-	luci-app-aliyundrive-webdav
+	luci-app-adbyby-plus
+	luci-app-adguardhome
+	luci-app-dockerman
+	luci-app-qbittorrent
+	luci-app-turboacc
+	luci-app-passwall2
+	luci-app-easymesh
+	luci-app-unblockneteasemusic
+	#luci-app-amule
+	#luci-app-smartdns
+	#luci-app-aliyundrive-webdav
 	#luci-app-deluge
-	#luci-app-turboacc
-	#luci-app-passwall2
+	#luci-app-netdata
 	htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#AmuleWebUI-Reloaded #subversion-server #unixodbc #git-http
 	"
@@ -410,9 +407,9 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	# sed -i 's/5.15/5.4/g' target/linux/rockchip/Makefile
+	sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
 	# rockchip swap wan and lan
-	sed -i "/1' 'eth0/s/1.*0/0' 'eth1/" target/*/rockchip/*/*/*/*/02_network
+	sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	# if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
 		# mkdir patches && \
 		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
