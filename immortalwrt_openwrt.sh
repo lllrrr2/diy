@@ -275,7 +275,7 @@ sed -i "{
 		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
 		}" $(find package/ -type f -name "*default-settings")
-# rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
+rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
 
 clone_url "
 	https://github.com/hong0980/build
@@ -421,7 +421,7 @@ case "$TARGET_DEVICE" in
 		luci-app-cpufreq luci-app-uhttpd luci-app-pushbot luci-app-wrtbwmon luci-app-vssr"
 		echo -e "CONFIG_DRIVER_11AC_SUPPORT=y\nCONFIG_DRIVER_11N_SUPPORT=y\nCONFIG_DRIVER_11W_SUPPORT=y" >> .config
 	}
-	[[ $TARGET_DEVICE =~ r1-plus-lts ]] && sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
+	# [[ $TARGET_DEVICE =~ r1-plus-lts ]] && sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	;;
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"

@@ -224,6 +224,7 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-theme-material=y
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
 	# CONFIG_PACKAGE_luci-app-wireguard is not set
+	# CONFIG_PACKAGE_luci-app-autoreboot is not set
 	# CONFIG_PACKAGE_luci-app-ddns is not set
 	## CONFIG_PACKAGE_luci-app-ssr-plus is not set
 	# CONFIG_PACKAGE_luci-app-zerotier is not set
@@ -250,7 +251,7 @@ if [[ $REPOSITORY = "lean" && ${REPO_BRANCH#*-} != "21.02" ]]; then
 			s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
 			s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow|
 			}" $(find package/ -type f -name "*default-settings")
-	_packages "luci-app-argon-config luci-theme-argon"
+	_packages "luci-app-argon-config"
 	clone_url "https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
 	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config"
 else
@@ -265,7 +266,7 @@ clone_url "
 	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/fw876/helloworld
-	#https://github.com/destan19/OpenAppFilter
+	https://github.com/destan19/OpenAppFilter
 	https://github.com/jerrykuku/luci-app-vssr
 	https://github.com/jerrykuku/lua-maxminddb
 	https://github.com/zzsj0928/luci-app-pushbot
@@ -358,7 +359,7 @@ xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy
 			sed -i '/<%+footer%>/i<%-\n\tlocal incdir = util.libpath() .. "/view/admin_status/index/"\n\tif fs.access(incdir) then\n\t\tlocal inc\n\t\tfor inc in fs.dir(incdir) do\n\t\t\tif inc:match("%.htm$") then\n\t\t\t\tinclude("admin_status/index/" .. inc:gsub("%.htm$", ""))\n\t\t\tend\n\t\tend\n\t\end\n-%>\n' $d
 		fi
 	done
-	_packages "luci-app-argon-config luci-theme-argon"
+	_packages "luci-app-argon-config"
 	clone_url "https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
 	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config"
 }
@@ -409,7 +410,7 @@ case $TARGET_DEVICE in
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
 	# rockchip swap wan and lan
-	sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
+	# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	# if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
 		# mkdir patches && \
 		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
@@ -579,7 +580,6 @@ done
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	sed -i 's/+amule/+amule-dlp/' package/A/*/Makefile
 	sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
-	sed -i '/turboacc/d;/oaf/d' .config
 	echo \
 	raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/patches-5.4/991-arm64-dts-rockchip-add-more-cpu-operating-points-for.patch | \
 	xargs -n 1 wget -qP target/linux/rockchip/patches-5.4/
