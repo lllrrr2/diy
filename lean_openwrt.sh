@@ -219,7 +219,7 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_automount=y
 	CONFIG_PACKAGE_autosamba=y
 	CONFIG_PACKAGE_luci-app-diskman=y
-	#CONFIG_PACKAGE_luci-app-syncdial=y
+	CONFIG_PACKAGE_luci-app-syncdial=y
 	CONFIG_PACKAGE_luci-theme-bootstrap=y
 	CONFIG_PACKAGE_luci-theme-material=y
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
@@ -289,8 +289,10 @@ for k in $packages_url; do
 	clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
 done
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
-echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
-tee -a $(find package/ feeds/luci/applications/ -type f -name "white.list" -or -name "direct_host" | grep "ss") >/dev/null
+echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
+tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" | grep "ss") >/dev/null
+echo -e 'www.nicept.net' | \
+tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" | grep "ss") >/dev/null
 
 # echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
 # tee -a {$(find package/ feeds/luci/applications/ -type d -name "luci-app-vssr")/*/*/*/status_top.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-ssr-plus")/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass")/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-passwall")/*/*/*/global/status.htm} >/dev/null
@@ -321,7 +323,7 @@ xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy
 	luci-app-adguardhome
 	luci-app-openclash
 	luci-app-wrtbwmon
-	#luci-app-syncdial
+	luci-app-syncdial
 	luci-app-weburl
 	luci-theme-material
 	luci-theme-opentomato
@@ -357,6 +359,7 @@ xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy
 		if grep -q "Kernel Version" $d; then
 			sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' $d
 			sed -i '/<%+footer%>/i<%-\n\tlocal incdir = util.libpath() .. "/view/admin_status/index/"\n\tif fs.access(incdir) then\n\t\tlocal inc\n\t\tfor inc in fs.dir(incdir) do\n\t\t\tif inc:match("%.htm$") then\n\t\t\t\tinclude("admin_status/index/" .. inc:gsub("%.htm$", ""))\n\t\t\tend\n\t\tend\n\t\end\n-%>\n' $d
+			sed -i 's| <%=luci.sys.exec("cat /etc/bench.log") or ""%>||' $d
 		fi
 	done
 	_packages "luci-app-argon-config"

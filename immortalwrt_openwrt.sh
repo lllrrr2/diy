@@ -311,8 +311,10 @@ clone_url "
 	https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 	"
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
-echo -e 'pthome.net\nchdbits.co\nhdsky.me\nwww.nicept.net\nourbits.club' | \
-tee -a $(find package/A/ feeds/luci/applications/ -type f -name "white.list" -or -name "direct_host" | grep "ss") >/dev/null
+echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
+tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" | grep "ss") >/dev/null
+echo -e 'www.nicept.net' | \
+tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" | grep "ss") >/dev/null
 
 grep -q "rblibtorrent" package/A/qBittorrent/Makefile && \
 sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
