@@ -413,7 +413,7 @@ case "$TARGET_DEVICE" in
 		[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
 		# _packages "odhcp6c odhcpd-ipv6only"
 		sed -i '/bridge/d' .config
-		}
+		} || wget -qO target/linux/rockchip/armv8/config-5.4 raw.githubusercontent.com/coolsnowwolf/lede/master/target/linux/rockchip/armv8/config-5.4
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	} || {
