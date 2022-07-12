@@ -266,24 +266,30 @@ clone_url "
 	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/fw876/helloworld
-	https://github.com/destan19/OpenAppFilter
+	#https://github.com/destan19/OpenAppFilter
 	https://github.com/jerrykuku/luci-app-vssr
 	https://github.com/jerrykuku/lua-maxminddb
 	https://github.com/zzsj0928/luci-app-pushbot
 	https://github.com/yaof2/luci-app-ikoolproxy
-	https://github.com/brvphoenix/wrtbwmon
-	https://github.com/brvphoenix/luci-app-wrtbwmon
 	https://github.com/project-lede/luci-app-godproxy
+	https://github.com/brvphoenix/wrtbwmon
+	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
-	https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-passwall
+	#https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-passwall
 	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
 	https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 	#https://github.com/sirpdboy/luci-app-netdata
 	https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+	#https://github.com/linkease/istore/trunk/luci/luci-app-store
+	#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
 	"
-
+git clone -b luci https://github.com/xiaorouji/openwrt-passwall package/A/luci-app-passwall
+[[ -e package/A/luci-app-ddnsto/root/etc/init.d/ddnsto ]] || \
+svn export --force https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/A/ddnsto
+[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
+sed -i '/log_check/s/^/#/' package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
 packages_url="luci-app-bypass luci-app-filetransfer"
 for k in $packages_url; do
 	clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
@@ -291,7 +297,7 @@ done
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
 tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" | grep "ss") >/dev/null
-echo -e 'www.nicept.net' | \
+echo -e '\nwww.nicept.net' | \
 tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" | grep "ss") >/dev/null
 
 # echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
@@ -307,6 +313,8 @@ xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")
 [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy")
 [[ -d $xe ]] && sed -i '/echo.*root/ s/^/[[ $time =~ [0-9]+ ]] \&\&/' $xe/root/etc/init.d/koolproxy
+xf=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-store")
+[[ -d $xf ]] && sed -i 's/ +luci-lib-ipkg//' $xf/Makefile
 
 [[ $VERSION = plus ]] && {
 	_packages "
@@ -322,7 +330,6 @@ xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy
 	luci-app-bypass
 	luci-app-adguardhome
 	luci-app-openclash
-	luci-app-wrtbwmon
 	luci-app-syncdial
 	luci-app-weburl
 	luci-theme-material
@@ -396,7 +403,8 @@ case $TARGET_DEVICE in
 	luci-app-qbittorrent
 	luci-app-turboacc
 	luci-app-passwall2
-	luci-app-easymesh
+	#luci-app-easymesh
+	luci-app-store
 	luci-app-unblockneteasemusic
 	#luci-app-amule
 	#luci-app-smartdns
@@ -411,7 +419,7 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
+	sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.18/' target/linux/rockchip/Makefile
 	# rockchip swap wan and lan
 	# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	# if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
@@ -592,7 +600,7 @@ grep -q "luci-app-deluge" .config && [[ $TARGET_DEVICE =~ lts ]] && {
 sed -i '/PKG_BUILD_DEPENDS/s/$/ !BUILD_NLS:gettext/' include/nls.mk
 }
 sed -i "s/\(PKG_HASH\|PKG_MD5SUM\|PKG_MIRROR_HASH\).*/\1:=skip/" feeds/packages/utils/containerd/Makefile
-sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/luci-app*/Makefile
+sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile
 
 for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/null); do
 	if [[ "${REPO_BRANCH#*-}" == "21.02" ]]; then

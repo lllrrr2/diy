@@ -309,11 +309,17 @@ clone_url "
 	#https://github.com/sirpdboy/luci-app-netdata
 	https://github.com/coolsnowwolf/lede/trunk/package/utils/ucode
 	https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+	#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
 	"
+
+[[ -e package/A/luci-app-ddnsto/root/etc/init.d/ddnsto ]] || \
+svn export --force https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/A/ddnsto
+[[ -e feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
+sed -i '/log_check/s/^/#/' feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
 echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
 tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" | grep "ss") >/dev/null
-echo -e 'www.nicept.net' | \
+echo -e '\nwww.nicept.net' | \
 tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" | grep "ss") >/dev/null
 
 grep -q "rblibtorrent" package/A/qBittorrent/Makefile && \
@@ -400,7 +406,7 @@ case "$TARGET_DEVICE" in
 		luci-app-passwall2
 		luci-app-cpufreq
 		luci-app-wolplus
-		luci-app-adguardhome
+		# luci-app-adguardhome
 		#luci-app-amule
 		#luci-app-deluge
 		#luci-app-netdata
@@ -544,7 +550,7 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 		fi
 	fi
 done
-sed -i 's|\.\./\.\.|\$(TOPDIR)/feeds/luci|' package/A/luci-app*/Makefile
+sed -i 's|\.\./\.\.|\$(TOPDIR)/feeds/luci|' package/A/*/Makefile
 
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
