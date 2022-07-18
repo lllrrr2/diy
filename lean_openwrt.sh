@@ -215,6 +215,8 @@ cat >> .config <<-EOF
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
+	CONFIG_PACKAGE_luci-app-wizard=y
+	CONFIG_PACKAGE_luci-app-simplenetwork=y
 	CONFIG_PACKAGE_luci-app-opkg=y
 	CONFIG_PACKAGE_automount=y
 	CONFIG_PACKAGE_autosamba=y
@@ -272,8 +274,6 @@ clone_url "
 	https://github.com/zzsj0928/luci-app-pushbot
 	https://github.com/yaof2/luci-app-ikoolproxy
 	https://github.com/project-lede/luci-app-godproxy
-	https://github.com/brvphoenix/wrtbwmon
-	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
 	#https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-passwall
@@ -295,8 +295,8 @@ for k in $packages_url; do
 	clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
 done
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
-echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
-tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" | grep "ss") >/dev/null
+# echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
+# tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" | grep "ss") >/dev/null
 echo -e '\nwww.nicept.net' | \
 tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" | grep "ss") >/dev/null
 
@@ -371,7 +371,13 @@ xf=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-store")
 	done
 	_packages "luci-app-argon-config"
 	clone_url "https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
-	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config"
+	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config
+	https://github.com/brvphoenix/wrtbwmon
+	https://github.com/firker/luci-app-wrtbwmon-zh/trunk/luci-app-wrtbwmon-zh"
+} || {
+	clone_url "https://github.com/brvphoenix/wrtbwmon
+	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
+	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
 }
 
 case $TARGET_DEVICE in
@@ -410,16 +416,17 @@ case $TARGET_DEVICE in
 	#luci-app-smartdns
 	#luci-app-aliyundrive-webdav
 	#luci-app-deluge
-	#luci-app-netdata
+	luci-app-netdata
 	htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#AmuleWebUI-Reloaded #subversion-server #unixodbc #git-http
 	"
+	clone_url "https://github.com/immortalwrt/immortalwrt/trunk/package/boot/uboot-rockchip"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.18/' target/linux/rockchip/Makefile
+	sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
 	# rockchip swap wan and lan
 	# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	# if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then

@@ -185,6 +185,8 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-ddnsto=y
 	CONFIG_PACKAGE_luci-app-accesscontrol=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
+	CONFIG_PACKAGE_luci-app-wizard=y
+	CONFIG_PACKAGE_luci-app-simplenetwork=y
 	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
 	CONFIG_PACKAGE_luci-app-diskman=y
 	CONFIG_PACKAGE_luci-app-cowbping=y
@@ -296,8 +298,6 @@ clone_url "
 	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent-static
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
-	https://github.com/brvphoenix/wrtbwmon
-	https://github.com/brvphoenix/luci-app-wrtbwmon
 	https://github.com/kuoruan/luci-app-frpc
 	https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
@@ -317,8 +317,8 @@ svn export --force https://github.com/linkease/nas-packages/trunk/network/servic
 [[ -e feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
 sed -i '/log_check/s/^/#/' feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
 # https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
-echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
-tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" | grep "ss") >/dev/null
+# echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
+# tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" | grep "ss") >/dev/null
 echo -e '\nwww.nicept.net' | \
 tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" | grep "ss") >/dev/null
 
@@ -350,11 +350,16 @@ sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
 	clone_url "
 	https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-samba
 	https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/network/services/samba36
-	"
+	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork
+	https://github.com/brvphoenix/wrtbwmon
+	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
+	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
 	sed -i 's/samba4/samba/' package/*/autosamba/Makefile
 } || {
 	clone_url "https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
-	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config"
+	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config
+	https://github.com/brvphoenix/wrtbwmon
+	https://github.com/firker/luci-app-wrtbwmon-zh/trunk/luci-app-wrtbwmon-zh"
 	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 	sed -i 's/option dports.*/option enabled 2/' feeds/*/*/*/*/upnpd.config
 	for d in $(find feeds/ package/ -type f -name "index.htm"); do
