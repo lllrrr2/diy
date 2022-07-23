@@ -316,6 +316,11 @@ xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy
 [[ -d $xe ]] && sed -i '/echo.*root/ s/^/[[ $time =~ [0-9]+ ]] \&\&/' $xe/root/etc/init.d/koolproxy
 xf=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-store")
 [[ -d $xf ]] && sed -i 's/ +luci-lib-ipkg//' $xf/Makefile
+xg=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-pushbot")
+[[ -d $xg ]] && {
+	sed -i "s|-c pushbot|/usr/bin/pushbot/pushbot|" $xg/luasrc/controller/pushbot.lua
+	sed -i '/start()/a[ "$(uci get pushbot.@pushbot[0].pushbot_enable)" -eq "0" ] && return 0' $xg/root/etc/init.d/pushbot
+}
 
 [[ $VERSION = plus ]] && {
 	_packages "

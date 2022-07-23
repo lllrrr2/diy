@@ -381,6 +381,11 @@ xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")
 [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy")
 [[ -d $xe ]] && sed -i '/echo.*root/ s/^/[[ $time =~ [0-9]+ ]] \&\&/' $xe/root/etc/init.d/koolproxy
+xg=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-pushbot")
+[[ -d $xg ]] && {
+	sed -i "s|-c pushbot|/usr/bin/pushbot/pushbot|" $xg/luasrc/controller/pushbot.lua
+	sed -i '/start()/a[ "$(uci get pushbot.@pushbot[0].pushbot_enable)" -eq "0" ] && return 0' $xg/root/etc/init.d/pushbot
+}
 
 # clone_url "https://github.com/immortalwrt/packages/branches/openwrt-21.02/libs/libtorrent-rasterbar" && {
 	# rm -rf package/A/{luci-app-deluge,deluge}
