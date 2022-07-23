@@ -276,7 +276,8 @@ clone_url "
 	https://github.com/project-lede/luci-app-godproxy
 	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 	#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
-	#https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-passwall
+	https://github.com/immortalwrt/luci/trunk/applications/luci-app-eqos
+	https://github.com/immortalwrt/luci/trunk/applications/luci-app-passwall
 	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
 	https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
@@ -285,7 +286,7 @@ clone_url "
 	#https://github.com/linkease/istore/trunk/luci/luci-app-store
 	#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
 	"
-git clone -b luci https://github.com/xiaorouji/openwrt-passwall package/A/luci-app-passwall
+# git clone -b luci https://github.com/xiaorouji/openwrt-passwall package/A/luci-app-passwall
 [[ -e package/A/luci-app-ddnsto/root/etc/init.d/ddnsto ]] || \
 svn export --force https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/A/ddnsto
 [[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
@@ -323,6 +324,7 @@ xf=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-store")
 	luci-app-commands
 	luci-app-hd-idle
 	luci-app-pushbot
+	luci-app-eqos
 	luci-app-softwarecenter
 	luci-app-transmission
 	luci-app-usb-printer
@@ -330,7 +332,6 @@ xf=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-store")
 	luci-app-bypass
 	luci-app-adguardhome
 	luci-app-openclash
-	luci-app-syncdial
 	luci-app-weburl
 	luci-theme-material
 	luci-theme-opentomato
@@ -340,9 +341,11 @@ xf=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-store")
 	rtl8723au-firmware rtl8723bu-firmware rtl8821ae-firmwarekmod-mt76x0u
 	kmod-mt76x2u kmod-rtl8821cu kmod-rtl8812au-ct kmod-rtl8812au-ac
 	kmod-rtl8821ae kmod-rtl8xxxu kmod-r8125 kmod-ipt-nat6 kmod-nf-nat6
+	kmod-rtl8xxxu kmod-r8125 kmod-ipt-nat6 kmod-nf-nat6
 	kmod-usb-serial-option kmod-rt2500-usb kmod-rtl8187 kmod-rt2800-usb
 	kmod-usb2 kmod-usb-wdm kmod-usb-ohci kmod-mt7601u
 	"
+
 	trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile`
 	[[ $trv ]] && wget -qO feeds/packages/net/transmission/patches/tr$trv.patch \
 	raw.githubusercontent.com/hong0980/diy/master/files/transmission/tr$trv.patch
@@ -420,13 +423,14 @@ case $TARGET_DEVICE in
 	htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#AmuleWebUI-Reloaded #subversion-server #unixodbc #git-http
 	"
-	clone_url "https://github.com/immortalwrt/immortalwrt/trunk/package/boot/uboot-rockchip"
+	clone_url "https://github.com/immortalwrt/immortalwrt/trunk/package/boot/uboot-rockchip
+	"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
+	sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.18/' target/linux/rockchip/Makefile
 	# rockchip swap wan and lan
 	# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	# if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
@@ -434,6 +438,32 @@ case $TARGET_DEVICE in
 		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
 		# git apply --reject --ignore-whitespace patches/*.patch
 	# fi
+	sed -i -e 's,kmod-r8168,kmod-r8169,g' target/linux/rockchip/image/armv8.mk
+	echo '
+	CONFIG_ARM64_CRYPTO=y
+	CONFIG_CRYPTO_AES_ARM64=y
+	CONFIG_CRYPTO_AES_ARM64_BS=y
+	CONFIG_CRYPTO_AES_ARM64_CE=y
+	CONFIG_CRYPTO_AES_ARM64_CE_BLK=y
+	CONFIG_CRYPTO_AES_ARM64_CE_CCM=y
+	CONFIG_CRYPTO_CRCT10DIF_ARM64_CE=y
+	CONFIG_CRYPTO_AES_ARM64_NEON_BLK=y
+	CONFIG_CRYPTO_CRYPTD=y
+	CONFIG_CRYPTO_GF128MUL=y
+	CONFIG_CRYPTO_GHASH_ARM64_CE=y
+	CONFIG_CRYPTO_SHA1=y
+	CONFIG_CRYPTO_SHA1_ARM64_CE=y
+	CONFIG_CRYPTO_SHA256_ARM64=y
+	CONFIG_CRYPTO_SHA2_ARM64_CE=y
+	CONFIG_CRYPTO_SHA512_ARM64=y
+	CONFIG_CRYPTO_SIMD=y
+	CONFIG_REALTEK_PHY=y
+	CONFIG_CPU_FREQ_GOV_USERSPACE=y
+	CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+	CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+	CONFIG_MOTORCOMM_PHY=y
+	CONFIG_SENSORS_PWM_FAN=y
+	' | tee -a target/linux/rockchip/armv8/{config-5.10,config-5.18} >/dev/null
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
