@@ -428,8 +428,7 @@ case $TARGET_DEVICE in
 	htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 	#AmuleWebUI-Reloaded #subversion-server #unixodbc #git-http
 	"
-	clone_url "https://github.com/friendlyarm/friendlywrt/trunk/package/boot/uboot-rockchip
-	"
+	clone_url "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
