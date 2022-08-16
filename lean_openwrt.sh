@@ -342,13 +342,13 @@ xg=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-pushbot")
 	luci-theme-opentomato
 	luci-app-wolplus
 	axel patch diffutils collectd-mod-ping collectd-mod-thermal wpad-wolfssl
-	kmod-rtl8188eu kmod-rtl8723bs mt7601u-firmware rtl8188eu-firmware
-	rtl8723au-firmware rtl8723bu-firmware rtl8821ae-firmwarekmod-mt76x0u
-	kmod-mt76x2u kmod-rtl8821cu kmod-rtl8812au-ct kmod-rtl8812au-ac
+	kmod-rtl8188eu kmod-rtl8723bs #mt7601u-firmware rtl8188eu-firmware
+	rtl8723au-firmware rtl8723bu-firmware #rtl8821ae-firmwarekmod-mt76x0u
+	#kmod-mt76x2u kmod-rtl8821cu kmod-rtl8812au-ct kmod-rtl8812au-ac
 	kmod-rtl8821ae kmod-rtl8xxxu kmod-r8125 kmod-ipt-nat6 kmod-nf-nat6
 	kmod-rtl8xxxu kmod-r8125 kmod-ipt-nat6 kmod-nf-nat6
 	kmod-usb-serial-option kmod-rt2500-usb kmod-rtl8187 kmod-rt2800-usb
-	kmod-usb2 kmod-usb-wdm kmod-usb-ohci kmod-mt7601u
+	kmod-usb2 kmod-usb-wdm kmod-usb-ohci #kmod-mt7601u
 	"
 
 	trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile`
