@@ -106,13 +106,11 @@ grep -q "log_info" $dir_shell/share.sh || {
 echo -e "1) Aaron-lv          https://github.com/Aaron-lv/sync"
 echo -e "2) JDHelloWorld      https://github.com/JDHelloWorld/jd_scripts"
 echo -e "3) he1pu             https://github.com/he1pu/JDHelp"
-echo -e "4) shufflewzc        https://github.com/shufflewzc/faker2"
-echo -e "5) yuannian1112      https://github.com/yuannian1112/jd_scripts"
-echo -e "6) zero205           https://github.com/zero205/JD_tencent_scf"
-echo -e "7) ccwav             https://github.com/ccwav/QLScript2"
-echo -e "8) 小埋duck          https://github.com/okyyds/duck(临时活动,开卡,有活动豆多)"
-echo -e "9) 小埋yyds          https://github.com/okyyds/yyds(带助力池)"
-echo -e "10) 小埋yydspure     https://github.com/okyyds/yydspure(不带助力池)"
+echo -e "4) shufflewzc        https://github.com/shufflewzc/faker3"
+echo -e "5) zero205           https://github.com/zero205/JD_tencent_scf"
+echo -e "6) ccwav             https://github.com/ccwav/QLScript2"
+echo -e "7) 小埋yyds          https://github.com/okyyds/yyds(带助力池)"
+echo -e "8) 小埋yydspure     https://github.com/okyyds/yydspure(不带助力池)"
 
 echo -e "输入你想拉取的仓库编号，多个仓库用空格分开\c"
 read -t 20 -p "( 20秒后不输入选取默认值 9 ): " hg
@@ -129,24 +127,18 @@ for i in $hg; do
 		add_cron_api "30 0-23/4 * * *" "ql repo https://github.com/he1pu/JDHelp.git 'jd_|jx_|getJDCookie' 'activity|backUp|jd_delCoupon' '^jd[^_]|USER|utils'" "he1pu"
 		;;
 		4)
-		add_cron_api "40 0-23/4 * * *" "ql repo 'https://github.com/shufflewzc/faker2.git' 'jd_|jx_|gua_|jddj_|getJDCookie' 'activity|backUp|Coupon|update' '^jd[^_]|USER|utils|function|^JS|^TS|^JDJRValidator_Pure|^ZooFaker|^sign|ql|sendNotify' 'main'" "shufflewzc"
+		add_cron_api "40 0-23/4 * * *" "ql repo 'https://github.com/shufflewzc/faker3.git' 'jd_|jx_|gua_|jddj_' 'activity|backUp' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator|magic|depend|jdCookie' 'main'" "shufflewzc"
 		;;
 		5)
-		add_cron_api "50 0-23/4 * * *" "ql repo https://github.com/yuannian1112/jd_scripts.git 'jd_|jx_|getJDCookie' 'activity|backUp' '^jd[^_]|USER|utils'" "yuannian1112"
-		;;
-		6)
 		add_cron_api "25 0-23/4 * * *" "ql repo https://github.com/zero205/JD_tencent_scf.git 'jd_|jx_|getJDCookie' 'backUp|icon' '^jd[^_]|USER|sendNotify|sign_graphics_validate|JDJR|JDSign' 'main'" "zero205"
 		;;
-		7)
+		6)
 		add_cron_api "5 0-23/4 * * *" "ql repo https://github.com/ccwav/QLScript2.git 'jd_' 'NoUsed' 'ql|sendNotify|utils|USER_AGENTS|jdCookie|JS_USER_AGENTS'" "ccwav"
 		;;
-		8)
-		add_cron_api "35 0-23/4 * * *" "ql repo https://github.com/okyyds/duck.git 'jd_|jx_|gua_|jddj_' 'activity|backUp' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "duck"
-		;;
-		9)
+		7)
 		add_cron_api "55 0-23/4 * * *" "ql repo https://github.com/okyyds/yyds.git 'jd_|jx_|gua_|jddj_' 'activity|backUp|delCoupon' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "yyds"
 		;;
-		10)
+		8)
 		add_cron_api "15 0-23/4 * * *" "ql repo https://github.com/okyyds/yydspure.git 'jd_|jx_|gua_|jddj_' 'activity|backUp|delCoupon' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "yydspure"
 		;;
 		*)
@@ -154,10 +146,6 @@ for i in $hg; do
 		;;
 	esac
 done
-
-# 将 wskey 添加到定时任务
-grep -q "Zy143L" $list_crontab_user || \
-add_cron_api "20 */3 * * *" "ql repo https://github.com/Zy143L/wskey.git 'wskey'" "拉取wskey"
 
 # 将 diy 添加到定时任务
 grep -q "diy.sh" $list_crontab_user || \
