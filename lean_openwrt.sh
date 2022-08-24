@@ -523,7 +523,7 @@ case $TARGET_DEVICE in
 	kmod-tulip kmod-usb-hid kmod-vmxnet3 lm-sensors-detect
 	qemu-ga smartmontools snmpd
 	"
-	_packages "luci-app-deluge"
+	# _packages "luci-app-deluge"
 	sed -i '/easymesh/d' .config
 	rm -rf package/lean/rblibtorrent
 	# rm -rf feeds/packages/libs/libtorrent-rasterbar
