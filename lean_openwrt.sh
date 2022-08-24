@@ -465,7 +465,7 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.150"/' $config_generate
 	[[ $REPOSITORY = "lean" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
-	_packages "
+	[[ $VERSION = plus ]] && _packages "
 	luci-app-adbyby-plus
 	luci-app-adguardhome
 	#luci-app-amule
@@ -523,6 +523,7 @@ case $TARGET_DEVICE in
 	kmod-tulip kmod-usb-hid kmod-vmxnet3 lm-sensors-detect
 	qemu-ga smartmontools snmpd
 	"
+	_packages "luci-app-deluge"
 	sed -i '/easymesh/d' .config
 	rm -rf package/lean/rblibtorrent
 	# rm -rf feeds/packages/libs/libtorrent-rasterbar
