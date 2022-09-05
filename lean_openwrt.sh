@@ -308,8 +308,9 @@ xa=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr")
 [[ -d $xa ]] && sed -i "/dports/s/1/2/;/ip_data_url/s|'.*'|'https://ispip.clang.cn/all_cn.txt'|" $xa/root/etc/config/vssr
 xb=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")
 [[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
+#https://github.com/userdocs/qbittorrent-nox-static/releases
 xc=$(find package/A/ feeds/ -type d -name "qBittorrent-static")
-[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.3.1_v2.0.6/' $xc/Makefile
+[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.5_v2.0.7/' $xc/Makefile
 xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")
 [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy")
