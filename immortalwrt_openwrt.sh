@@ -417,7 +417,7 @@ case "$TARGET_DEVICE" in
 		luci-app-passwall2
 		luci-app-cpufreq
 		luci-app-wolplus
-		# luci-app-adguardhome
+		#luci-app-adguardhome
 		#luci-app-amule
 		#luci-app-deluge
 		#luci-app-netdata
@@ -474,7 +474,7 @@ case "$TARGET_DEVICE" in
 	[[ $VERSION = plus ]] && {
 		_packages "
 		luci-app-adbyby-plus
-		luci-app-adguardhome
+		#luci-app-adguardhome
 		luci-app-passwall2
 		#luci-app-amule
 		luci-app-dockerman
