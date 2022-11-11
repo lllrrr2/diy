@@ -416,6 +416,12 @@ case $TARGET_DEVICE in
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
+	[ $VERSION = mini ] && {
+	cat > .config <<-EOF
+		CONFIG_TARGET_ramips=y
+		CONFIG_TARGET_ramips_mt7621=y
+		CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
+		EOF
 	;;
 "phicomm_k2p")
 	FIRMWARE_TYPE="sysupgrade"
@@ -676,8 +682,7 @@ if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE 
 	rm -rf package/A/{*bypass*,*passwall*,*ssr*,xray*,v2ray*,*deluge*}
 fi
 
-sed -i "s/\(PKG_HASH\|PKG_MD5SUM\|PKG_MIRROR_HASH\).*/\1:=skip/" feeds/packages/utils/containerd/Makefile
-sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile
+sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 2>/dev/null
 
 for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/null); do
 	if [[ "${REPO_BRANCH#*-}" == "21.02" ]]; then

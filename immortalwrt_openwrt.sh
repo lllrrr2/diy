@@ -608,7 +608,7 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 		fi
 	fi
 done
-sed -i 's|\.\./\.\.|\$(TOPDIR)/feeds/luci|' package/A/*/Makefile
+sed -i 's|\.\./\.\.|\$(TOPDIR)/feeds/luci|' package/A/*/Makefile 2>/dev/null
 
 echo -e "$(color cy 当前的机型) $(color cb ${REPO_BRANCH}-${TARGET_DEVICE}-${VERSION})"
 echo -e "$(color cy '更新配置....')\c"
