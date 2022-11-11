@@ -404,7 +404,7 @@ color cy "自定义设置.... "
 }
 
 [[ $VERSION = "mini" ]] && {
-	sed -i 's/luci-app-.* //' include/target.mk
+	sed -i '/DEVICE_TYPE/d' include/target.mk
 	sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
 }
 
