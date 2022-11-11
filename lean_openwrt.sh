@@ -446,7 +446,7 @@ case $TARGET_DEVICE in
 	luci-app-deluge
 	luci-app-netdata
 	htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
-	#AmuleWebUI-Reloaded #subversion-server #unixodbc #git-http
+	#AmuleWebUI-Reloaded subversion-server unixodbc git-http
 	"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
@@ -513,7 +513,7 @@ case $TARGET_DEVICE in
 	luci-app-aliyundrive-fuse
 	luci-app-aliyundrive-webdav
 	#AmuleWebUI-Reloaded ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
-	#subversion-server #unixodbc #git-http
+	subversion-server unixodbc git-http
 
 	#USB3.0支持
 	kmod-usb-audio kmod-usb-printer
