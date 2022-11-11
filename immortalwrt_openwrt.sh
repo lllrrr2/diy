@@ -38,14 +38,35 @@ _printf() {
 	awk '{printf "%s %-40s %s %s %s\n" ,$1,$2,$3,$4,$5}'
 }
 
+svn_co() {
+	g=$(find package/ feeds/ -maxdepth 5 -type d -name ${2##*/} 2>/dev/null)
+	if [[ -d $g ]] && mv -f $g ../; then
+		p="1"; k="$g"
+	else
+		k="package/A/${2##*/}"
+	fi
+	if svn co $1 $2 $k 1>/dev/null 2>&1; then
+		if [[ x$p = x1 ]]; then
+			echo -e "$(color cg 替换) ${2##*/} [ $(color cg ✔) ]" | _printf
+		else
+			echo -e "$(color cb 添加) ${2##*/} [ $(color cb ✔) ]" | _printf
+		fi
+	else
+		echo -e "$(color cr 拉取) ${2##*/} [ $(color cr ✕) ]" | _printf
+		[[ -d ../${g##*/} ]] && mv -f ../${g##*/} ${g%/*}/ && \
+		echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+	fi
+	unset -v p
+}
+
 clone_url() {
 	for x in $@; do
-		if [[ "$(grep "^https" <<<$x | grep -Ev "helloworld|pass|build")" ]]; then
-			g=$(find package/ feeds/ -maxdepth 6 -type d -name ${x##*/} 2>/dev/null)
+		if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|xiaorouji|hong")" ]]; then
+			g=$(find package/ feeds/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
 			if ([[ -d $g ]] && ([[ -d ../${g##*/} ]] && rm -rf $g || mv -f $g ../)); then
 				p="1"; k="$g"
 			else
-				p="0"; k="package/A/${x##*/}"
+				k="package/A/${x##*/}"
 			fi
 
 			if [[ "$(egrep "trunk|branches" <<<$x)" ]]; then
@@ -54,15 +75,16 @@ clone_url() {
 				git clone -q $x $k && f="1"
 			fi
 
-			if [[ $f -eq 1 ]]; then
-				if [[ $p -eq 1 ]]; then
+			if [[ $f ]]; then
+				if [[ $p ]]; then
 					echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf
 				else
 					echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
 				fi
 			else
 				echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
-				[[ $p -eq 1 && -d ../${g##*/} ]] && mv -f ../${g##*/} ${g%/*}/
+				[[ -d ../${g##*/} ]] && mv -f ../${g##*/} ${g%/*}/ && \
+				echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
 			fi
 			unset -v p f
 		else
@@ -76,11 +98,13 @@ clone_url() {
 							k="package/A"
 						fi
 
-						if mv -f ../${w##*/}/$x $k; then
-							[[ $k = $g ]] && \
-							echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf || \
-							echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
-						fi
+						mv -f ../${w##*/}/$x $k && {
+							if [[ $k == $g ]]; then
+								echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf
+							else
+								echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
+							fi
+						}
 						unset -v k g
 					done
 				fi
@@ -94,19 +118,14 @@ REPO_URL=https://github.com/immortalwrt/immortalwrt
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 echo -e "$(color cy '拉取源码....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
-git clone -q $REPO_URL $cmd $REPO_FLODER
+git clone -q $cmd $REPO_URL $REPO_FLODER
 status
 
 cd $REPO_FLODER || exit
-echo -e "$(color cy 当前的机型) $(color cb ${REPO_BRANCH}-${TARGET_DEVICE}-${VERSION})"
 
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
-status
-
-echo -e "$(color cy '安装软件....')\c"
-BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds install -a 1>/dev/null 2>&1
 status
 
@@ -178,6 +197,8 @@ case "$TARGET_DEVICE" in
 	;;
 esac
 
+curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep -q "ImmortalWrt.*${TARGET_DEVICE}" || VERSION="mini"
+
 cat >>.config<<-EOF
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
@@ -203,7 +224,9 @@ cat >>.config<<-EOF
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-opkg=y
+	CONFIG_PACKAGE_luci-app-arpbind=y
 	CONFIG_PACKAGE_luci-app-vlmcsd=y
+	CONFIG_PACKAGE_luci-app-tinynote=y
 	CONFIG_PACKAGE_automount=y
 	CONFIG_PACKAGE_autosamba=y
 	CONFIG_TARGET_IMAGES_GZIP=y
@@ -233,6 +256,7 @@ EOF
 	luci-app-bypass
 	luci-app-cifs-mount
 	luci-app-hd-idle
+	luci-app-cupsd
 	luci-app-openclash
 	luci-app-pushbot
 	luci-app-softwarecenter
@@ -240,11 +264,11 @@ EOF
 	luci-app-transmission
 	luci-app-usb-printer
 	luci-app-vssr
+	luci-app-wol
 	luci-app-weburl
 	luci-app-wrtbwmon
 	luci-theme-material
 	luci-theme-opentomato
-	luci-app-argon-config
 	"
 	trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile`
 	[[ $trv ]] && wget -qO feeds/packages/net/transmission/patches/tr$trv.patch \
@@ -262,6 +286,40 @@ EOF
 	/usr/lib/python$(PYTHON3_VERSION)/lib-dynload/_uuid.$(PYTHON3_SO_SUFFIX) \
 	))
 	EOF
+
+	clone_url "
+		https://github.com/hong0980/build
+		https://github.com/xiaorouji/openwrt-passwall2
+		#https://github.com/xiaorouji/openwrt-passwall
+		#https://github.com/fw876/helloworld
+		https://github.com/destan19/OpenAppFilter
+		https://github.com/messense/aliyundrive-webdav
+		https://github.com/messense/aliyundrive-fuse
+		https://github.com/kiddin9/openwrt-bypass
+		https://github.com/jerrykuku/luci-app-vssr
+		https://github.com/jerrykuku/lua-maxminddb
+		https://github.com/sirpdboy/luci-app-cupsd
+		#https://github.com/ntlf9t/luci-app-easymesh
+		https://github.com/yaof2/luci-app-ikoolproxy
+		https://github.com/zzsj0928/luci-app-pushbot
+		https://github.com/coolsnowwolf/packages/trunk/libs/qtbase
+		https://github.com/coolsnowwolf/packages/trunk/libs/qttools
+		https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
+		https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent-static
+		https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
+		https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
+		https://github.com/kuoruan/luci-app-frpc
+		https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
+		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
+		#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-easyupdate
+		#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-supervisord
+		#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
+		https://github.com/coolsnowwolf/packages/trunk/admin/netdata
+		#https://github.com/sirpdboy/luci-app-netdata
+		https://github.com/coolsnowwolf/lede/trunk/package/utils/ucode
+		https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
+	"
 }
 
 config_generate="package/base-files/files/bin/config_generate"
@@ -278,39 +336,6 @@ sed -i "{
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
 		}" $(find package/ -type f -name "*default-settings")
 rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
-
-clone_url "
-	https://github.com/hong0980/build
-	https://github.com/xiaorouji/openwrt-passwall2
-	#https://github.com/xiaorouji/openwrt-passwall
-	#https://github.com/fw876/helloworld
-	#https://github.com/destan19/OpenAppFilter
-	https://github.com/messense/aliyundrive-webdav
-	https://github.com/kiddin9/openwrt-bypass
-	https://github.com/jerrykuku/luci-app-vssr
-	https://github.com/jerrykuku/lua-maxminddb
-	#https://github.com/ntlf9t/luci-app-easymesh
-	https://github.com/yaof2/luci-app-ikoolproxy
-	https://github.com/zzsj0928/luci-app-pushbot
-	https://github.com/coolsnowwolf/packages/trunk/libs/qtbase
-	https://github.com/coolsnowwolf/packages/trunk/libs/qttools
-	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
-	https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent-static
-	https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-	https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
-	https://github.com/kuoruan/luci-app-frpc
-	https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
-	https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
-	https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-wolplus
-	#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-easyupdate
-	#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-supervisord
-	#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
-	https://github.com/coolsnowwolf/packages/trunk/admin/netdata
-	#https://github.com/sirpdboy/luci-app-netdata
-	https://github.com/coolsnowwolf/lede/trunk/package/utils/ucode
-	https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
-	#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
-	"
 
 [[ -e package/A/luci-app-ddnsto/root/etc/init.d/ddnsto ]] || \
 svn export --force https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/A/ddnsto
@@ -348,18 +373,22 @@ sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
 	sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
 	# sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
 	clone_url "
-	https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-samba
-	https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/network/services/samba36
+	#https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-samba
+	#https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/network/services/samba36
+	https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba
 	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork
 	https://github.com/brvphoenix/wrtbwmon
 	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
-	sed -i 's/samba4/samba/' package/*/autosamba/Makefile
+	# sed -i 's/samba4/samba/' package/*/autosamba/Makefile
 } || {
-	clone_url "https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
+	_packages "luci-app-argon-config"
+	clone_url "
+	https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
 	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config
 	https://github.com/brvphoenix/wrtbwmon
 	https://github.com/firker/luci-app-wrtbwmon-zh/trunk/luci-app-wrtbwmon-zh"
+	sed -i "s/argonv3/argon/" feeds/luci/applications/luci-app-argon-config/Makefile
 	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 	sed -i 's/option dports.*/option enabled 2/' feeds/*/*/*/*/upnpd.config
 	for d in $(find feeds/ package/ -type f -name "index.htm"); do
@@ -377,7 +406,7 @@ xb=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass")
 [[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
 #https://github.com/userdocs/qbittorrent-nox-static/releases
 xc=$(find package/A/ feeds/ -type d -name "qBittorrent-static")
-[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.5_v2.0.7/' $xc/Makefile
+[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.4.5_v2.0.8/' $xc/Makefile
 xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc")
 [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy")
@@ -410,16 +439,14 @@ case "$TARGET_DEVICE" in
 	[[ $VERSION = plus ]] && {
 		_packages "
 		luci-app-dockerman
-		luci-app-arpbind
 		luci-app-turboacc
 		luci-app-uhttpd
 		luci-app-qbittorrent
 		luci-app-passwall2
 		luci-app-cpufreq
-		luci-app-wolplus
-		#luci-app-adguardhome
+		luci-app-adguardhome
 		#luci-app-amule
-		#luci-app-deluge
+		luci-app-deluge
 		#luci-app-netdata
 		#luci-app-smartdns
 		#luci-app-adbyby-plus
@@ -439,6 +466,14 @@ case "$TARGET_DEVICE" in
 		kmod-mt76x0u kmod-gpu-lima wpad-wolfssl iwinfo iw collectd-mod-ping collectd-mod-thermal
 		luci-app-cpufreq luci-app-uhttpd luci-app-pushbot luci-app-wrtbwmon luci-app-vssr"
 		echo -e "CONFIG_DRIVER_11AC_SUPPORT=y\nCONFIG_DRIVER_11N_SUPPORT=y\nCONFIG_DRIVER_11W_SUPPORT=y" >> .config
+	}
+	[[ $VERSION = mini ]] && {
+	cat > .config <<-EOF
+		CONFIG_TARGET_rockchip=y
+		CONFIG_TARGET_rockchip_armv8=y
+		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus-lts=y
+		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
+	EOF
 	}
 	# [[ $TARGET_DEVICE =~ r1-plus-lts ]] && sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	;;
@@ -474,7 +509,7 @@ case "$TARGET_DEVICE" in
 	[[ $VERSION = plus ]] && {
 		_packages "
 		luci-app-adbyby-plus
-		#luci-app-adguardhome
+		luci-app-adguardhome
 		luci-app-passwall2
 		#luci-app-amule
 		luci-app-dockerman
@@ -485,10 +520,10 @@ case "$TARGET_DEVICE" in
 		luci-app-smartdns
 		luci-app-unblockneteasemusic
 		luci-app-ikoolproxy
-		#luci-app-deluge
+		luci-app-deluge
 		luci-app-godproxy
-		luci-app-wolplus
 		luci-app-frpc
+		luci-app-aliyundrive-fuse
 		luci-app-aliyundrive-webdav
 		#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
 		#subversion-server #unixodbc #git-http
@@ -512,11 +547,23 @@ case "$TARGET_DEVICE" in
 		kmod-fs-ntfs kmod-igbvf kmod-iwlwifi kmod-ixgbevf
 		kmod-mmc-spi kmod-rtl8xxxu kmod-sdhci
 		kmod-tg3 lm-sensors-detect qemu-ga snmpd
-		luci-app-wolplus
 		"
 		# [[ "${REPO_BRANCH#*-}" == "21.02" ]] || _packages "luci-app-easyupdate luci-app-nginx-manager luci-app-supervisord"
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
+	}
+	[[ $VERSION = mini ]] && {
+		cat > .config <<-EOF
+			CONFIG_TARGET_x86=y
+			CONFIG_TARGET_x86_64=y
+			CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
+			CONFIG_BUILD_NLS=y
+			CONFIG_BUILD_PATENTED=y
+			CONFIG_TARGET_IMAGES_GZIP=y
+			CONFIG_GRUB_IMAGES=y
+			# CONFIG_GRUB_EFI_IMAGES is not set
+			# CONFIG_VMDK_IMAGES is not set
+		EOF
 	}
 	;;
 "armvirt_64_Default")
@@ -563,6 +610,7 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 done
 sed -i 's|\.\./\.\.|\$(TOPDIR)/feeds/luci|' package/A/*/Makefile
 
+echo -e "$(color cy 当前的机型) $(color cb ${REPO_BRANCH}-${TARGET_DEVICE}-${VERSION})"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
@@ -576,6 +624,7 @@ echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 # echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
 echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+echo "CLEAN=false" >> $GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 [[ $VERSION == pure ]] && echo "VERSION=pure" >>$GITHUB_ENV
