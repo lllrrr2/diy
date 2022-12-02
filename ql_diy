@@ -1,31 +1,7 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-export IMG_USER=$SOURCE_USER-$SOURCE_BRANCH-$TARGET_DEVICE
-export LOOP_DEVICE=$(losetup -f)
-hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* | sed "s/openwrt/$SOURCE_USER-$SOURCE_BRANCH/g"`
-xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* | sed "s/openwrt/$SOURCE_USER-$SOURCE_BRANCH/g"`
-
-decompress() {
-	echo "解压-部署"
-	for i in {1..20}; do
-		curl -sL --fail https://github.com/hong0980/OpenWrt-Cache/releases/download/cache/$IMG_USER.img.zst.0$i || break
-	done | zstdmt -d -o $REPO_FLODER.img || (truncate -s 33g $REPO_FLODER.img && mkfs.btrfs -M $REPO_FLODER.img)
-	sudo losetup -P --direct-io $LOOP_DEVICE $REPO_FLODER.img
-	mkdir $REPO_FLODER && sudo mount -o nossd,compress=zstd $LOOP_DEVICE $REPO_FLODER
-
-	if [ -d '$REPO_FLODER/.git' ]; then
-		cd $REPO_FLODER
-		rm -f zerospace
-		git config --local user.email "action@github.com"
-		git config --local user.name "GitHub Action"
-		git fetch
-		git reset --hard origin/$SOURCE_BRANCH
-		git clean -df
-	else
-		sudo chown $USER:$(id -gn) $REPO_FLODER
-		git clone -b $SOURCE_BRANCH --single-branch $REPO_URL $REPO_FLODER
-	fi
-}
+hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* | sed "s/openwrt/$IMG_USER/g"`
+xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* | sed "s/openwrt/$IMG_USER/g"`
 
 organize_pack() {
 	echo "压缩-打包"
@@ -85,7 +61,6 @@ echo $ret
 	echo "OUTPUT_RELEASE=''" >>$GITHUB_ENV
 } || {
 	organize_pack || true
-	# decompress || true
 	# up_github || true
 	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 }

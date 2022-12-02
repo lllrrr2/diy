@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-[[ $REPO_FLODER ]] || REPO_FLODER="lede"; echo "REPO_FLODER=lede" >>$GITHUB_ENV
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
@@ -137,16 +136,37 @@ case $REPOSITORY in
 	;;
 esac
 
+export LOOP_DEVICE=$(losetup -f)
 echo "SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)" >>$GITHUB_ENV
-echo "SOURCE_BRANCH=$REPO_BRANCH" >>$GITHUB_ENV
-[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-echo -e "$(color cy '拉取源码....')\c"
-BEGIN_TIME=$(date '+%H:%M:%S')
-git clone -q $cmd $REPO_URL $REPO_FLODER
-status
+echo "IMG_USER=$SOURCE_USER-$REPO_BRANCH-$TARGET_DEVICE" >>$GITHUB_ENV
+
+fi curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep -q "$IMG_USER.*zst"; then
+	echo "解压-部署"
+	for i in {1..20}; do
+		curl -sL --fail https://github.com/hong0980/OpenWrt-Cache/releases/download/cache/$IMG_USER.img.zst.0$i || break
+	done | zstdmt -d -o $IMG_USER.img || (truncate -s 33g $IMG_USER.img && mkfs.btrfs -M $IMG_USER.img)
+	sudo losetup -P --direct-io $LOOP_DEVICE $IMG_USER.img
+	mkdir $REPO_FLODER && sudo mount -o nossd,compress=zstd $LOOP_DEVICE $REPO_FLODER
+	if [ -d '$REPO_FLODER/.git' ]; then
+		rm -rf $IMG_USER.img*
+		pushd  $REPO_FLODER
+		rm -f zerospace
+		git config --local user.email "action@github.com"
+		git config --local user.name "GitHub Action"
+		git fetch
+		git reset --hard origin/$REPO_BRANCH
+		git clean -df
+		popd
+	fi
+else
+	[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
+	echo -e "$(color cy '拉取源码....')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	git clone -q $cmd $REPO_URL $REPO_FLODER
+	status
+fi
 
 cd $REPO_FLODER || exit
-
 #[[ $REPOSITORY == "lean" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
