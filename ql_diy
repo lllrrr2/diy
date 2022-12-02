@@ -1,278 +1,94 @@
 #!/usr/bin/env bash
-dir_shell=/ql/shell
-. $dir_shell/share.sh
-. $dir_shell/api.sh
+curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
+export IMG_USER=$SOURCE_USER-$SOURCE_BRANCH-$TARGET_DEVICE
+export LOOP_DEVICE=$(losetup -f)
+hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* | sed "s/openwrt/$SOURCE_USER-$SOURCE_BRANCH/g"`
+xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* | sed "s/openwrt/$SOURCE_USER-$SOURCE_BRANCH/g"`
 
-#青龙添加环境变量API
-ql_add_env_api() {
-    local currentTimeStamp=$(date +%s) name=$1 value=$2 remarks=$3
+decompress() {
+	echo "解压-部署"
+	for i in {1..20}; do
+		curl -sL --fail https://github.com/hong0980/OpenWrt-Cache/releases/download/cache/$IMG_USER.img.zst.0$i || break
+	done | zstdmt -d -o $REPO_FLODER.img || (truncate -s 33g $REPO_FLODER.img && mkfs.btrfs -M $REPO_FLODER.img)
+	sudo losetup -P --direct-io $LOOP_DEVICE $REPO_FLODER.img
+	mkdir $REPO_FLODER && sudo mount -o nossd,compress=zstd $LOOP_DEVICE $REPO_FLODER
 
-    if [[ $remarks ]]; then
-        local api=$(
-            curl -s --noproxy "*" "http://0.0.0.0:5600/api/envs?t=$currentTimeStamp" \
-                -X 'POST' \
-                -H "Accept: application/json" \
-                -H "Authorization: Bearer $token" \
-                -H "Content-Type: application/json;charset=UTF-8" \
-                --data-raw "[{\"name\":\"$name\",\"value\":\"$value\",\"remarks\":\"$remarks\"}]"
-        )
-    else
-        local api=$(
-            curl -s --noproxy "*" "$url?t=$currentTimeStamp" \
-                -X 'POST' \
-                -H "Accept: application/json" \
-                -H "Authorization: Bearer $token" \
-                -H "Content-Type: application/json;charset=UTF-8" \
-                --data-raw "[{\"name\":\"$name\",\"value\":\"$value\"}]"
-        )
-    fi
-
-    code=$(echo $api | jq -r .code)
-    message=$(echo $api | jq -r .message)
-    if [[ $code == 200 ]]; then
-        echo -n "$name -> 添加成功"
-    else
-        egrep -q "$value|$name|$remarks" $file_env && {
-			echo -e "$name 已在环境变量中"
-		} || {
-			echo -n "$name -> 添加失败(${message})"
-		}
-    fi
+	if [ -d '$REPO_FLODER/.git' ]; then
+		cd $REPO_FLODER
+		rm -f zerospace
+		git config --local user.email "action@github.com"
+		git config --local user.name "GitHub Action"
+		git fetch
+		git reset --hard origin/$SOURCE_BRANCH
+		git clean -df
+	else
+		sudo chown $USER:$(id -gn) $REPO_FLODER
+		git clone -b $SOURCE_BRANCH --single-branch $REPO_URL $REPO_FLODER
+	fi
 }
 
-#青龙更新环境变量API
-ql_update_env_api() {
-    local currentTimeStamp=$(date +%s) name=$1 value=$2 id=$3 remarks=$4
+organize_pack() {
+	echo "压缩-打包"
+	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true
+	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true
 
-    if [[ $remarks ]]; then
-        local api=$(
-            curl -s --noproxy "*" "http://0.0.0.0:5600/api/envs?t=$currentTimeStamp" \
-                -X 'PUT' \
-                -H "Accept: application/json" \
-                -H "Authorization: Bearer $token" \
-                -H "Content-Type: application/json;charset=UTF-8" \
-                --data-raw "{\"name\":\"$name\",\"value\":\"$value\",\"$tmp_id\":\"$id\",\"remarks\":\"$remarks\"}"
-        )
-    else
-        local api=$(
-            curl -s --noproxy "*" "$url?t=$currentTimeStamp" \
-                -X 'PUT' \
-                -H "Accept: application/json" \
-                -H "Authorization: Bearer $token" \
-                -H "Content-Type: application/json;charset=UTF-8" \
-                --data-raw "{\"name\":\"$name\",\"value\":\"$value\",\"$tmp_id\":\"$id\"}"
-        )
-    fi
+	cd $REPO_FLODER
+	[ -f _Makefile ] && mv -f _Makefile Makefile
+	make clean
+	rm -rf bin tmp logs
+	cd ../
+	sleep 10
 
-    code=$(echo $api | jq -r .code)
-    message=$(echo $api | jq -r .message)
-    if [[ $code == 200 ]]; then
-        echo -n "$name -> 更新成功"
-    else
-        echo -n "$name -> 更新失败(${message})"
-    fi
+	# sudo mount -o remount,compress=no,nodatacow,nodatasum $REPO_FLODER
+	# pushd $REPO_FLODER
+	# pv /dev/zero > zerospace || true
+	# sync
+	# rm -f zerospace
+	# popd
+	# sleep 30
+	# sudo umount $REPO_FLODER
+
+	mksquashfs $REPO_FLODER $REPO_FLODER.img
+	zstdmt -c --long $REPO_FLODER.img | split --numeric=1 -b 2000m - output/$IMG_USER.img.zst.
+	ls -lh output
 }
 
-grep -q "token" $file_auth_user || { echo "请先登入，数据初始化后运行！" && exit; }
-
-grep -q 'find $dir_config' $dir_shell/task.sh || {
-	sed -i '{
-	/$first_param $cmd/i\\t[[ -f $first_param ]] || local first_param=$(find $dir_config $dir_scripts $dir_dep $dir_shell -type f -name "$first_param")
-	}' $dir_shell/task.sh
+up_github() {
+	echo "上传到github"
+	export AUTH="Authorization: token $GITHUB_TOKEN"
+	export cache_path='github.com/repos/hong0980/OpenWrt-Cache/releases'
+	export cache_repo_id='84581161'
+	while true; do
+		ret=$(curl -sH "$AUTH" "https://api.$cache_path/tags/cache")
+		echo $ret | jq -r '.assets[] | select(.name == "${hx##*/}").id' | xargs -n1 -i curl -X DELETE -H "$AUTH" "https://api.$cache_path/assets/{}"
+		echo $ret | jq -r '.assets[] | select(.name == "${xx##*/}").id' | xargs -n1 -i curl -X DELETE -H "$AUTH" "https://api.$cache_path/assets/{}"
+		echo $ret | jq -r '.assets[] | select(.name | contains ("'$IMG_USER'.img")).id' | xargs -n1 -i curl -X DELETE -H "$AUTH" "https://api.$cache_path/assets/{}"
+		ls output | parallel --wc 'while true; do curl -T {} -H "$AUTH" -H "Content-Type: application/octet-stream" "https://uploads.$cache_path/$cache_repo_id/assets?name={}" && break || true; done'
+		set +e
+		for i in {1..20}; do
+			curl -sL --fail https://github.com/hong0980/OpenWrt-Cache/releases/download/cache/$IMG_USER.img.zst.0$i || break
+		done | zstdmt -d -o /dev/null
+		if [ $? -eq 0 ]; then
+			break
+		fi
+	done
+	set -e
 }
 
-grep -q '已在定时任务中' $dir_shell/api.sh || {
-	sed -i '{
-	/添加失败/i\        egrep -q "$command|$name|$schedule" $list_crontab_user && echo -e "$name 已在定时任务中" || \\
-	}' $dir_shell/api.sh
+export AUTH="Authorization: token $GITHUB_TOKEN"
+export cache_path='github.com/repos/hong0980/OpenWrt-Cache/releases'
+export cache_repo_id='84581161'
+ret=$(curl -sH "$AUTH" "https://api.$cache_path/tags/cache")
+echo $ret
+
+[[ $VERSION = "mini" ]] && {
+	echo "OUTPUT_RELEASE=''" >>$GITHUB_ENV
+} || {
+	organize_pack || true
+	# decompress || true
+	# up_github || true
+	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 }
+echo "SAVE_CACHE=''" >>$GITHUB_ENV
 
-grep -q 'GithubProxyUrl' $dir_shell/update.sh || {
-	sed -i '{
-	/whyour/ {s/https/${GithubProxyUrl}https/g}
-	/update_qinglong "$2" $cmd/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
-	/local url="$1"/a\    [[ $GithubProxyUrl && $(grep "^https://github.com" <<<$url) ]] && url="$GithubProxyUrl$url" && echo -e "当前使用的网址：\\n$url"
-	}' $dir_shell/update.sh
-}
-
-grep -q "log_info" $dir_shell/share.sh || {
-	sed -i '{
-	/git_clone_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
-	s/git pull/git pull\n\t[[ $exit_status = "0" ]] \&\& log \$dir_work/
-	1,/exit_status/{s/exit_status=$?/exit_status=$?\n\t[[ $exit_status = "0" ]] \&\& log $dir/}
-	}' $dir_shell/share.sh
-}
-
-echo -e "1) Aaron-lv          https://github.com/Aaron-lv/sync"
-echo -e "2) JDHelloWorld      https://github.com/JDHelloWorld/jd_scripts"
-echo -e "3) he1pu             https://github.com/he1pu/JDHelp"
-echo -e "4) shufflewzc        https://github.com/shufflewzc/faker3"
-echo -e "5) zero205           https://github.com/zero205/JD_tencent_scf"
-echo -e "6) ccwav             https://github.com/ccwav/QLScript2"
-echo -e "7) 小埋yyds          https://github.com/okyyds/yyds(带助力池)"
-echo -e "8) 小埋yydspure     https://github.com/okyyds/yydspure(不带助力池)"
-
-echo -e "输入你想拉取的仓库编号，多个仓库用空格分开\c"
-read -t 20 -p "( 20秒后不输入选取默认值 9 ): " hg
-[[ x$hg = x ]] && hg=9
-for i in $hg; do
-	case $i in
-		1)
-		add_cron_api "10 0-23/4 * * *" "ql repo https://github.com/Aaron-lv/sync.git 'jd_|jx_|getJDCookie' 'activity|backUp|Coupon' '^jd[^_]|USER|utils' 'jd_scripts'" "Aaron-lv"
-		;;
-		2)
-		add_cron_api "20 0-23/4 * * *" "ql repo https://github.com/JDHelloWorld/jd_scripts.git 'jd_|jx_|getJDCookie' 'activity|backUp|Coupon|enen|update|test' '^jd[^_]|USER|^TS|utils|notify|env|package|ken.js'" "JDHelloWorld"
-		;;
-		3)
-		add_cron_api "30 0-23/4 * * *" "ql repo https://github.com/he1pu/JDHelp.git 'jd_|jx_|getJDCookie' 'activity|backUp|jd_delCoupon' '^jd[^_]|USER|utils'" "he1pu"
-		;;
-		4)
-		add_cron_api "40 0-23/4 * * *" "ql repo 'https://github.com/shufflewzc/faker3.git' 'jd_|jx_|gua_|jddj_' 'activity|backUp' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator|magic|depend|jdCookie' 'main'" "shufflewzc"
-		;;
-		5)
-		add_cron_api "25 0-23/4 * * *" "ql repo https://github.com/zero205/JD_tencent_scf.git 'jd_|jx_|getJDCookie' 'backUp|icon' '^jd[^_]|USER|sendNotify|sign_graphics_validate|JDJR|JDSign' 'main'" "zero205"
-		;;
-		6)
-		add_cron_api "5 0-23/4 * * *" "ql repo https://github.com/ccwav/QLScript2.git 'jd_' 'NoUsed' 'ql|sendNotify|utils|USER_AGENTS|jdCookie|JS_USER_AGENTS'" "ccwav"
-		;;
-		7)
-		add_cron_api "55 0-23/4 * * *" "ql repo https://github.com/okyyds/yyds.git 'jd_|jx_|gua_|jddj_' 'activity|backUp|delCoupon' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "yyds"
-		;;
-		8)
-		add_cron_api "15 0-23/4 * * *" "ql repo https://github.com/okyyds/yydspure.git 'jd_|jx_|gua_|jddj_' 'activity|backUp|delCoupon' '^jd[^_]|USER|function|utils|sendNotify|ZooFaker_Necklace.js|JDJRValidator_|sign_graphics_validate|ql|JDSignValidator' 'master'" "yydspure"
-		;;
-		*)
-		break
-		;;
-	esac
-done
-
-# 将 diy 添加到定时任务
-grep -q "diy.sh" $list_crontab_user || \
-add_cron_api "0 5 */15 * *" "task diy.sh" "运行diy"
-
-# 将 bot 添加到定时任务
-grep -q "ql bot" $list_crontab_user || \
-add_cron_api "13 14 * 2 *" "ql bot" "安装bot"
-
-# 将删除旧日志添加到定时任务
-grep -q "ql rmlog 3" $list_crontab_user || \
-add_cron_api "20 4 */3 * *" "ql rmlog 3" "除旧日志"
-
-# 将更新青龙添加到定时任务
-grep -q "ql update" $list_crontab_user || \
-add_cron_api "20 5 */3 2 *" "ql update" "更新并重启青龙"
-
-## 将 task_before.sh 添加到定时任务
-([ -s $file_task_before ] || wget -qO $file_task_before hk1.monika.love/hong0980/diy/master/task_before.sh) && {
-	grep -q "task_before.sh" $list_crontab_user || \
-	add_cron_api "23 */3 */3 * *" "task task_before.sh" "运行task_before"
-}
-
-## 将 ckck2.sh 添加到定时任务
-([ -s $dir_config/ckck2.sh ] || wget -qO $dir_config/ckck2.sh hk1.monika.love/hong0980/diy/master/ckck2.sh) && {
-	grep -q "ckck2.sh" $list_crontab_user || \
-	add_cron_api "23 */12 * * *" "task ckck2.sh" "运行ckck2"
-}
-
-# 将 extra2.sh 添加到定时任务
-([ -s $dir_config/extra2.sh ] || wget -qO $dir_config/extra2.sh hk1.monika.love/hong0980/diy/master/extra2.sh) && {
-	grep -q "task extra2" $list_crontab_user || \
-	add_cron_api "15 0-23/4 */2 * *" "task extra2.sh" "运行extra2"
-}
-
-# 下载 code.sh
-code_shell_path=$dir_config/code.sh
-if [[ ! -e $code_shell_path ]] || [[ "$(grep -c '调用仓库设置' $code_shell_path)" -eq "0" ]]; then
-	wget -qO $code_shell_path hk1.monika.love/hong0980/diy/master/code.sh && {
-		echo -e "code.sh 下载完成"
-		## 将 code.sh 添加到定时任务
-		grep -q "task code.sh" $list_crontab_user || \
-		add_cron_api "10 */3 */3 * *" "task code.sh" "助力码管理"
-
-		echo -e "\n===设置提取互助码仓库==="
-		kk=$(awk '/repo/{print $9,$13}' $list_crontab_user|sed "s/'//g;s/ /\//g;s/\/$//;s/\.git//")
-		i=0; for x in $kk; do echo "$((i+1))) $x"; i=$((i+1)); done
-		echo -e "输入你想调用互助码仓库\c"
-		read -t 20 -p "( 20秒后不输入选取默认值 1 ):" xx
-		[[ m$xx = m ]] && xx=1
-		op=`awk '/repo/{print $9,$13}' $list_crontab_user|sed "s/'//g;s/ /\//g;s/\/$//;s/\.git//"|awk -F/ '{print $4,$5,$6}'|sed 's/ /_/g;s/_$//'|sed -n ${xx}p`
-		sed -i "/^repo.=/d;s/^repo=.*/repo='$op'/g" $code_shell_path
-	} || {
-		echo "code.sh 下载失败"
-	}
-fi
-
-# 下载 config.sh
-grep -q "wskey" $file_config_user || {
-	mv $file_config_user $dir_config/config.sh.bk
-	wget -qO $file_config_user hk1.monika.love/hong0980/diy/master/config.sample.sh && \
-	echo "config.sh 下载完成" || \
-	echo "config.sh 下载失败"
-}
-
-# 下载 extra.sh
-grep -q "shufflewzc" $file_extra_shell || {
-	mv $file_extra_shell $dir_config/extra.sh.bk
-	wget -qO $file_extra_shell hk1.monika.love/hong0980/diy/master/extra.sh && \
-	echo "extra.sh 下载完成" || \
-	echo "extra.sh 下载失败"
-}
-
-[[ -e $dir_config/auth ]] || ln -s $file_auth_user $dir_config/auth
-[[ -e $dir_config/crontab ]] || ln -s $list_crontab_user $dir_config/crontab
-
-if [[ ! -s $dir_config/diy.sh ]]; then
-	cat <<-\EOF >"$dir_config/diy.sh"
-#!/usr/bin/env bash
-dir_shell=/ql/shell
-. $dir_shell/share.sh
-echo -e "## 开始运行diy脚本...\n"
-sh="api share task update"
-[[ x$sh = x ]] || {
-for x in $sh; do
-  wget -qO $dir_shell/$x.sh hk1.monika.love/whyour/qinglong/$QL_BRANCH/shell/$x.sh && \
-  echo "$x.sh 下载完成"
-done
-}
-
-grep -q 'find $dir_config' $dir_shell/task.sh || {
-  sed -i '{
-  /$first_param $cmd/i\\t[[ -f $first_param ]] || local first_param=$(find $dir_config $dir_scripts $dir_dep $dir_shell -type f -name "$first_param")
-  }' $dir_shell/task.sh
-}
-
-grep -q '已在定时任务中' $dir_shell/api.sh || {
-  sed -i '{
-  /添加失败/i\        egrep -q "$command|$name|$schedule" $list_crontab_user && echo -e "$name 已在定时任务中" || \\
-  }' $dir_shell/api.sh
-}
-
-grep -q 'GithubProxyUrl' $dir_shell/update.sh || {
-  sed -i '{
-  /whyour/ {s/https/${GithubProxyUrl}https/g}
-  /update_qinglong "$2" $cmd/a\\t\t[[ -f $dir_config/diy.sh ]] && . $dir_config/diy.sh >>$log_path
-  /local url="$1"/a\    [[ $GithubProxyUrl && $(grep "^https://github.com" <<<$url) ]] && url="$GithubProxyUrl$url" && echo -e "当前使用的网址：\\n$url"
-  }' $dir_shell/update.sh
-}
-
-grep -q "log_info" $dir_shell/share.sh || {
-  sed -i '{
-  /git_clone_scripts/i\log() {\n\tlog_info=$(cd $1 && git log --stat -5 --date=format:"%Y年%m月%d日 %H:%M:%S" | grep -Ev "Author|^$" | sed -e "s/Date:  /更新日期：/;s/ file changed/个文件更改/;s/ insertion/次插入/;s/feature/特征/;s/ deletions/次删除/;s/commit/\\ncommit/")\n\techo -e "\\n\\n=========================================================="\n\techo -e "截止 $(date "+%Y年%m月%d日 %H:%M:%S") 的最后5次更新 $1 的信息：$log_info"\n\techo -e "==========================================================\\n\\n"\n}\n
-  s/git pull/git pull\n\t[[ $exit_status = "0" ]] \&\& log \$dir_work/
-  1,/exit_status/{s/exit_status=$?/exit_status=$?\n\t[[ $exit_status = "0" ]] \&\& log $dir/}
-  }' $dir_shell/share.sh
-}
-
-[[ -e $dir_config/auth ]] || ln -s $file_auth_user $dir_config/auth
-[[ -e $dir_config/crontab ]] || ln -s $list_crontab_user $dir_config/crontab
-d="CK_WxPusherUid CK_Sign_UA CKName_cache"
-for g in $d; do
-  [[ -e $dir_scripts/$g.json && ! -e $dir_config/$g.json ]] && ln -s $dir_scripts/$g.json $dir_config/$g.json
-done
-grep -q '当前版本' $dep_notify_js || wget -qO $dep_notify_js hk1.monika.love/ccwav/QLScript2/main/sendNotify.js
-[ -s $dir_config/jdCookie.js ] || wget -qO $dir_config/jdCookie.js hk1.monika.love/hong0980/diy/master/jdCookie.js
-#kill $(ps | grep ql | awk '/diy/{print $1}')
-echo -e "## diy脚本运行完成...\n"
-	EOF
-fi
+export -p

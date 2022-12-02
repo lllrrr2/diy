@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-echo "$RANDOM"  # Supported in bash. No warnings.
+
 [[ $REPO_FLODER ]] || REPO_FLODER="lede"; echo "REPO_FLODER=lede" >>$GITHUB_ENV
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
@@ -31,6 +31,12 @@ status() {
 _packages() {
 	for z in $@; do
 		[[ $z =~ ^# ]] || echo "CONFIG_PACKAGE_$z=y" >> .config
+	done
+}
+
+_dlpackages() {
+	for z in $@; do
+		[[ $z =~ ^# ]] || sed -i "/^CONFIG.*$z=y$/ s/=y/ is not set/; s/^/# /" .config
 	done
 }
 
@@ -127,9 +133,12 @@ case $REPOSITORY in
 	;;
 	"lean"|"*")
 	REPO_URL="https://github.com/coolsnowwolf/lede"
+	REPO_BRANCH="master"
 	;;
 esac
 
+echo "SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)" >>$GITHUB_ENV
+echo "SOURCE_BRANCH=$REPO_BRANCH" >>$GITHUB_ENV
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 echo -e "$(color cy '拉取源码....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
@@ -138,7 +147,7 @@ status
 
 cd $REPO_FLODER || exit
 
-# [[ $REPOSITORY == "lean" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3
+#[[ $REPOSITORY == "lean" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -151,6 +160,7 @@ case "$TARGET_DEVICE" in
 		cat >.config<<-EOF
 		CONFIG_TARGET_x86=y
 		CONFIG_TARGET_x86_64=y
+		CONFIG_TARGET_x86_64_DEVICE_generic=y
 		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
 		CONFIG_BUILD_NLS=y
 		CONFIG_BUILD_PATENTED=y
@@ -257,15 +267,15 @@ TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*
 DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 
 color cy "自定义设置.... "
-[[ $VERSION = plus ]] && {
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
 	if [[ $REPOSITORY = "lean" && ${REPO_BRANCH#*-} != "21.02" ]]; then
 		REPO_BRANCH="18.06"
 		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-		sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+		sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-$VERSION-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 		sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
+		sed -i 's/gmtime/localtime/g' include/kernel.mk
 		sed -i "{
 				/upnp/d;/banner/d;/openwrt_release/d;/shadow/d
 				s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
@@ -298,7 +308,7 @@ color cy "自定义设置.... "
 	xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc" 2>/dev/null)
 	[[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 	xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy" 2>/dev/null)
-	[[ -d $xe ]] && sed -i '/echo.*root/ s/^/[[ $time =~ [0-9]+ ]] \&\&/' $xe/root/etc/init.d/koolproxy
+	[[ -d $xe ]] && sed -i '/echo .*root/ s/echo /[ $time =~ [0-9]+ ] \&\& echo /' $xe/root/etc/init.d/koolproxy
 	# xf=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-store" 2>/dev/null)
 	# [[ -d $xf ]] && sed -i 's/ +luci-lib-ipkg//' $xf/Makefile
 	xg=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-pushbot" 2>/dev/null)
@@ -306,6 +316,8 @@ color cy "自定义设置.... "
 		sed -i "s|-c pushbot|/usr/bin/pushbot/pushbot|" $xg/luasrc/controller/pushbot.lua
 		sed -i '/start()/a[ "$(uci get pushbot.@pushbot[0].pushbot_enable)" -eq "0" ] && return 0' $xg/root/etc/init.d/pushbot
 	}
+	xh=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-passwall" 2>/dev/null)
+	[[ -d $xh ]] && sed -i '/+v2ray-geoip/d' $xh/Makefile
 	_packages "
 	luci-app-aria2
 	luci-app-cifs-mount
@@ -319,7 +331,7 @@ color cy "自定义设置.... "
 	luci-app-vssr
 	luci-app-bypass
 	luci-app-cupsd
-	luci-app-adguardhome
+	#luci-app-adguardhome
 	luci-app-openclash
 	luci-app-weburl
 	luci-app-wol
@@ -352,6 +364,7 @@ color cy "自定义设置.... "
 	))
 	EOF
 
+[[ $VERSION = plus ]] && {
 	clone_url "
 		https://github.com/hong0980/build
 		https://github.com/fw876/helloworld
@@ -368,12 +381,13 @@ color cy "自定义设置.... "
 		#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
 		https://github.com/immortalwrt/luci/trunk/applications/luci-app-eqos
 		https://github.com/immortalwrt/luci/trunk/applications/luci-app-passwall
-		https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
-		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
+		#https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
+		#https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 		#https://github.com/sirpdboy/luci-app-netdata
-		https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+		#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 		#https://github.com/linkease/istore/trunk/luci/luci-app-store
 		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
+		#https://gitee.com/hong0980/deluge
 	"
 	[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
 	sed -i '/log_check/s/^/#/' package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
@@ -401,11 +415,7 @@ color cy "自定义设置.... "
 		https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 		https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
 	}
-}
-
-[[ $VERSION = "mini" ]] && {
-	sed -i '/DEVICE_TYPE/d' include/target.mk
-	sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
+	sed -i 's/ariang/ariang +webui-aria2/g' feeds/*/*/luci-app-aria2/Makefile
 }
 
 case $TARGET_DEVICE in
@@ -413,6 +423,9 @@ case $TARGET_DEVICE in
 	FIRMWARE_TYPE="sysupgrade"
 	DEVICE_NAME="Newifi-D2"
 	_packages "luci-app-easymesh"
+	# sed -i '/diskman/d;/auto/d;/ikoolproxy/d;/openclash/d;/transmission/d;/softwarecenter/d;/aria2/d' .config
+	_dlpackages "ikoolproxy openclash transmission softwarecenter aria2 vssr adguardhome
+	"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
@@ -422,15 +435,23 @@ case $TARGET_DEVICE in
 		CONFIG_TARGET_ramips_mt7621=y
 		CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 		EOF
+	}
 	;;
 "phicomm_k2p")
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "luci-app-easymesh"
 	DEVICE_NAME="Phicomm-K2P"
-	sed -i '/diskman/d;/auto/d' .config
+	_dlpackages "samba4 luci-app-usb-printer luci-app-cifs-mount diskman cupsd autosamba automount"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
+	[[ $VERSION = "mini" ]] && {
+		cat > .config <<-EOF
+			CONFIG_TARGET_ramips=y
+			CONFIG_TARGET_ramips_mt7621=y
+			CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
+			EOF
+	}
 	;;
 "r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s")
 	DEVICE_NAME="$TARGET_DEVICE"
@@ -444,15 +465,15 @@ case $TARGET_DEVICE in
 	luci-app-passwall2
 	#luci-app-easymesh
 	luci-app-store
-	luci-app-unblockneteasemusic
+	#luci-app-unblockneteasemusic
 	#luci-app-amule
 	#luci-app-smartdns
-	luci-app-aliyundrive-fuse
-	luci-app-aliyundrive-webdav
+	#luci-app-aliyundrive-fuse
+	#luci-app-aliyundrive-webdav
 	luci-app-deluge
-	luci-app-netdata
-	htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
-	#AmuleWebUI-Reloaded subversion-server unixodbc git-http
+	#luci-app-netdata
+	htop lscpu lsscsi lsusb #nano pciutils screen zstd pv
+	#AmuleWebUI-Reloaded #subversion-client unixodbc #git-http
 	"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
@@ -468,12 +489,13 @@ case $TARGET_DEVICE in
 		# git apply --reject --ignore-whitespace patches/*.patch
 	# fi
 	# svn export --force https://github.com/friendlyarm/friendlywrt/trunk/target/linux/rockchip/armv8/base-files/etc/modules.d target/linux/rockchip/armv8/base-files/etc/modules.d
+	# VERSION="mini"
 	if [[ $VERSION = "mini" ]]; then
 		cat > .config <<-EOF
 			CONFIG_TARGET_rockchip=y
 			CONFIG_TARGET_rockchip_armv8=y
 			CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-		EOF
+			EOF
 		case "$TARGET_DEVICE" in
 			"r1-plus-lts"|"r1-plus")
 			echo "CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y" >> .config ;;
@@ -483,10 +505,13 @@ case $TARGET_DEVICE in
 	fi
 	if [[ `git log --oneline | awk 'NR==1{print $1}'` =~ b0ea2f3 ]]; then
 		svn_co "-r220868" "https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba"
-		sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.default
+		clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
+		# sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.default
 	fi
-	[[ $REPOSITORY == "lean" && $TARGET_DEVICE =~ r1-plus ]] && svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
-	# clone_url "https://github.com/immortalwrt/packages/trunk/libs/glib2"
+	[[ $REPOSITORY == "lean" && $TARGET_DEVICE =~ r1-plus ]] && {
+	svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
+	# clone_url "https://github.com/hong0980/diy/trunk/uboot-rockchip"
+	}
 	# wget -qO package/boot/uboot-rockchip/patches/302-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus.patch \
 	# raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch
 	;;
@@ -515,11 +540,11 @@ case $TARGET_DEVICE in
 	luci-app-poweroff
 	luci-app-qbittorrent
 	luci-app-smartdns
-	luci-app-unblockmusic
-	luci-app-aliyundrive-fuse
+	#luci-app-unblockmusic
+	#luci-app-aliyundrive-fuse
 	luci-app-aliyundrive-webdav
 	#AmuleWebUI-Reloaded ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
-	subversion-server unixodbc git-http
+	subversion-client unixodbc git-http
 
 	#USB3.0支持
 	kmod-usb-audio kmod-usb-printer
@@ -581,7 +606,7 @@ case $TARGET_DEVICE in
 		CONFIG_GRUB_IMAGES=y
 		# CONFIG_GRUB_EFI_IMAGES is not set
 		# CONFIG_VMDK_IMAGES is not set
-	EOF
+		EOF
 	}
 	;;
 "armvirt_64_Default")
@@ -598,7 +623,7 @@ case $TARGET_DEVICE in
 	kmod-fs-exfat kmod-fs-ext4 kmod-fs-vfat kmod-mac80211 kmod-rt2800-usb kmod-usb-net
 	kmod-usb-net-asix-ax88179 kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 kmod-usb-storage
 	kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb2 kmod-usb3 lm-sensors losetup
-	lsattr lsblk lscpu lsscsi luci-app-adguardhome luci-app-cpufreq luci-app-dockerman
+	lsattr lsblk lscpu lsscsi #luci-app-adguardhome luci-app-cpufreq luci-app-dockerman
 	luci-app-qbittorrent mkf2fs ntfs-3g parted pv python3 resize2fs tune2fs unzip
 	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkf"
 
@@ -695,11 +720,35 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 		fi
 	fi
 done
+
+[[ $VERSION = "mini" ]] && {
+	# sed -i '/DEVICE_TYPE/d' include/target.mk
+	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
+	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
+	echo "FETCH_CACHE=''" >>$GITHUB_ENV
+} || echo "FETCH_CACHE=true" >>$GITHUB_ENV
+
+cat >> .config <<-EOF
+CONFIG_DEVEL=y
+CONFIG_CCACHE=y
+CONFIG_NEED_TOOLCHAIN=y
+CONFIG_IB=y
+CONFIG_IB_STANDALONE=y
+CONFIG_DEVEL=y
+CONFIG_BUILD_LOG=y
+CONFIG_DROPBEAR_ECC_FULL=y
+CONFIG_DROPBEAR_ECC=y
+CONFIG_AUTOREMOVE=y
+CONFIG_MAKE_TOOLCHAIN=y
+CONFIG_BUILD_LOG_DIR="./logs"
+EOF
+
 echo -e "$(color cy 当前的机型) $(color cb $REPOSITORY-${DEVICE_NAME}-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
+sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 
 [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && {
 	[[ $TARGET_DEVICE =~ lts ]] && [[ `grep -Eq "bypass|passwall|ssr-plus" .config` ]] && {
@@ -721,8 +770,9 @@ echo "REPO_BRANCH=${REPO_BRANCH#*-}" >> $GITHUB_ENV || \
 echo "REPO_BRANCH=18.06" >> $GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
-[[ $VERSION == pure ]] && echo "VERSION=pure" >>$GITHUB_ENV
+echo "VERSION=$VERSION" >>$GITHUB_ENV
 echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
 echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
+cp Makefile _Makefile
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
