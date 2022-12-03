@@ -144,27 +144,24 @@ export LOOP_DEVICE=$(losetup -f)
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 
 if grep -Eq "^$IMG_USER.*zst" xd; then
-	BEGIN_TIME=$(date '+%H:%M:%S')
 	for i in {1..3}; do
 		curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/$SOURCE_USER-Cache/$IMG_USER.img.zst.0$i || break 
 	done | zstdmt -d -o $IMG_USER.img && {
-		echo -e "$(color cy '解压....')\c"
-		file $IMG_USER.img
-		sudo losetup $LOOP_DEVICE $IMG_USER.img
-		mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
-		status
-		ls -lh
-		df -hT
-		if [ -d '$REPO_FLODER/.git' ]; then
-			cd $REPO_FLODER
-			echo -e "$(color cy '更新源码....')\c"
-			git config --local user.email "action@github.com"
-			git config --local user.name "GitHub Action"
-			git fetch
+		echo -e "$(color cy '解压....')"
+		mkdir -p openwrt-ro $REPO_FLODER workdir overlay
+		sudo mount -o loop $IMG_USER.img openwrt-ro
+		sudo mount -t overlay overlay -o lowerdir=openwrt-ro,upperdir=overlay,workdir=workdir $REPO_FLODER
+		sudo chown runner:runner $REPO_FLODER
+		if [[ -d "$GITHUB_WORKSPACE/$REPO_FLODER/.git" ]]; then
+			cd $GITHUB_WORKSPACE/$REPO_FLODER
+			echo -e "$(color cy '更新源码....')"
+			git fetch --all
 			git reset --hard origin/$REPO_BRANCH
 			git clean -df
-			cd ../
+			rm -rf package/A
+			cd $GITHUB_WORKSPACE
 			echo "FETCH_CACHE=''" >> $GITHUB_ENV
+			echo "CACHE_ACTIONS=''" >> $GITHUB_ENV
 		fi
 	} || {
 		echo -e "$(color cy '部署....')"

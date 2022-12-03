@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
+curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '{print $(NF)}' > xd
 # set -x
 [[ $REPO_FLODER ]] || REPO_FLODER="openwrt"; echo "REPO_FLODER=openwrt" >>$GITHUB_ENV
 [[ $VERSION ]] || VERSION=plus
@@ -121,13 +123,62 @@ clone_url() {
 }
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
-echo "SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)" >>$GITHUB_ENV
-echo "SOURCE_BRANCH=$REPO_BRANCH" >>$GITHUB_ENV
+export SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)
+echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
+export IMG_USER=$SOURCE_USER-$REPO_BRANCH-$TARGET_DEVICE
+echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
+export LOOP_DEVICE=$(losetup -f)
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-echo -e "$(color cy '拉取源码....')\c"
-BEGIN_TIME=$(date '+%H:%M:%S')
-git clone -q $cmd $REPO_URL $REPO_FLODER
-status
+
+if grep -Eq "^$IMG_USER.*zst" xd; then
+	for i in {1..3}; do
+		curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/$SOURCE_USER-Cache/$IMG_USER.img.zst.0$i || break 
+	done | zstdmt -d -o $IMG_USER.img && {
+		echo -e "$(color cy '解压....')"
+		mkdir -p openwrt-ro $REPO_FLODER workdir overlay
+		sudo mount -o loop $IMG_USER.img openwrt-ro
+		sudo mount -t overlay overlay -o lowerdir=openwrt-ro,upperdir=overlay,workdir=workdir $REPO_FLODER
+		sudo chown runner:runner $REPO_FLODER
+		if [[ -d "$GITHUB_WORKSPACE/$REPO_FLODER/.git" ]]; then
+			cd $GITHUB_WORKSPACE/$REPO_FLODER
+			echo -e "$(color cy '更新源码....')"
+			git fetch --all
+			git reset --hard origin/$REPO_BRANCH
+			git clean -df
+			rm -rf package/A
+			cd $GITHUB_WORKSPACE
+			echo "FETCH_CACHE=''" >> $GITHUB_ENV
+			echo "CACHE_ACTIONS=''" >> $GITHUB_ENV
+		fi
+	} || {
+		echo -e "$(color cy '部署....')"
+		truncate -s 33g $REPO_FLODER.img
+		mkfs.btrfs -M $REPO_FLODER.img 1>/dev/null 2>&1
+		sudo losetup $LOOP_DEVICE $REPO_FLODER.img
+		mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
+		sudo chown $USER:$(id -gn) $REPO_FLODER
+		echo -e "$(color cy '拉取源码1....')\c"
+		BEGIN_TIME=$(date '+%H:%M:%S')
+		git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
+		status
+		echo "FETCH_CACHE=true" >> $GITHUB_ENV
+	}
+else
+	echo -e "$(color cy '部署....')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	truncate -s 33g $REPO_FLODER.img
+	mkfs.btrfs -M $REPO_FLODER.img 1>/dev/null 2>&1
+	sudo losetup $LOOP_DEVICE $REPO_FLODER.img
+	mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
+	sudo chown $USER:$(id -gn) $REPO_FLODER
+	status
+	echo -e "$(color cy '拉取源码2....')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
+	status
+	echo "FETCH_CACHE=true" >> $GITHUB_ENV
+fi
+grep -q "${REPOSITORY}.*${TARGET_DEVICE}" xd || VERSION="mini"
 
 cd $REPO_FLODER || exit
 
@@ -210,9 +261,7 @@ case "$TARGET_DEVICE" in
 	;;
 esac
 
-curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep -q "ImmortalWrt.*${REPO_BRANCH#*-}.*${TARGET_DEVICE}" || VERSION="mini"
-
-cat >>.config<<-EOF
+cat >> .config <<-EOF
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 	CONFIG_PACKAGE_luci-app-ssr-plus=y
@@ -390,7 +439,7 @@ sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
 	#https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/network/services/samba36
 	https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba
 	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork
-	https://github.com/brvphoenix/wrtbwmon
+	https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
 	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
 	# sed -i 's/samba4/samba/' package/*/autosamba/Makefile
@@ -609,6 +658,7 @@ case "$TARGET_DEVICE" in
 	;;
 esac
 
+sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 2>/dev/null
 for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/null); do
 	if [[ "${REPO_BRANCH#*-}" == "21.02" ]]; then
 		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
@@ -624,13 +674,12 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 		fi
 	fi
 done
-sed -i 's|\.\./\.\.|\$(TOPDIR)/feeds/luci|' package/A/*/Makefile 2>/dev/null
+
 [[ $VERSION = "mini" ]] && {
 	# sed -i '/DEVICE_TYPE/d' include/target.mk
 	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
 	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
-	echo "FETCH_CACHE=''" >>$GITHUB_ENV
-} || echo "FETCH_CACHE=true" >>$GITHUB_ENV
+}
 
 cat >> .config <<-EOF
 CONFIG_DEVEL=y
@@ -661,7 +710,6 @@ echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
 # echo "UPLOAD_FIRMWARE=false" >>$GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 # echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
-echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
 echo "CLEAN=false" >> $GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
 hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* | sed "s/openwrt/$IMG_USER/g"`
 xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* | sed "s/openwrt/$IMG_USER/g"`
 
@@ -10,11 +9,10 @@ organize_pack() {
 	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xf}${xx##*/} || true
 
 	cd $REPO_FLODER
-	du -h --max-depth=1 ./ --exclude=bin --exclude=build_dir --exclude=staging_dir
 	[ -f _Makefile ] && mv -f _Makefile Makefile
 	make clean
 	rm -rf bin tmp logs
-	du -h --max-depth=1 ./ --exclude=bin --exclude=build_dir --exclude=staging_dir
+	# du -h --max-depth=1 ./ --exclude=bin --exclude=build_dir --exclude=staging_dir
 	cd ../
 	sleep 10
 
@@ -29,11 +27,9 @@ organize_pack() {
 
 	# mksquashfs $REPO_FLODER $REPO_FLODER.img
 	# zstdmt -c --long $REPO_FLODER.img | split --numeric=1 -b 2000m - output/${xf}${IMG_USER}.img.zst.
-	mksquashfs $REPO_FLODER xx.img -force-gid 1001 -force-uid 1001 -comp zstd
-    zstdmt -c --long xx.img | split --numeric=1 -b 2000m - output/${xf}${IMG_USER}.img.zst.
+	mksquashfs $REPO_FLODER xx.img -no-sparse -no-duplicates -force-gid 1001 -force-uid 1001 -comp zstd | split --numeric=1 -b 2000m - output/${xf}${IMG_USER}.img.zst.
 	ls -lh output
-	mksquashfs --help
-	ls -lh
+	# mksquashfs --help
 }
 
 up_github() {
@@ -64,14 +60,12 @@ up_github() {
 }
 grep -Eq "^$IMG_USER.*zst" && echo "OUTPUT_RELEASE=''" >>$GITHUB_ENV
 
-organize_pack || true
-echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 # up_github || true
 echo "SAVE_CACHE=''" >>$GITHUB_ENV
 export AUTH="Authorization: token $GITHUB_TOKEN"
 export cache_path='github.com/repos/hong0980/OpenWrt-Cache/releases'
 export cache_repo_id='84581161'
-ret=$(curl -sH "$AUTH" "https://api.$cache_path/tags/cache")
+ret=$(curl -sH "$AUTH" "https://api.$cache_path/tags")
 echo $ret
-
+echo $GITHUB_WORKSPACE
 export -p
