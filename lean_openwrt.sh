@@ -155,7 +155,7 @@ if grep -Eq "^$IMG_USER.*zst" xd; then
 		if [[ -d "$GITHUB_WORKSPACE/$REPO_FLODER/.git" ]]; then
 			cd $GITHUB_WORKSPACE/$REPO_FLODER
 			echo -e "$(color cy '更新源码....')"
-			rm -rf ./tmp && rm -rf ./feeds && rm -rf ./pacakges/feeds && rm -rf package/A
+			rm -rf tmp && rm -rf feeds && rm -rf pacakges/feeds && rm -rf package/A
 			git fetch --all
 			git reset --hard origin/$REPO_BRANCH
 			git clean -df
