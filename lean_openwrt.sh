@@ -155,8 +155,9 @@ if grep -Eq "^$IMG_USER.*zst" xd; then
 		if [[ -d "$GITHUB_WORKSPACE/$REPO_FLODER/.git" ]]; then
 			cd $GITHUB_WORKSPACE/$REPO_FLODER
 			echo -e "$(color cy '更新源码....')"
-			rm -rf tmp && rm -rf feeds && rm -rf pacakges/feeds && rm -rf package/A
-			git fetch --all
+			git config --local user.email "action@github.com"
+			git config --local user.name "GitHub Action"
+			git fetch
 			git reset --hard origin/$REPO_BRANCH
 			git clean -df
 			if [ -d 'feeds' ]; then
@@ -165,6 +166,7 @@ if grep -Eq "^$IMG_USER.*zst" xd; then
 				pushd feeds/routing; git restore .; popd
 				pushd feeds/telephony; git restore .; popd
 			fi
+			rm -rf tmp && rm -rf feeds && rm -rf pacakges/feeds && rm -rf package/A
 			cd $GITHUB_WORKSPACE
 			echo "FETCH_CACHE=''" >> $GITHUB_ENV
 			echo "CACHE_ACTIONS=''" >> $GITHUB_ENV
