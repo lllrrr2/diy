@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-
+curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
-
+curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '{print $(NF)}' > xd
+#cat xd
 color() {
 	case $1 in
 		cy) echo -e "\033[1;33m$2\033[0m" ;;
@@ -135,36 +136,65 @@ case $REPOSITORY in
 	REPO_BRANCH="master"
 	;;
 esac
-
+export SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)
+echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
+export IMG_USER=$SOURCE_USER-$REPO_BRANCH-$TARGET_DEVICE
+echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
 export LOOP_DEVICE=$(losetup -f)
-echo "SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)" >>$GITHUB_ENV
-echo "IMG_USER=$SOURCE_USER-$REPO_BRANCH-$TARGET_DEVICE" >>$GITHUB_ENV
+[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 
-fi curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep -q "$IMG_USER.*zst"; then
-	echo "解压-部署"
-	for i in {1..20}; do
-		curl -sL --fail https://github.com/hong0980/OpenWrt-Cache/releases/download/cache/$IMG_USER.img.zst.0$i || break
-	done | zstdmt -d -o $IMG_USER.img || (truncate -s 33g $IMG_USER.img && mkfs.btrfs -M $IMG_USER.img)
-	sudo losetup -P --direct-io $LOOP_DEVICE $IMG_USER.img
-	mkdir $REPO_FLODER && sudo mount -o nossd,compress=zstd $LOOP_DEVICE $REPO_FLODER
-	if [ -d '$REPO_FLODER/.git' ]; then
-		rm -rf $IMG_USER.img*
-		pushd  $REPO_FLODER
-		rm -f zerospace
-		git config --local user.email "action@github.com"
-		git config --local user.name "GitHub Action"
-		git fetch
-		git reset --hard origin/$REPO_BRANCH
-		git clean -df
-		popd
-	fi
-else
-	[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-	echo -e "$(color cy '拉取源码....')\c"
+if grep -Eq "^$IMG_USER.*zst" xd; then
 	BEGIN_TIME=$(date '+%H:%M:%S')
-	git clone -q $cmd $REPO_URL $REPO_FLODER
+	for i in {1..3}; do
+		curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/$SOURCE_USER-Cache/$IMG_USER.img.zst.0$i || break 
+	done | zstdmt -d -o $IMG_USER.img && {
+		echo -e "$(color cy '解压....')\c"
+		file $IMG_USER.img
+		sudo losetup $LOOP_DEVICE $IMG_USER.img
+		mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
+		status
+		ls -lh
+		df -hT
+		if [ -d '$REPO_FLODER/.git' ]; then
+			cd $REPO_FLODER
+			echo -e "$(color cy '更新源码....')\c"
+			git config --local user.email "action@github.com"
+			git config --local user.name "GitHub Action"
+			git fetch
+			git reset --hard origin/$REPO_BRANCH
+			git clean -df
+			cd ../
+			echo "FETCH_CACHE=''" >> $GITHUB_ENV
+		fi
+	} || {
+		echo -e "$(color cy '部署....')"
+		truncate -s 33g $REPO_FLODER.img
+		mkfs.btrfs -M $REPO_FLODER.img 1>/dev/null 2>&1
+		sudo losetup $LOOP_DEVICE $REPO_FLODER.img
+		mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
+		sudo chown $USER:$(id -gn) $REPO_FLODER
+		echo -e "$(color cy '拉取源码1....')\c"
+		BEGIN_TIME=$(date '+%H:%M:%S')
+		git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
+		status
+		echo "FETCH_CACHE=true" >> $GITHUB_ENV
+	}
+else
+	echo -e "$(color cy '部署....')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	truncate -s 33g $REPO_FLODER.img
+	mkfs.btrfs -M $REPO_FLODER.img 1>/dev/null 2>&1
+	sudo losetup $LOOP_DEVICE $REPO_FLODER.img
+	mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
+	sudo chown $USER:$(id -gn) $REPO_FLODER
 	status
+	echo -e "$(color cy '拉取源码2....')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
+	status
+	echo "FETCH_CACHE=true" >> $GITHUB_ENV
 fi
+grep -q "${REPOSITORY}.*${TARGET_DEVICE}" xd || VERSION="mini"
 
 cd $REPO_FLODER || exit
 #[[ $REPOSITORY == "lean" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
@@ -237,8 +267,6 @@ case "$TARGET_DEVICE" in
 		EOF
 	;;
 esac
-
-curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep -q "${REPOSITORY}.*${TARGET_DEVICE}" || VERSION="mini"
 
 cat >> .config <<-EOF
 	CONFIG_KERNEL_BUILD_USER="win3gp"
@@ -509,7 +537,6 @@ case $TARGET_DEVICE in
 		# git apply --reject --ignore-whitespace patches/*.patch
 	# fi
 	# svn export --force https://github.com/friendlyarm/friendlywrt/trunk/target/linux/rockchip/armv8/base-files/etc/modules.d target/linux/rockchip/armv8/base-files/etc/modules.d
-	# VERSION="mini"
 	if [[ $VERSION = "mini" ]]; then
 		cat > .config <<-EOF
 			CONFIG_TARGET_rockchip=y
@@ -745,8 +772,7 @@ done
 	# sed -i '/DEVICE_TYPE/d' include/target.mk
 	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
 	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
-	echo "FETCH_CACHE=''" >>$GITHUB_ENV
-} || echo "FETCH_CACHE=true" >>$GITHUB_ENV
+}
 
 cat >> .config <<-EOF
 CONFIG_DEVEL=y
@@ -783,7 +809,6 @@ echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
 # echo "UPLOAD_FIRMWARE=false" >>$GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 # echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
-echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
 echo "CLEAN=false" >> $GITHUB_ENV
 [[ $REPO_BRANCH =~ 21 ]] && \
 echo "REPO_BRANCH=${REPO_BRANCH#*-}" >> $GITHUB_ENV || \

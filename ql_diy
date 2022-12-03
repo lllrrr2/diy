@@ -5,13 +5,16 @@ xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* | sed "s/openwrt/$IMG_USER/g"`
 
 organize_pack() {
 	echo "压缩-打包"
-	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true
-	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true
+	[[ $VERSION = "mini" ]] && xf=mini-
+	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${xf}${hx##*/} || true
+	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xf}${xx##*/} || true
 
 	cd $REPO_FLODER
+	du -h --max-depth=1 ./ --exclude=bin --exclude=build_dir --exclude=staging_dir
 	[ -f _Makefile ] && mv -f _Makefile Makefile
 	make clean
 	rm -rf bin tmp logs
+	du -h --max-depth=1 ./ --exclude=bin --exclude=build_dir --exclude=staging_dir
 	cd ../
 	sleep 10
 
@@ -24,9 +27,13 @@ organize_pack() {
 	# sleep 30
 	# sudo umount $REPO_FLODER
 
-	mksquashfs $REPO_FLODER $REPO_FLODER.img
-	zstdmt -c --long $REPO_FLODER.img | split --numeric=1 -b 2000m - output/$IMG_USER.img.zst.
+	# mksquashfs $REPO_FLODER $REPO_FLODER.img
+	# zstdmt -c --long $REPO_FLODER.img | split --numeric=1 -b 2000m - output/${xf}${IMG_USER}.img.zst.
+	mksquashfs $REPO_FLODER xx.img -force-gid 1001 -force-uid 1001 -comp zstd
+    zstdmt -c --long xx.img | split --numeric=1 -b 2000m - output/${xf}${IMG_USER}.img.zst.
 	ls -lh output
+	mksquashfs --help
+	ls -lh
 }
 
 up_github() {
@@ -41,8 +48,8 @@ up_github() {
 		echo $ret | jq -r '.assets[] | select(.name | contains ("'$IMG_USER'.img")).id' | xargs -n1 -i curl -X DELETE -H "$AUTH" "https://api.$cache_path/assets/{}"
 		ls output | parallel --wc 'while true; do curl -T {} -H "$AUTH" -H "Content-Type: application/octet-stream" "https://uploads.$cache_path/$cache_repo_id/assets?name={}" && break || true; done'
 		set +e
-		for i in {1..20}; do
-			curl -sL --fail https://github.com/hong0980/OpenWrt-Cache/releases/download/cache/$IMG_USER.img.zst.0$i || break
+		for i in {1..5}; do
+			curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/$SOURCE_USER-Cache/$IMG_USER.img.zst.0$i || break
 		done | zstdmt -d -o /dev/null
 		if [ $? -eq 0 ]; then
 			break
@@ -51,19 +58,20 @@ up_github() {
 	set -e
 }
 
+(grep -Eq "^mini-$IMG_USER.*zst" || grep -Eq "^$IMG_USER.*zst") || {
+	organize_pack || true
+	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+}
+grep -Eq "^$IMG_USER.*zst" && echo "OUTPUT_RELEASE=''" >>$GITHUB_ENV
+
+organize_pack || true
+echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+# up_github || true
+echo "SAVE_CACHE=''" >>$GITHUB_ENV
 export AUTH="Authorization: token $GITHUB_TOKEN"
 export cache_path='github.com/repos/hong0980/OpenWrt-Cache/releases'
 export cache_repo_id='84581161'
 ret=$(curl -sH "$AUTH" "https://api.$cache_path/tags/cache")
 echo $ret
-
-[[ $VERSION = "mini" ]] && {
-	echo "OUTPUT_RELEASE=''" >>$GITHUB_ENV
-} || {
-	organize_pack || true
-	# up_github || true
-	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
-}
-echo "SAVE_CACHE=''" >>$GITHUB_ENV
 
 export -p
