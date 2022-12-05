@@ -543,9 +543,9 @@ case $TARGET_DEVICE in
 		# sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.default
 	fi
 	[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && {
-	# svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
-	wget -qO package/boot/uboot-rockchip/patches/303-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus-LTS.patch \
-	raw.githubusercontent.com/hong0980/diy/master/uboot-rockchip/patches/202-rockchip-rk3328-Add-support-for-OrangePi-R1-Plus-LTS.patch
+	svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
+	#wget -qO package/boot/uboot-rockchip/patches/303-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus-LTS.patch \
+	#raw.githubusercontent.com/hong0980/diy/master/uboot-rockchip/patches/202-rockchip-rk3328-Add-support-for-OrangePi-R1-Plus-LTS.patch
 	# clone_url "https://github.com/hong0980/diy/trunk/uboot-rockchip"
 	}
 	# wget -qO package/boot/uboot-rockchip/patches/302-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus.patch \
