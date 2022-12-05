@@ -778,7 +778,7 @@ CONFIG_MAKE_TOOLCHAIN=y
 CONFIG_BUILD_LOG_DIR="./logs"
 EOF
 
-echo -e "$(color cy 当前机型) $(color cb $SOURCE_USER-${DEVICE_NAME}-$VERSION)"
+echo -e "$(color cy 当前机型) $(color cb $SOURCE_USER-${REPO_BRANCH#*-}-$DEVICE_NAME-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
