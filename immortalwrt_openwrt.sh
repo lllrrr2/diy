@@ -125,62 +125,46 @@ clone_url() {
 REPO_URL=https://github.com/immortalwrt/immortalwrt
 export SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)
 echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
-export IMG_USER=$SOURCE_USER-$REPO_BRANCH-$TARGET_DEVICE
+export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
-export LOOP_DEVICE=$(losetup -f)
-[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 
-if grep -Eq "^$IMG_USER.*zst" xd; then
-	for i in {1..3}; do
-		curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/$SOURCE_USER-Cache/$IMG_USER.img.zst.0$i || break 
-	done | zstdmt -d -o $IMG_USER.img && {
-		echo -e "$(color cy '解压....')"
-		mkdir -p openwrt-ro $REPO_FLODER workdir overlay
-		sudo mount -o loop $IMG_USER.img openwrt-ro
-		sudo mount -t overlay overlay -o lowerdir=openwrt-ro,upperdir=overlay,workdir=workdir $REPO_FLODER
-		sudo chown runner:runner $REPO_FLODER
-		if [[ -d "$GITHUB_WORKSPACE/$REPO_FLODER/.git" ]]; then
-			cd $GITHUB_WORKSPACE/$REPO_FLODER
-			echo -e "$(color cy '更新源码....')"
-			git fetch --all
-			git reset --hard origin/$REPO_BRANCH
-			git clean -df
-			rm -rf package/A
-			cd $GITHUB_WORKSPACE
-			echo "FETCH_CACHE=''" >> $GITHUB_ENV
-			echo "CACHE_ACTIONS=''" >> $GITHUB_ENV
-		fi
-	} || {
-		echo -e "$(color cy '部署....')"
-		truncate -s 33g $REPO_FLODER.img
-		mkfs.btrfs -M $REPO_FLODER.img 1>/dev/null 2>&1
-		sudo losetup $LOOP_DEVICE $REPO_FLODER.img
-		mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
-		sudo chown $USER:$(id -gn) $REPO_FLODER
-		echo -e "$(color cy '拉取源码1....')\c"
-		BEGIN_TIME=$(date '+%H:%M:%S')
-		git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
-		status
-		echo "FETCH_CACHE=true" >> $GITHUB_ENV
-	}
-else
-	echo -e "$(color cy '部署....')\c"
-	BEGIN_TIME=$(date '+%H:%M:%S')
-	truncate -s 33g $REPO_FLODER.img
-	mkfs.btrfs -M $REPO_FLODER.img 1>/dev/null 2>&1
-	sudo losetup $LOOP_DEVICE $REPO_FLODER.img
-	mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
-	sudo chown $USER:$(id -gn) $REPO_FLODER
-	status
-	echo -e "$(color cy '拉取源码2....')\c"
-	BEGIN_TIME=$(date '+%H:%M:%S')
-	git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
-	status
-	echo "FETCH_CACHE=true" >> $GITHUB_ENV
-fi
-grep -q "${REPOSITORY}.*${TARGET_DEVICE}" xd || VERSION="mini"
+echo -e "$(color cy '拉取源码....')\c"
+[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
+BEGIN_TIME=$(date '+%H:%M:%S')
+git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
+status
 
 cd $REPO_FLODER || exit
+cp Makefile _Makefile
+export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
+echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
+DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_USER-Cache"
+
+if grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tar.xz" ../xd; then
+	echo -e "$(color cy '部署xz-cache')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.xz && {
+		tar -xf *cache.tar.xz && rm *.xz
+		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
+		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+	}
+	status
+elif grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
+	echo -e "$(color cy '部署tz-cache')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
+		tar --use-compress-program unzstd -xf *cache.tzst && rm *.tzst
+		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
+		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+	}
+	status
+else
+	if grep -Eq "${SOURCE_USER}.*${REPO_BRANCH#*-}.*$TARGET_DEVICE" ../xd; then
+		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+	else
+		VERSION="mini"
+	fi
+fi
 
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
@@ -302,8 +286,8 @@ EOF
 config_generate="package/base-files/files/bin/config_generate"
 color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
-sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-ImmortalWrt-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
-sed -i "/IMG_PREFIX:/ {s/=/=ImmortalWrt-$VERSION-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_USER-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_USER-$VERSION-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk}
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
@@ -480,8 +464,6 @@ sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
 	}
 
 }
-
-[[ $VERSION = "mini" ]] && sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
 
 # clone_url "https://github.com/immortalwrt/packages/branches/openwrt-21.02/libs/libtorrent-rasterbar" && {
 	# rm -rf package/A/{luci-app-deluge,deluge}
@@ -679,6 +661,8 @@ done
 	# sed -i '/DEVICE_TYPE/d' include/target.mk
 	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
 	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+	echo "UPLOAD_RELEASE=" >> $GITHUB_ENV
 }
 
 cat >> .config <<-EOF
@@ -696,7 +680,7 @@ CONFIG_MAKE_TOOLCHAIN=y
 CONFIG_BUILD_LOG_DIR="./logs"
 EOF
 
-echo -e "$(color cy 当前的机型) $(color cb $REPO_BRANCH-$DEVICE_NAME-$VERSION)"
+echo -e "$(color cy 当前机型) $(color cb $SOURCE_USER-${REPO_BRANCH#*-}-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
@@ -709,13 +693,11 @@ sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defcon
 echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
 # echo "UPLOAD_FIRMWARE=false" >>$GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
-# echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
-echo "CLEAN=false" >> $GITHUB_ENV
+# echo "UPLOAD_WETRANSFER=false" >>$GITHUB_ENV
+echo "CLEAN=false" >>$GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
 echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
-echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
-cp Makefile _Makefile
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"

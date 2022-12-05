@@ -2,36 +2,6 @@
 hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* | sed "s/openwrt/$IMG_USER/g"`
 xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* | sed "s/openwrt/$IMG_USER/g"`
 
-organize_pack() {
-	echo "压缩-打包"
-	[[ $VERSION = "mini" ]] && xf=mini-
-	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${xf}${hx##*/} || true
-	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xf}${xx##*/} || true
-
-	cd $REPO_FLODER
-	[ -f _Makefile ] && mv -f _Makefile Makefile
-	make clean
-	rm -rf bin tmp logs
-	# du -h --max-depth=1 ./ --exclude=bin --exclude=build_dir --exclude=staging_dir
-	cd ../
-	sleep 10
-
-	# sudo mount -o remount,compress=no,nodatacow,nodatasum $REPO_FLODER
-	# pushd $REPO_FLODER
-	# pv /dev/zero > zerospace || true
-	# sync
-	# rm -f zerospace
-	# popd
-	# sleep 30
-	# sudo umount $REPO_FLODER
-
-	# mksquashfs $REPO_FLODER $REPO_FLODER.img
-	# zstdmt -c --long $REPO_FLODER.img | split --numeric=1 -b 2000m - output/${xf}${IMG_USER}.img.zst.
-	mksquashfs $REPO_FLODER xx.img -no-sparse -no-duplicates -force-gid 1001 -force-uid 1001 -comp zstd | split --numeric=1 -b 2000m - output/${xf}${IMG_USER}.img.zst.
-	ls -lh output
-	# mksquashfs --help
-}
-
 up_github() {
 	echo "上传到github"
 	export AUTH="Authorization: token $GITHUB_TOKEN"
@@ -54,18 +24,24 @@ up_github() {
 	set -e
 }
 
-(grep -Eq "^mini-$IMG_USER.*zst" || grep -Eq "^$IMG_USER.*zst") || {
-	organize_pack || true
+grep -Eq "$IMG_USER-$TOOLS_HASH-cache" xd || {
+	echo "打包cache"
 	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true
+	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true
+	[[ "$SOURCE_USER" = coolsnowwolf && "$TARGET_DEVICE" = r1-plus-lts ]] && {
+		grep -Eq "uboot-rockchip" xd || \
+		tar -zcf output/uboot-rockchip.tar.gz $REPO_FLODER/package/boot/uboot-rockchip
+	}
+	cd $REPO_FLODER
+	du -h --max-depth=1 ./ --exclude=staging_dir
+	du -h --max-depth=1 ./staging_dir
+	# diff -u Makefile _Makefile | tee ../output/Makefile.patch
+	tar --posix --use-compress-program zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* .ccache
+	# tar --mtime=now -Jcf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.xz staging_dir/host* staging_dir/tool* .ccache
+	ls -lh ../output
 }
-grep -Eq "^$IMG_USER.*zst" && echo "OUTPUT_RELEASE=''" >>$GITHUB_ENV
 
 # up_github || true
 echo "SAVE_CACHE=''" >>$GITHUB_ENV
-export AUTH="Authorization: token $GITHUB_TOKEN"
-export cache_path='github.com/repos/hong0980/OpenWrt-Cache/releases'
-export cache_repo_id='84581161'
-ret=$(curl -sH "$AUTH" "https://api.$cache_path/tags")
-echo $ret
-echo $GITHUB_WORKSPACE
 export -p

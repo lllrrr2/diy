@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
+curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '{print $(NF)}' > xd
+#cat xd
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
-curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '{print $(NF)}' > xd
-#cat xd
 color() {
 	case $1 in
 		cy) echo -e "\033[1;33m$2\033[0m" ;;
@@ -131,67 +131,59 @@ case $REPOSITORY in
 	REPO_URL="https://github.com/orangepi-xunlong/openwrt"
 	REPO_BRANCH="openwrt-21.02"
 	;;
-	"lean"|"*")
+	"coolsnowwolf")
 	REPO_URL="https://github.com/coolsnowwolf/lede"
 	REPO_BRANCH="master"
+	;;
+	"immortalwrt")
+	REPO_URL="https://github.com/immortalwrt/immortalwrt"
+	REPO_BRANCH=$REPO_BRANCH
 	;;
 esac
 export SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)
 echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
-export IMG_USER=$SOURCE_USER-$REPO_BRANCH-$TARGET_DEVICE
+export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
-export LOOP_DEVICE=$(losetup -f)
-[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 
-if grep -Eq "^$IMG_USER.*zst" xd; then
-	for i in {1..3}; do
-		curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/$SOURCE_USER-Cache/$IMG_USER.img.zst.0$i || break 
-	done | zstdmt -d -o $IMG_USER.img && {
-		echo -e "$(color cy '解压....')"
-		mkdir -p openwrt-ro $REPO_FLODER workdir overlay
-		sudo mount -o loop $IMG_USER.img openwrt-ro
-		sudo mount -t overlay overlay -o lowerdir=openwrt-ro,upperdir=overlay,workdir=workdir $REPO_FLODER
-		sudo chown runner:runner $REPO_FLODER
-		if [[ -d "$GITHUB_WORKSPACE/$REPO_FLODER/.git" ]]; then
-			cd $REPO_FLODER
-			echo -e "$(color cy '更新源码....')"
-			git fetch --all && git reset --hard origin/$REPO_BRANCH
-			cd $GITHUB_WORKSPACE
-			echo "FETCH_CACHE=true" >> $GITHUB_ENV
-			echo "CACHE_ACTIONS=''" >> $GITHUB_ENV
-		fi
-	} || {
-		echo -e "$(color cy '部署....')"
-		truncate -s 33g $REPO_FLODER.img
-		mkfs.btrfs -M $REPO_FLODER.img 1>/dev/null 2>&1
-		sudo losetup $LOOP_DEVICE $REPO_FLODER.img
-		mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
-		sudo chown $USER:$(id -gn) $REPO_FLODER
-		echo -e "$(color cy '拉取源码1....')\c"
-		BEGIN_TIME=$(date '+%H:%M:%S')
-		git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
-		status
-		echo "FETCH_CACHE=true" >> $GITHUB_ENV
-	}
-else
-	echo -e "$(color cy '部署....')\c"
-	BEGIN_TIME=$(date '+%H:%M:%S')
-	truncate -s 33g $REPO_FLODER.img
-	mkfs.btrfs -M $REPO_FLODER.img 1>/dev/null 2>&1
-	sudo losetup $LOOP_DEVICE $REPO_FLODER.img
-	mkdir $REPO_FLODER && sudo mount $LOOP_DEVICE $REPO_FLODER
-	sudo chown $USER:$(id -gn) $REPO_FLODER
-	status
-	echo -e "$(color cy '拉取源码2....')\c"
-	BEGIN_TIME=$(date '+%H:%M:%S')
-	git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
-	status
-	echo "FETCH_CACHE=true" >> $GITHUB_ENV
-fi
-grep -q "${REPOSITORY}.*${TARGET_DEVICE}" xd || VERSION="mini"
+echo -e "$(color cy '拉取源码....')\c"
+[[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
+BEGIN_TIME=$(date '+%H:%M:%S')
+git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
+status
 
 cd $REPO_FLODER || exit
-#[[ $REPOSITORY == "lean" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
+cp Makefile _Makefile
+export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
+echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
+DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_USER-Cache"
+
+if grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tar.xz" ../xd; then
+	echo -e "$(color cy '部署xz-cache')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.xz && {
+		tar -xf *cache.tar.xz && rm *.xz
+		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
+		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+	}
+	status
+elif grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
+	echo -e "$(color cy '部署tz-cache')\c"
+	BEGIN_TIME=$(date '+%H:%M:%S')
+	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
+		tar --use-compress-program unzstd -xf *cache.tzst && rm *.tzst
+		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
+		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+	}
+	status
+else
+	if grep -Eq "${SOURCE_USER}.*${REPO_BRANCH#*-}.*$TARGET_DEVICE" ../xd; then
+		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+	else
+		VERSION="mini"
+	fi
+fi
+
+#[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -310,11 +302,11 @@ DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*
 
 color cy "自定义设置.... "
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
-	if [[ $REPOSITORY = "lean" && ${REPO_BRANCH#*-} != "21.02" ]]; then
+	if [[ $SOURCE_USER =~ "coolsnowwolf" && ${REPO_BRANCH#*-} != "21.02" ]]; then
 		REPO_BRANCH="18.06"
-		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_USER-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-		sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-$VERSION-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+		sed -i "/IMG_PREFIX:/ {s/=/=${SOURCE_USER}-$VERSION-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 		sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 		sed -i 's/gmtime/localtime/g' include/kernel.mk
@@ -412,7 +404,6 @@ color cy "自定义设置.... "
 		https://github.com/fw876/helloworld
 		https://github.com/xiaorouji/openwrt-passwall
 		https://github.com/xiaorouji/openwrt-passwall2
-		https://github.com/sirpdboy/luci-app-cupsd
 		https://github.com/destan19/OpenAppFilter
 		https://github.com/jerrykuku/luci-app-vssr
 		https://github.com/jerrykuku/lua-maxminddb
@@ -421,6 +412,8 @@ color cy "自定义设置.... "
 		#https://github.com/project-lede/luci-app-godproxy
 		https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 		#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
+		https://github.com/sirpdboy/luci-app-cupsd/trunk/luci-app-cupsd
+		https://github.com/sirpdboy/luci-app-cupsd/trunk/cups
 		https://github.com/immortalwrt/luci/trunk/applications/luci-app-eqos
 		https://github.com/immortalwrt/luci/trunk/applications/luci-app-passwall
 		#https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
@@ -432,7 +425,7 @@ color cy "自定义设置.... "
 		#https://gitee.com/hong0980/deluge
 	"
 	[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
-	sed -i '/log_check/s/^/#/' package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
+	sed -i '/log_check/s/^/#/' package/A/*/*/*/init.d/unblockneteasemusic
 	packages_url="luci-app-bypass luci-app-filetransfer"
 	for k in $packages_url; do
 		clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
@@ -525,7 +518,7 @@ case $TARGET_DEVICE in
 	# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
 	# rockchip swap wan and lan
 	# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
-	# if [[ $REPOSITORY == "lean" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
+	# if [[ $SOURCE_USER == "coolsnowwolf" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
 		# mkdir patches && \
 		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
 		# git apply --reject --ignore-whitespace patches/*.patch
@@ -549,7 +542,7 @@ case $TARGET_DEVICE in
 		clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
 		# sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.default
 	fi
-	[[ $REPOSITORY == "lean" && $TARGET_DEVICE =~ r1-plus ]] && {
+	[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && {
 	svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
 	# clone_url "https://github.com/hong0980/diy/trunk/uboot-rockchip"
 	}
@@ -569,7 +562,7 @@ case $TARGET_DEVICE in
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.150"/' $config_generate
-	[[ $REPOSITORY = "lean" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
+	[[ $SOURCE_USER =~ "coolsnowwolf" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
 	[[ $VERSION = plus ]] && _packages "
 	luci-app-adbyby-plus
 	#luci-app-amule
@@ -684,7 +677,7 @@ case $TARGET_DEVICE in
 	;;
 esac
 
-if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE =~ lts ]]; then
+if [[ $SOURCE_USER =~ "baiywt" || $SOURCE_USER =~ "xunlong" ]] && [[ $TARGET_DEVICE =~ lts ]]; then
 	_packages "autosamba automount autocore-arm default-settings default-settings-chn fdisk cfdisk e2fsprogs ethtool haveged htop wpad-openssl usbutils losetup luci-theme-argon luci-theme-openwrt-2020 luci-theme-openwrt"
 	clone_url "
 	https://github.com/coolsnowwolf/packages/trunk/libs/qtbase
@@ -704,7 +697,7 @@ if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE 
 	for k in $ko; do
 		clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/kernel/$k"
 	done
-	[[ $REPOSITORY = "baiywt" ]] && clone_url "https://github.com/baiywt/openwrt/branches/openwrt-21.02/package/boot/uboot-rockchip"
+	[[ $SOURCE_USER =~ "baiywt" ]] && clone_url "https://github.com/baiywt/openwrt/branches/openwrt-21.02/package/boot/uboot-rockchip"
 	cat >>package/kernel/linux/modules/fs.mk<<-\EOF
 	define KernelPackage/fs-ntfs3
 	  SUBMENU:=$(FS_MENU)
@@ -725,9 +718,9 @@ if [[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && [[ $TARGET_DEVICE 
 	EOF
 	rm -rf package/A/{AmuleWebUI-Reloaded,luci-app-amule}
 	sed -i 's,-mcpu=generic,-march=armv8-a+crypto+crc -mabi=lp64,g' include/target.mk
-	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$REPOSITORY-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_USER-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-	sed -i "/IMG_PREFIX:/ {s/=/=${REPOSITORY}-${REPO_BRANCH#*-}-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
+	sed -i "/IMG_PREFIX:/ {s/=/=${SOURCE_USER}-${REPO_BRANCH#*-}-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 	sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 	echo -e "# CONFIG_PACKAGE_dnsmasq is not set\nCONFIG_LUCI_LANG_zh_Hans=y" >> .config
 	cpuinfo="$(find package/ -type d -name "autocore" 2>/dev/null)"
@@ -766,6 +759,8 @@ done
 	# sed -i '/DEVICE_TYPE/d' include/target.mk
 	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
 	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+	echo "UPLOAD_RELEASE=" >> $GITHUB_ENV
 }
 
 cat >> .config <<-EOF
@@ -783,35 +778,34 @@ CONFIG_MAKE_TOOLCHAIN=y
 CONFIG_BUILD_LOG_DIR="./logs"
 EOF
 
-echo -e "$(color cy 当前的机型) $(color cb $REPOSITORY-${DEVICE_NAME}-$VERSION)"
+echo -e "$(color cy 当前机型) $(color cb $SOURCE_USER-${DEVICE_NAME}-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 
-[[ $REPOSITORY = "baiywt" || $REPOSITORY = "xunlong" ]] && {
+[[ $SOURCE_USER =~ "baiywt" || $SOURCE_USER =~ "xunlong" ]] && {
 	[[ $TARGET_DEVICE =~ lts ]] && [[ `grep -Eq "bypass|passwall|ssr-plus" .config` ]] && {
 		make defconfig 1>/dev/null 2>&1
 		egrep "bypass|passwall|ssr-plus" .config
 	}
 }
+clone_url "https://github.com/immortalwrt/packages/branches/openwrt-18.06/net/iperf3"
 # echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
 # echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=false" >>$GITHUB_ENV
 echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
 # echo "UPLOAD_FIRMWARE=false" >>$GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
-# echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
-echo "CLEAN=false" >> $GITHUB_ENV
+# echo "UPLOAD_WETRANSFER=false" >>$GITHUB_ENV
+echo "CLEAN=false" >>$GITHUB_ENV
 [[ $REPO_BRANCH =~ 21 ]] && \
-echo "REPO_BRANCH=${REPO_BRANCH#*-}" >> $GITHUB_ENV || \
-echo "REPO_BRANCH=18.06" >> $GITHUB_ENV
+echo "REPO_BRANCH=${REPO_BRANCH#*-}" >>$GITHUB_ENV || \
+echo "REPO_BRANCH=18.06" >>$GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
 echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
-echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
-cp Makefile _Makefile
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
