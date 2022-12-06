@@ -43,7 +43,7 @@ grep -Eq "$IMG_USER-$TOOLS_HASH-cache" xd || {
 	cp -v `find -type f -name "orangepi-r1-plus-lts-rk3328_defconfig"` ../output
 	ls -lh ../output
 }
-
+ls -lh package/boot/uboot-rockchip/src/configs
 # up_github || true
 echo "SAVE_CACHE=''" >>$GITHUB_ENV
 export -p
