@@ -30,7 +30,7 @@ status() {
 
 _packages() {
 	for z in $@; do
-		[[ $z =~ ^# ]] || echo "CONFIG_PACKAGE_$z=y" >> .config
+		[[ $z =~ ^# ]] || echo "CONFIG_PACKAGE_$z=y" >>.config
 	done
 }
 
@@ -177,7 +177,7 @@ elif grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	status
 else
 	if grep -Eq "${SOURCE_USER}.*${REPO_BRANCH#*-}.*$TARGET_DEVICE" ../xd; then
-		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 	else
 		VERSION="mini"
 	fi
@@ -219,9 +219,9 @@ case "$TARGET_DEVICE" in
 		EOF
 		case "$TARGET_DEVICE" in
 		"r1-plus-lts"|"r1-plus")
-		echo "CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y" >> .config ;;
+		echo "CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y" >>.config ;;
 		"r4s"|"r2c"|"r2s")
-		echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >> .config ;;
+		echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >>.config ;;
 		esac
 	;;
 	"newifi-d2")
@@ -254,7 +254,7 @@ case "$TARGET_DEVICE" in
 	;;
 esac
 
-cat >> .config <<-EOF
+cat >>.config <<-EOF
 	CONFIG_KERNEL_BUILD_USER="win3gp"
 	CONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"
 	CONFIG_PACKAGE_luci-app-accesscontrol=y
@@ -306,7 +306,7 @@ color cy "自定义设置.... "
 		REPO_BRANCH="18.06"
 		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_USER-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-		sed -i "/IMG_PREFIX:/ {s/=/=${SOURCE_USER}-$VERSION-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+		sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_USER-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 		sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 		sed -i 's/gmtime/localtime/g' include/kernel.mk
@@ -532,9 +532,9 @@ case $TARGET_DEVICE in
 			EOF
 		case "$TARGET_DEVICE" in
 			"r1-plus-lts"|"r1-plus")
-			echo "CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y" >> .config ;;
+			echo "CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y" >>.config ;;
 			"r4s"|"r2c"|"r2s")
-			echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >> .config ;;
+			echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >>.config ;;
 		esac
 	fi
 	if [[ `git log --oneline | awk 'NR==1{print $1}'` =~ b0ea2f3 ]]; then
@@ -724,7 +724,7 @@ if [[ $SOURCE_USER =~ "baiywt" || $SOURCE_USER =~ "xunlong" ]] && [[ $TARGET_DEV
 	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 	sed -i "/IMG_PREFIX:/ {s/=/=${SOURCE_USER}-${REPO_BRANCH#*-}-\$(shell date +%m%d-%H%M -d +8hour)-/}" include/image.mk
 	sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
-	echo -e "# CONFIG_PACKAGE_dnsmasq is not set\nCONFIG_LUCI_LANG_zh_Hans=y" >> .config
+	echo -e "# CONFIG_PACKAGE_dnsmasq is not set\nCONFIG_LUCI_LANG_zh_Hans=y" >>.config
 	cpuinfo="$(find package/ -type d -name "autocore" 2>/dev/null)"
 	[[ -d $cpuinfo ]] && sed -i 's/"?"/"ARMv8 Processor"/' $cpuinfo/files/generic/cpuinfo
 	sed -i "{
@@ -761,11 +761,11 @@ done
 	# sed -i '/DEVICE_TYPE/d' include/target.mk
 	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
 	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
-	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
-	echo "UPLOAD_RELEASE=" >> $GITHUB_ENV
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+	echo "UPLOAD_RELEASE=" >>$GITHUB_ENV
 }
 
-cat >> .config <<-EOF
+cat >>.config <<-EOF
 CONFIG_DEVEL=y
 CONFIG_CCACHE=y
 CONFIG_NEED_TOOLCHAIN=y

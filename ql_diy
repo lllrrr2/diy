@@ -39,8 +39,8 @@ grep -Eq "$IMG_USER-$TOOLS_HASH-cache" xd || {
 	# diff -u Makefile _Makefile | tee ../output/Makefile.patch
 	tar --posix --use-compress-program zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* .ccache
 	# tar --mtime=now -Jcf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.xz staging_dir/host* staging_dir/tool* .ccache
-	find -type f -name "orangepi-r1-plus-lts-rk3328_defconfig" 2>/dev/null && \
-	cp -v `find -type f -name "orangepi-r1-plus-lts-rk3328_defconfig"` ../output
+	# find -type f -name "orangepi-r1-plus-lts-rk3328_defconfig" 2>/dev/null && \
+	# cp -v `find -type f -name "orangepi-r1-plus-lts-rk3328_defconfig"` ../output
 	ls -lh ../output
 }
 ls -lh package/boot/uboot-rockchip/src/configs
