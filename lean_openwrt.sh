@@ -176,7 +176,7 @@ elif grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	}
 	status
 else
-	if grep -Eq "${SOURCE_USER}.*${REPO_BRANCH#*-}.*$TARGET_DEVICE" ../xd; then
+	if egrep "$SOURCE_USER.*$TARGET_DEVICE" ../xd | egrep -q "squashfs|sysupgrade"; then
 		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 	else
 		VERSION="mini"
@@ -322,6 +322,61 @@ color cy "自定义设置.... "
 		done
 		clone_url "https://github.com/coolsnowwolf/lede/trunk/package/lean/ntfs3-oot"
 	fi
+	git diff ./ >> ../output/t.patch || true
+	[[ $VERSION = plus ]] && {
+		clone_url "
+			https://github.com/hong0980/build
+			https://github.com/fw876/helloworld
+			https://github.com/xiaorouji/openwrt-passwall
+			https://github.com/xiaorouji/openwrt-passwall2
+			https://github.com/destan19/OpenAppFilter
+			https://github.com/jerrykuku/luci-app-vssr
+			https://github.com/jerrykuku/lua-maxminddb
+			https://github.com/zzsj0928/luci-app-pushbot
+			https://github.com/yaof2/luci-app-ikoolproxy
+			#https://github.com/project-lede/luci-app-godproxy
+			https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
+			#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
+			https://github.com/sirpdboy/luci-app-cupsd/trunk/luci-app-cupsd
+			https://github.com/sirpdboy/luci-app-cupsd/trunk/cups
+			https://github.com/immortalwrt/luci/trunk/applications/luci-app-eqos
+			https://github.com/immortalwrt/luci/trunk/applications/luci-app-passwall
+			#https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
+			#https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
+			#https://github.com/sirpdboy/luci-app-netdata
+			#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+			#https://github.com/linkease/istore/trunk/luci/luci-app-store
+			#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
+			#https://gitee.com/hong0980/deluge
+		"
+		[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
+		sed -i '/log_check/s/^/#/' package/A/*/*/*/init.d/unblockneteasemusic
+		packages_url="luci-app-bypass luci-app-filetransfer"
+		for k in $packages_url; do
+			clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
+		done
+
+		[[ ${REPO_BRANCH#*-} == "18.06" ]] && {
+			for d in $(find feeds/ package/ -type f -name "index.htm" 2>/dev/null); do
+				if grep -q "Kernel Version" $d; then
+					sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' $d
+					sed -i '/<%+footer%>/i<%-\n\tlocal incdir = util.libpath() .. "/view/admin_status/index/"\n\tif fs.access(incdir) then\n\t\tlocal inc\n\t\tfor inc in fs.dir(incdir) do\n\t\t\tif inc:match("%.htm$") then\n\t\t\t\tinclude("admin_status/index/" .. inc:gsub("%.htm$", ""))\n\t\t\tend\n\t\tend\n\t\end\n-%>\n' $d
+					sed -i 's| <%=luci.sys.exec("cat /etc/bench.log") or ""%>||' $d
+				fi
+			done
+			_packages "luci-app-argon-config luci-theme-argon"
+			clone_url "
+			https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
+			https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config
+			https://github.com/brvphoenix/wrtbwmon
+			https://github.com/firker/luci-app-wrtbwmon-zh/trunk/luci-app-wrtbwmon-zh"
+		} || {
+			clone_url "https://github.com/brvphoenix/wrtbwmon
+			https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
+			https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
+		}
+		sed -i 's/ariang/ariang +webui-aria2/g' feeds/*/*/luci-app-aria2/Makefile
+	}
 	# git clone -b luci https://github.com/xiaorouji/openwrt-passwall package/A/luci-app-passwall
 	# https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ##使用分支
 	# echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
@@ -398,61 +453,6 @@ color cy "自定义设置.... "
 	))
 	EOF
 
-[[ $VERSION = plus ]] && {
-	clone_url "
-		https://github.com/hong0980/build
-		https://github.com/fw876/helloworld
-		https://github.com/xiaorouji/openwrt-passwall
-		https://github.com/xiaorouji/openwrt-passwall2
-		https://github.com/destan19/OpenAppFilter
-		https://github.com/jerrykuku/luci-app-vssr
-		https://github.com/jerrykuku/lua-maxminddb
-		https://github.com/zzsj0928/luci-app-pushbot
-		https://github.com/yaof2/luci-app-ikoolproxy
-		#https://github.com/project-lede/luci-app-godproxy
-		https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-		#https://github.com/immortalwrt/packages/trunk/net/qBittorrent-Enhanced-Edition
-		https://github.com/sirpdboy/luci-app-cupsd/trunk/luci-app-cupsd
-		https://github.com/sirpdboy/luci-app-cupsd/trunk/cups
-		https://github.com/immortalwrt/luci/trunk/applications/luci-app-eqos
-		https://github.com/immortalwrt/luci/trunk/applications/luci-app-passwall
-		#https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
-		#https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
-		#https://github.com/sirpdboy/luci-app-netdata
-		#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
-		#https://github.com/linkease/istore/trunk/luci/luci-app-store
-		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
-		#https://gitee.com/hong0980/deluge
-	"
-	[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
-	sed -i '/log_check/s/^/#/' package/A/*/*/*/init.d/unblockneteasemusic
-	packages_url="luci-app-bypass luci-app-filetransfer"
-	for k in $packages_url; do
-		clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
-	done
-
-	[[ ${REPO_BRANCH#*-} == "18.06" ]] && {
-		for d in $(find feeds/ package/ -type f -name "index.htm" 2>/dev/null); do
-			if grep -q "Kernel Version" $d; then
-				sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' $d
-				sed -i '/<%+footer%>/i<%-\n\tlocal incdir = util.libpath() .. "/view/admin_status/index/"\n\tif fs.access(incdir) then\n\t\tlocal inc\n\t\tfor inc in fs.dir(incdir) do\n\t\t\tif inc:match("%.htm$") then\n\t\t\t\tinclude("admin_status/index/" .. inc:gsub("%.htm$", ""))\n\t\t\tend\n\t\tend\n\t\end\n-%>\n' $d
-				sed -i 's| <%=luci.sys.exec("cat /etc/bench.log") or ""%>||' $d
-			fi
-		done
-		_packages "luci-app-argon-config luci-theme-argon"
-		clone_url "
-		https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
-		https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config
-		https://github.com/brvphoenix/wrtbwmon
-		https://github.com/firker/luci-app-wrtbwmon-zh/trunk/luci-app-wrtbwmon-zh"
-	} || {
-		clone_url "https://github.com/brvphoenix/wrtbwmon
-		https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
-		https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
-	}
-	sed -i 's/ariang/ariang +webui-aria2/g' feeds/*/*/luci-app-aria2/Makefile
-}
-
 case $TARGET_DEVICE in
 "newifi-d2")
 	FIRMWARE_TYPE="sysupgrade"
@@ -515,15 +515,6 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
-	# rockchip swap wan and lan
-	# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
-	# if [[ $SOURCE_USER == "coolsnowwolf" && $TARGET_DEVICE == "r1-plus-lts" ]]; then
-		# mkdir patches && \
-		# wget -qP patches/ https://raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch && \
-		# git apply --reject --ignore-whitespace patches/*.patch
-	# fi
-	# svn export --force https://github.com/friendlyarm/friendlywrt/trunk/target/linux/rockchip/armv8/base-files/etc/modules.d target/linux/rockchip/armv8/base-files/etc/modules.d
 	if [[ $VERSION = "mini" ]]; then
 		cat > .config <<-EOF
 			CONFIG_TARGET_rockchip=y
@@ -544,12 +535,16 @@ case $TARGET_DEVICE in
 	fi
 	[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && {
 	svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
-	#wget -qO package/boot/uboot-rockchip/patches/303-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus-LTS.patch \
-	#raw.githubusercontent.com/hong0980/diy/master/uboot-rockchip/patches/202-rockchip-rk3328-Add-support-for-OrangePi-R1-Plus-LTS.patch
 	# clone_url "https://github.com/hong0980/diy/trunk/uboot-rockchip"
+	# mkdir patches
+	# wget -nv raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch -P patches/
+	# sh -c "curl -sfL https://raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch | git apply --reject --ignore-whitespace"
+	# wget -nv raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch -P patches/
+	# git apply --reject --ignore-whitespace patches/*.patch
+	# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
+	# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
+	# svn export --force https://github.com/friendlyarm/friendlywrt/trunk/target/linux/rockchip/armv8/base-files/etc/modules.d target/linux/rockchip/armv8/base-files/etc/modules.d
 	}
-	# wget -qO package/boot/uboot-rockchip/patches/302-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus.patch \
-	# raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
@@ -793,7 +788,6 @@ sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defcon
 		egrep "bypass|passwall|ssr-plus" .config
 	}
 }
-clone_url "https://github.com/immortalwrt/packages/branches/openwrt-18.06/net/iperf3"
 # echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
 # echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=false" >>$GITHUB_ENV

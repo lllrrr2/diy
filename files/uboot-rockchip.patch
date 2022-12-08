@@ -1,70 +1,20 @@
---- package/boot/uboot-rockchip/patches/302-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus.patch
-+++ package/boot/uboot-rockchip/patches/302-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus.patch
-@@ -23,27 +23,69 @@
-  	rk3328-roc-cc.dtb \
-  	rk3328-rock64.dtb \
-  	rk3328-rock-pi-e.dtb
--diff --git a/arch/arm/dts/rk3328-orangepi-r1-plus-lts.dts b/arch/arm/dts/rk3328-orangepi-r1-plus-lts.dts
--new file mode 100644
--index 00000000..e6225b0c
-+--- /dev/null
-++++ b/arch/arm/dts/rk3328-orangepi-r1-plus-lts-u-boot.dtsi
-+@@ -0,0 +1 @@
-++#include "rk3328-orangepi-r1-plus-u-boot.dtsi"
- --- /dev/null
- +++ b/arch/arm/dts/rk3328-orangepi-r1-plus-lts.dts
--@@ -0,0 +1,7 @@
-+@@ -0,0 +1,47 @@
- +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-++/*
-++ * Copyright (c) 2016 Xunlong Software. Co., Ltd.
-++ * (http://www.orangepi.org)
-++ *
-++ * Copyright (c) 2021 Tianling Shen <cnsztl@immortalwrt.org>
-++ */
-++
- +#include "rk3328-orangepi-r1-plus.dts"
- +
- +/ {
- +	model = "Xunlong Orange Pi R1 Plus LTS";
- +	compatible = "xunlong,orangepi-r1-plus-lts", "rockchip,rk3328";
- +};
--diff --git a/configs/orangepi-r1-plus-lts-rk3328_defconfig b/configs/orangepi-r1-plus-lts-rk3328_defconfig
--new file mode 100644
--index 00000000..3cb3b5c3
-++
-++&gmac2io {
-++	phy-handle = <&yt8531c>;
-++	tx_delay = <0x19>;
-++	rx_delay = <0x05>;
-++
-++	mdio {
-++		/delete-node/ ethernet-phy@1;
-++
-++		yt8531c: ethernet-phy@0 {
-++			compatible = "ethernet-phy-id4f51.e91b",
-++				     "ethernet-phy-ieee802.3-c22";
-++			reg = <0>;
-++			pinctrl-0 = <&eth_phy_reset_pin>;
-++			pinctrl-names = "default";
-++			reset-assert-us = <15000>;
-++			reset-deassert-us = <50000>;
-++			reset-gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
-++		};
-++	};
-++};
-++
-++&lan_led {
-++	label = "orangepi-r1-plus-lts:green:lan";
-++};
-++
-++&sys_led {
-++	label = "orangepi-r1-plus-lts:red:sys";
-++};
-++
-++&wan_led {
-++	label = "orangepi-r1-plus-lts:green:wan";
-++};
+--- a/package/boot/uboot-rockchip/Makefile
++++ b/package/boot/uboot-rockchip/Makefile
+@@ -244,10 +244,6 @@
+ 
+ 	$(SED) 's/CONFIG_TOOLS_LIBCRYPTO=y/# CONFIG_TOOLS_LIBCRYPTO is not set/' $(PKG_BUILD_DIR)/.config
+ 	$(SED) 's#CONFIG_MKIMAGE_DTC_PATH=.*#CONFIG_MKIMAGE_DTC_PATH="$(PKG_BUILD_DIR)/scripts/dtc/dtc"#g' $(PKG_BUILD_DIR)/.config
+-	echo 'CONFIG_IDENT_STRING=" OpenWrt"' >> $(PKG_BUILD_DIR)/.config
+-ifneq ($(DDR),)
+-	$(CP) $(STAGING_DIR_IMAGE)/$(DDR) $(PKG_BUILD_DIR)/ram_init.bin
+-endif
+ endef
+ 
+ define Build/InstallDev
+--- a/package/boot/uboot-rockchip/patches/303-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus-LTS.patch
++++ b/package/boot/uboot-rockchip/patches/303-rockchip-rk3328-Add-support-for-Orangepi-R1-Plus-LTS.patch
+@@ -41,9 +41,13 @@
+ index 00000000..3cb3b5c3
  --- /dev/null
  +++ b/configs/orangepi-r1-plus-lts-rk3328_defconfig
 -@@ -0,0 +1,100 @@
@@ -78,7 +28,7 @@
  +CONFIG_SYS_TEXT_BASE=0x00200000
  +CONFIG_SPL_GPIO_SUPPORT=y
  +CONFIG_ENV_OFFSET=0x3F8000
-@@ -57,9 +99,9 @@
+@@ -57,9 +61,9 @@
  +CONFIG_DEBUG_UART_BASE=0xFF130000
  +CONFIG_DEBUG_UART_CLOCK=24000000
  +CONFIG_SYSINFO=y
@@ -89,7 +39,7 @@
  +# CONFIG_ANDROID_BOOT_IMAGE is not set
  +CONFIG_FIT=y
  +CONFIG_FIT_VERBOSE=y
-@@ -133,7 +175,6 @@
+@@ -133,7 +137,6 @@
  +CONFIG_USB_EHCI_GENERIC=y
  +CONFIG_USB_OHCI_HCD=y
  +CONFIG_USB_OHCI_GENERIC=y
@@ -97,7 +47,7 @@
  +CONFIG_USB_DWC2=y
  +CONFIG_USB_DWC3=y
  +# CONFIG_USB_DWC3_GADGET is not set
-@@ -142,5 +183,3 @@
+@@ -142,5 +145,3 @@
  +CONFIG_SPL_TINY_MEMSET=y
  +CONFIG_TPL_TINY_MEMSET=y
  +CONFIG_ERRNO_STR=y

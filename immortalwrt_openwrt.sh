@@ -159,7 +159,7 @@ elif grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	}
 	status
 else
-	if grep -Eq "${SOURCE_USER}.*${REPO_BRANCH#*-}.*$TARGET_DEVICE" ../xd; then
+	if egrep "$SOURCE_USER.*$TARGET_DEVICE" ../xd | egrep -q "squashfs|sysupgrade"; then
 		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 	else
 		VERSION="mini"
@@ -298,6 +298,7 @@ sed -i "{
 		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
 		}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 
+git diff ./ >> ../output/t.patch || true
 [[ $VERSION = plus ]] && {
 	_packages "
 	attr axel bash blkid bsdtar btrfs-progs cfdisk chattr collectd-mod-ping
@@ -645,14 +646,14 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 	if [[ "${REPO_BRANCH#*-}" == "21.02" ]]; then
 		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
 			ln -s zh-cn $p/zh_Hans 2>/dev/null
-			printf "%-13s %-33s %s %s %s\n" \
-			$(echo -e "添加zh_Hans $(awk -F/ '{print $(NF-1)}' <<< $p) [ $(color cg ✔) ]")
+			# printf "%-13s %-33s %s %s %s\n" \
+			# $(echo -e "添加zh_Hans $(awk -F/ '{print $(NF-1)}' <<< $p) [ $(color cg ✔) ]")
 		fi
 	else
 		if [[ ! -d $p/zh-cn && -d $p/zh_Hans ]]; then
 			ln -s zh_Hans $p/zh-cn 2>/dev/null
-			printf "%-13s %-33s %s %s %s\n" \
-			`echo -e "添加zh-cn $(awk -F/ '{print $(NF-1)}' <<< $p) [ $(color cg ✔) ]"`
+			# printf "%-13s %-33s %s %s %s\n" \
+			# `echo -e "添加zh-cn $(awk -F/ '{print $(NF-1)}' <<< $p) [ $(color cg ✔) ]"`
 		fi
 	fi
 done
