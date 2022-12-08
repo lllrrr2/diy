@@ -153,7 +153,8 @@ elif grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	echo -e "$(color cy '部署tz-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
-		tar --use-compress-program unzstd -xf *cache.tzst && rm *.tzst
+		(tar -I unzstd -T$[`nproc`+1] -xf *.tzst || \
+		tar --use-compress-program unzstd -T$(($(nproc)+1)) -xf *cache.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
 		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
@@ -162,7 +163,8 @@ else
 	if egrep "$SOURCE_USER.*$TARGET_DEVICE" ../xd | egrep -q "squashfs|sysupgrade"; then
 		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 	else
-		VERSION="mini"
+		# VERSION="mini"
+		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 	fi
 fi
 

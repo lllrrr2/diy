@@ -170,7 +170,8 @@ elif grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	echo -e "$(color cy '部署tz-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
-		tar --use-compress-program unzstd -xf *cache.tzst && rm *.tzst
+		(tar -I unzstd -T$[`nproc`+1] -xf *.tzst || \
+		tar --use-compress-program unzstd -T$(($(nproc)+1)) -xf *cache.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
 		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
@@ -179,7 +180,8 @@ else
 	if egrep "$SOURCE_USER.*$TARGET_DEVICE" ../xd | egrep -q "squashfs|sysupgrade"; then
 		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 	else
-		VERSION="mini"
+		# VERSION="mini"
+		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 	fi
 fi
 
@@ -534,16 +536,16 @@ case $TARGET_DEVICE in
 		# sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.default
 	fi
 	[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && {
-	svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
-	# clone_url "https://github.com/hong0980/diy/trunk/uboot-rockchip"
-	# mkdir patches
-	# wget -nv raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch -P patches/
-	# sh -c "curl -sfL https://raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch | git apply --reject --ignore-whitespace"
-	# wget -nv raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch -P patches/
-	# git apply --reject --ignore-whitespace patches/*.patch
-	# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
-	# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
-	# svn export --force https://github.com/friendlyarm/friendlywrt/trunk/target/linux/rockchip/armv8/base-files/etc/modules.d target/linux/rockchip/armv8/base-files/etc/modules.d
+		wget -qO- raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch | git apply --reject --ignore-whitespace
+		clone_url "https://github.com/hong0980/diy/trunk/uboot-rockchip" || \
+		svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
+		# mkdir patches
+		# wget -nv raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch -P patches/
+		# sh -c "curl -sfL https://raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch | git apply --reject --ignore-whitespace"
+		# wget -nv raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch -P patches/
+		# git apply --reject --ignore-whitespace patches/*.patch
+		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
+		# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	}
 	;;
 "asus_rt-n16")

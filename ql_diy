@@ -29,19 +29,21 @@ grep -Eq "$IMG_USER-$TOOLS_HASH-cache" xd || {
 	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true
 	cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true
-	[[ "$SOURCE_USER" = coolsnowwolf && "$TARGET_DEVICE" = r1-plus-lts ]] && {
-		grep -Eq "uboot-rockchip" xd || \
+	[[ "$TARGET_DEVICE" =~ r[1-9] ]] && {
+		ls -lh package/boot/uboot-rockchip/src/configs
+		([[ "$SOURCE_USER" = coolsnowwolf ]] && grep -Eq "uboot-rockchip" xd) || \
 		tar -zcf output/uboot-rockchip.tar.gz $REPO_FLODER/package/boot/uboot-rockchip
 	}
 	cd $REPO_FLODER
 	du -h --max-depth=1 ./ --exclude=staging_dir
 	du -h --max-depth=1 ./staging_dir
 	# tar --mtime=now -Jcf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.xz staging_dir/host* staging_dir/tool* .ccache
+	tar -I zstdmt -8 -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* .ccache || \
 	tar --posix --use-compress-program zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* .ccache
 	# diff -u Makefile _Makefile | tee ../output/Makefile.patch
+	[ -f ../output/*tzst ] && zstd -l ../output/*tzst
 	ls -lh ../output
 }
-[ -d package/boot/uboot-rockchip/src/configs ] && ls -lh package/boot/uboot-rockchip/src/configs
 # up_github || true
 echo "SAVE_CACHE=''" >>$GITHUB_ENV
 # export -p
