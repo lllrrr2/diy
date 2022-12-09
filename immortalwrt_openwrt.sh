@@ -144,7 +144,7 @@ if grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
 	echo -e "$(color cy '部署zst-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
-		time -p tar --zstd -xf *cache.tar.zst && rm *.zst
+		tar --zstd -xf *cache.tar.zst && rm *.zst
 		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
 		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
@@ -153,8 +153,8 @@ elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	echo -e "$(color cy '部署tz-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
-		(time -p tar -I unzstd -xf *.tzst || \
-		time -p tar -I -xf *.tzst) && rm *.tzst
+		(tar -I unzstd -xf *.tzst || \
+		tar -I -xf *.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
 		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
