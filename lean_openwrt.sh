@@ -157,7 +157,7 @@ export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
 DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_USER-Cache"
 
-if grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tar.xz" ../xd; then
+if grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.xz" ../xd; then
 	echo -e "$(color cy '部署xz-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.xz && {
@@ -166,7 +166,7 @@ if grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tar.xz" ../xd; then
 		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
-elif grep -Eq "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
+elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	echo -e "$(color cy '部署tz-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
