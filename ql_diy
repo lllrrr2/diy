@@ -36,8 +36,8 @@ grep -q "$IMG_USER-$TOOLS_HASH-cache" xd || {
 		tar -zcf output/uboot-rockchip.tar.gz $REPO_FLODER/package/boot/uboot-rockchip)
 	}
 	cd $REPO_FLODER
-	# tar --mtime=now -Jcf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.xz staging_dir/host* staging_dir/tool* .ccache
-	tar --posix --use-compress-program zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* .ccache
+	time -p tar --zstd -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* .ccache || \
+	time -p tar -I zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* .ccache
 	# diff -u Makefile _Makefile | tee ../output/Makefile.patch
 	ls -lh ../output || true
 	find -type f -name "manifest.txt" || true
