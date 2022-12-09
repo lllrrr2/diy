@@ -170,8 +170,8 @@ elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	echo -e "$(color cy '部署tz-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
-		(time -p tar -I unzstd -T$[`nproc`+1] -xf *.tzst || \
-		time -p tar -I -T$(($(nproc)+1)) -xf *cache.tzst) && rm *.tzst
+		(time -p tar -I unzstd -xf *.tzst || \
+		time -p tar -I -xf *.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
 		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
