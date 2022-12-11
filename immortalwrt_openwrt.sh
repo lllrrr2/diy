@@ -145,8 +145,8 @@ if grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
 	BEGIN_TIME=$(date '+%H:%M:%S')
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
 		tar --zstd -xf *cache.tar.zst && rm *.zst
-		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
-		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
@@ -155,19 +155,15 @@ elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
 		(tar -I unzstd -xf *.tzst || \
 		tar -I -xf *.tzst) && rm *.tzst
-		sed -i 's/ $(tool.*\/stamp-compile)//;s/ $(tool.*\/stamp-install)//' Makefile
-		echo "FETCH_CACHE=" >>$GITHUB_ENV; echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 else
-	if egrep "$SOURCE_USER.*$TARGET_DEVICE" ../xd | egrep -q "squashfs|sysupgrade"; then
-		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
-	else
-		# VERSION="mini"
-		echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
-	fi
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
+echo "FETCH_CACHE=true" >>$GITHUB_ENV; #echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -293,7 +289,7 @@ sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_USER-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 dat
 sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk}
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
-sed -i 's/gmtime/localtime/g' include/kernel.mk
+sed -i 's/UTC/UTC-8/' Makefile
 sed -i "{
 		/upnp/d;/banner/d
 		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
@@ -668,27 +664,25 @@ done
 	echo "UPLOAD_RELEASE=" >>$GITHUB_ENV
 }
 
-cat >>.config <<-EOF
-CONFIG_DEVEL=y
-CONFIG_CCACHE=y
-CONFIG_NEED_TOOLCHAIN=y
-CONFIG_IB=y
-CONFIG_IB_STANDALONE=y
-CONFIG_DEVEL=y
-CONFIG_BUILD_LOG=y
-CONFIG_DROPBEAR_ECC_FULL=y
-CONFIG_DROPBEAR_ECC=y
-CONFIG_AUTOREMOVE=y
-CONFIG_MAKE_TOOLCHAIN=y
-CONFIG_BUILD_LOG_DIR="./logs"
-EOF
+# cat >>.config <<-EOF
+# CONFIG_DEVEL=y
+# CONFIG_CCACHE=y
+# CONFIG_NEED_TOOLCHAIN=y
+# CONFIG_IB=y
+# CONFIG_IB_STANDALONE=y
+# CONFIG_DEVEL=y
+# CONFIG_DROPBEAR_ECC_FULL=y
+# CONFIG_DROPBEAR_ECC=y
+# CONFIG_AUTOREMOVE=y
+# CONFIG_MAKE_TOOLCHAIN=y
+# EOF
 
 echo -e "$(color cy 当前机型) $(color cb $SOURCE_USER-${REPO_BRANCH#*-}-$DEVICE_NAME-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
-sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
+# sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 
 # echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
 # echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
