@@ -135,26 +135,24 @@ git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 
 cd $REPO_FLODER || exit
-cp Makefile _Makefile
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
 DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_USER-Cache"
 
-if grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
-	echo -e "$(color cy '部署zst-cache')\c"
+if grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
+	echo -e "$(color cy '部署tz-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
-	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
-		tar --zstd -xf *cache.tar.zst && rm *.zst
+	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
+		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
 		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
-elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
-	echo -e "$(color cy '部署tz-cache')\c"
+elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
+	echo -e "$(color cy '部署zst-cache')\c"
 	BEGIN_TIME=$(date '+%H:%M:%S')
-	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
-		(tar -I unzstd -xf *.tzst || \
-		tar -I -xf *.tzst) && rm *.tzst
+	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
+		tar --zstd -xf *cache.tar.zst && rm *.zst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
 		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}

@@ -35,28 +35,14 @@ grep -q "$IMG_USER-$TOOLS_HASH-cache" xd || {
 		[[ "$SOURCE_USER" = coolsnowwolf ]] && (grep -q "uboot-rockchip" xd || \
 		tar -zcf output/uboot-rockchip.tar.gz $REPO_FLODER/package/boot/uboot-rockchip)
 	}
-	cd $REPO_FLODER
+	pushd $REPO_FLODER
 	tar --zstd -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* .ccache || \
 	tar -I zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* .ccache
-	# diff -u Makefile _Makefile | tee ../output/Makefile.patch
-	ls -lh ../output
 	du -h --max-depth=1 ./ --exclude=staging_dir
 	du -h --max-depth=1 ./staging_dir
+	popd
+	ls -lh output
 }
 # up_github || true
 echo "SAVE_CACHE=''" >>$GITHUB_ENV
-[[ $CACHE_ACTIONS = true ]] && {
-	pushd $GITHUB_WORKSPACE/$REPO_FLODER
-	git diff Makefile | tee ../output/$IMG_USER-Makefile.patch || true
-	echo "比较scripts"
-	git diff scripts | tee -a ../output/$IMG_USER-Makefile.patch || true
-	echo "比较include"
-	git diff include | tee -a ../output/$IMG_USER-Makefile.patch || true
-	echo "比较toolchain"
-	git diff toolchain | tee -a ../output/$IMG_USER-Makefile.patch || true
-	echo "比较tools"
-	git diff tools | tee -a ../output/$IMG_USER-Makefile.patch || true
-	popd
-}
 # export -p
-
