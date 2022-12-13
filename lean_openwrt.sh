@@ -479,7 +479,7 @@ case $TARGET_DEVICE in
 		# clone_url "https://github.com/hong0980/diy/branches/master/uboot-rockchip" || \
 		# svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
 		# svn_co "-r5467" "https://github.com/coolsnowwolf/lede/trunk/target/linux/rockchip"
-		git_apply "raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch"
+		git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
 		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
 		# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	}
