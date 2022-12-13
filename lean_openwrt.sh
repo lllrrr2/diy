@@ -40,7 +40,7 @@ _packages() {
 	done
 }
 
-_dlpackages() {
+_delpackages() {
 	for z in $@; do
 		[[ $z =~ ^# ]] || sed -i "/^CONFIG.*$z=y$/ s/=y/ is not set/; s/^/# /" .config
 	done
@@ -125,25 +125,8 @@ clone_url() {
 	# set +x
 }
 
-case $REPOSITORY in
-	"baiywt")
-	REPO_URL="https://github.com/baiywt/openwrt"
-	REPO_BRANCH="openwrt-21.02"
-	;;
-	"xunlong")
-	REPO_URL="https://github.com/orangepi-xunlong/openwrt"
-	REPO_BRANCH="openwrt-21.02"
-	;;
-	"coolsnowwolf")
-	REPO_URL="https://github.com/coolsnowwolf/lede"
-	REPO_BRANCH="master"
-	;;
-	"immortalwrt")
-	REPO_URL="https://github.com/immortalwrt/immortalwrt"
-	REPO_BRANCH=$REPO_BRANCH
-	;;
-esac
-export SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)
+REPO_URL="https://github.com/coolsnowwolf/lede"
+export SOURCE_USER=coolsnowwolf
 echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
 export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
@@ -154,7 +137,7 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 
-cd $REPO_FLODER || exit
+[[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
 DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_USER-Cache"
@@ -181,7 +164,6 @@ else
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
-echo "FETCH_CACHE=true" >>$GITHUB_ENV; #echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 #[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
@@ -204,7 +186,7 @@ case "$TARGET_DEVICE" in
 		# CONFIG_GRUB_EFI_IMAGES is not set
 		# CONFIG_VMDK_IMAGES is not set
 		EOF
-	;;
+		;;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s")
 		cat<<-EOF >.config
 		CONFIG_TARGET_rockchip=y
@@ -222,35 +204,35 @@ case "$TARGET_DEVICE" in
 		"r4s"|"r2c"|"r2s")
 		echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >>.config ;;
 		esac
-	;;
+		;;
 	"newifi-d2")
 		cat >.config<<-EOF
 		CONFIG_TARGET_ramips=y
 		CONFIG_TARGET_ramips_mt7621=y
 		CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 		EOF
-	;;
+		;;
 	"phicomm_k2p")
 		cat >.config<<-EOF
 		CONFIG_TARGET_ramips=y
 		CONFIG_TARGET_ramips_mt7621=y
 		CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 		EOF
-	;;
+		;;
 	"asus_rt-n16")
 		cat >.config<<-EOF
 		CONFIG_TARGET_bcm47xx=y
 		CONFIG_TARGET_bcm47xx_mips74k=y
 		CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
 		EOF
-	;;
+		;;
 	"armvirt_64_Default")
 		cat >.config<<-EOF
 		CONFIG_TARGET_armvirt=y
 		CONFIG_TARGET_armvirt_64=y
 		CONFIG_TARGET_armvirt_64_Default=y
 		EOF
-	;;
+		;;
 esac
 
 cat >>.config <<-EOF
@@ -447,36 +429,22 @@ case $TARGET_DEVICE in
 	FIRMWARE_TYPE="sysupgrade"
 	DEVICE_NAME="Newifi-D2"
 	_packages "luci-app-easymesh"
-	_dlpackages "ikoolproxy openclash transmission softwarecenter aria2 vssr adguardhome
+	_delpackages "ikoolproxy openclash transmission softwarecenter aria2 vssr adguardhome
 	"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
-	[ $VERSION = mini ] && {
-		cat > .config <<-EOF
-		CONFIG_TARGET_ramips=y
-		CONFIG_TARGET_ramips_mt7621=y
-		CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
-		EOF
-	}
 	;;
 "phicomm_k2p")
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "luci-app-easymesh"
 	DEVICE_NAME="Phicomm-K2P"
-	_dlpackages "samba4 luci-app-usb-printer luci-app-cifs-mount diskman cupsd autosamba automount"
+	_delpackages "samba4 luci-app-usb-printer luci-app-cifs-mount diskman cupsd autosamba automount"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
-	[[ $VERSION = "mini" ]] && {
-		cat > .config <<-EOF
-		CONFIG_TARGET_ramips=y
-		CONFIG_TARGET_ramips_mt7621=y
-		CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
-		EOF
-	}
 	;;
-"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s")
+"r1-plus*"|"r4s"|"r2c"|"r2s")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "
@@ -503,26 +471,13 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	if [[ $VERSION = "mini" ]]; then
-		cat > .config <<-EOF
-			CONFIG_TARGET_rockchip=y
-			CONFIG_TARGET_rockchip_armv8=y
-			CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-			EOF
-		case "$TARGET_DEVICE" in
-			"r1-plus-lts"|"r1-plus")
-			echo "CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y" >>.config ;;
-			"r4s"|"r2c"|"r2s")
-			echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >>.config ;;
-		esac
-	fi
 	if [[ `git log --oneline | awk 'NR==1{print $1}'` =~ b0ea2f3 ]]; then
 		svn_co "-r220868" "https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba"
 		clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
 		sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
 	fi
 	[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && {
-		git_apply "raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch"
+		# git_apply "raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch"
 		# clone_url "https://github.com/hong0980/diy/branches/master/uboot-rockchip" || \
 		svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
 		svn_co "-r5467" "https://github.com/coolsnowwolf/lede/trunk/target/linux/rockchip"
@@ -611,19 +566,6 @@ case $TARGET_DEVICE in
 	# sed -i 's/:qbittorrent/:qBittorrent-Enhanced-Edition/g' package/lean/luci-app-qbittorrent/Makefile
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	[ $VERSION = mini ] && {
-	cat > .config <<-EOF
-		CONFIG_TARGET_x86=y
-		CONFIG_TARGET_x86_64=y
-		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-		CONFIG_BUILD_NLS=y
-		CONFIG_BUILD_PATENTED=y
-		CONFIG_TARGET_IMAGES_GZIP=y
-		CONFIG_GRUB_IMAGES=y
-		# CONFIG_GRUB_EFI_IMAGES is not set
-		# CONFIG_VMDK_IMAGES is not set
-		EOF
-	}
 	;;
 "armvirt_64_Default")
 	DEVICE_NAME="armvirt-64-default"
@@ -712,6 +654,5 @@ echo "REPO_BRANCH=18.06" >>$GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
-echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
