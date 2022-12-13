@@ -15,7 +15,7 @@ up_github() {
 		ls output | parallel --wc 'while true; do curl -T {} -H "$AUTH" -H "Content-Type: application/octet-stream" "https://uploads.$cache_path/$cache_repo_id/assets?name={}" && break || true; done'
 		set +e
 		for i in {1..5}; do
-			curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/$SOURCE_USER-Cache/$IMG_USER.img.zst.0$i || break
+			curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/${IMG_USER%%-*}-Cache/$IMG_USER.img.zst.0$i || break
 		done | zstdmt -d -o /dev/null
 		if [ $? -eq 0 ]; then
 			break
@@ -32,12 +32,13 @@ grep -q "$IMG_USER-$TOOLS_HASH-cache" xd || {
 	[[ "$TARGET_DEVICE" =~ r[1-9] ]] && {
 		[[ -d $REPO_FLODER/package/boot/uboot-rockchip/src/configs ]] && \
 		ls -lh $REPO_FLODER/package/boot/uboot-rockchip/src/configs
-		[[ "$SOURCE_USER" = coolsnowwolf ]] && (grep -q "uboot-rockchip" xd || \
+		[[ "${IMG_USER%%-*}" = coolsnowwolf ]] && (grep -q "uboot-rockchip" xd || \
 		tar -zcf output/uboot-rockchip.tar.gz $REPO_FLODER/package/boot/uboot-rockchip)
 	}
 	pushd $REPO_FLODER
-	tar --zstd -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* .ccache || \
-	tar -I zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* .ccache
+	[[ -d ".ccache" ]] && ccache=".ccache"
+	tar --zstd -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache || \
+	tar -I zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* $ccache
 	du -h --max-depth=1 ./ --exclude=staging_dir
 	du -h --max-depth=1 ./staging_dir
 	popd

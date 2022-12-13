@@ -126,7 +126,9 @@ clone_url() {
 }
 
 REPO_URL="https://github.com/coolsnowwolf/lede"
-export IMG_USER=coolsnowwolf-${REPO_BRANCH#*-}-$TARGET_DEVICE
+export SOURCE_USER=coolsnowwolf
+echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
+export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
 
 echo -e "$(color cy '拉取源码....')\c"
@@ -162,6 +164,7 @@ else
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
+# echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 #[[ ${IMG_USER%%-*} =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
@@ -440,7 +443,7 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	;;
-"r1-plus*"|"r4s"|"r2c"|"r2s")
+"r1-plus-lts"|"r4s"|"r2c"|"r2s")
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "
 	luci-app-cpufreq
@@ -471,11 +474,11 @@ case $TARGET_DEVICE in
 		clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
 		sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
 	fi
-	[[ ${IMG_USER%%-*} =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && {
+	[[ ${IMG_USER%%-*} =~ coolsnowwolf && $TARGET_DEVICE =~ r1-plus-lts ]] && {
 		# git_apply "raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch"
 		# clone_url "https://github.com/hong0980/diy/branches/master/uboot-rockchip" || \
 		svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
-		svn_co "-r5467" "https://github.com/coolsnowwolf/lede/trunk/target/linux/rockchip"
+		# svn_co "-r5467" "https://github.com/coolsnowwolf/lede/trunk/target/linux/rockchip"
 		# git_apply "raw.githubusercontent.com/mingxiaoyu/R1-Plus-LTS/main/patches/0001-Add-pwm-fan.sh.patch"
 		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
 		# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
