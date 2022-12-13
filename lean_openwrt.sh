@@ -126,9 +126,7 @@ clone_url() {
 }
 
 REPO_URL="https://github.com/coolsnowwolf/lede"
-export SOURCE_USER=coolsnowwolf
-echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
-export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
+export IMG_USER=coolsnowwolf-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
 
 echo -e "$(color cy '拉取源码....')\c"
@@ -140,7 +138,7 @@ status
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
-DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_USER-Cache"
+DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
 
 if grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	echo -e "$(color cy '部署tz-cache')\c"
@@ -164,7 +162,7 @@ else
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
-#[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
+#[[ ${IMG_USER%%-*} =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -283,11 +281,11 @@ DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*
 
 color cy "自定义设置.... "
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
-	if [[ $SOURCE_USER =~ "coolsnowwolf" ]]; then
+	if [[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]]; then
 		REPO_BRANCH="18.06"
-		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_USER-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-		sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_USER-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+		sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 		sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 		sed -i 's/UTC/UTC-8/' Makefile
@@ -427,7 +425,6 @@ color cy "自定义设置.... "
 case $TARGET_DEVICE in
 "newifi-d2")
 	FIRMWARE_TYPE="sysupgrade"
-	DEVICE_NAME="Newifi-D2"
 	_packages "luci-app-easymesh"
 	_delpackages "ikoolproxy openclash transmission softwarecenter aria2 vssr adguardhome
 	"
@@ -438,14 +435,12 @@ case $TARGET_DEVICE in
 "phicomm_k2p")
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "luci-app-easymesh"
-	DEVICE_NAME="Phicomm-K2P"
 	_delpackages "samba4 luci-app-usb-printer luci-app-cifs-mount diskman cupsd autosamba automount"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	;;
 "r1-plus*"|"r4s"|"r2c"|"r2s")
-	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
 	_packages "
 	luci-app-cpufreq
@@ -476,7 +471,7 @@ case $TARGET_DEVICE in
 		clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
 		sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
 	fi
-	[[ $SOURCE_USER =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && {
+	[[ ${IMG_USER%%-*} =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && {
 		# git_apply "raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch"
 		# clone_url "https://github.com/hong0980/diy/branches/master/uboot-rockchip" || \
 		svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
@@ -487,19 +482,17 @@ case $TARGET_DEVICE in
 	}
 	;;
 "asus_rt-n16")
-	DEVICE_NAME="Asus-RT-N16"
 	FIRMWARE_TYPE="n16"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.130"/' $config_generate
 	;;
 "x86_64")
-	DEVICE_NAME="x86_64"
 	FIRMWARE_TYPE="squashfs-combined"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.150"/' $config_generate
-	[[ $SOURCE_USER =~ "coolsnowwolf" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
+	[[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
 	[[ $VERSION = plus ]] && _packages "
 	luci-app-adbyby-plus
 	#luci-app-amule
@@ -568,7 +561,6 @@ case $TARGET_DEVICE in
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	;;
 "armvirt_64_Default")
-	DEVICE_NAME="armvirt-64-default"
 	FIRMWARE_TYPE="armvirt-64-default"
 	sed -i '/easymesh/d' .config
 	[[ $IP ]] && \
@@ -635,7 +627,7 @@ done
 # CONFIG_MAKE_TOOLCHAIN=y
 # EOF
 
-echo -e "$(color cy 当前机型) $(color cb $SOURCE_USER-${REPO_BRANCH#*-}-$DEVICE_NAME-$VERSION)"
+echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$TARGET_DEVICE-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
@@ -651,7 +643,6 @@ echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 [[ $REPO_BRANCH =~ 21 ]] && \
 echo "REPO_BRANCH=${REPO_BRANCH#*-}" >>$GITHUB_ENV || \
 echo "REPO_BRANCH=18.06" >>$GITHUB_ENV
-echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
 
