@@ -298,7 +298,7 @@ sed -i 's/UTC/UTC-8/' Makefile
 sed -i "{
 		/upnp/d;/banner/d
 		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-		s^.*shadow$^sed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
+		s^.*shadow$^sed -i 's/root::.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
 		}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 
 # git diff ./ >> ../output/t.patch || true

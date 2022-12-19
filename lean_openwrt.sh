@@ -290,7 +290,7 @@ color cy "自定义设置.... "
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
 	if [[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]]; then
 		REPO_BRANCH="18.06"
-		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-${REPO_BRANCH#*-}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 		sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
@@ -299,7 +299,7 @@ color cy "自定义设置.... "
 		sed -i "{
 				/upnp/d;/banner/d;/openwrt_release/d;/shadow/d
 				s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-				s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/root:::0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\n[ -f '/bin/bash' ] && sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd|
+				s|indexcache|indexcache\nsed -i 's/root::.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\n[ -f '/bin/bash' ] && sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd|
 				}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 	fi
 	# git diff ./ >> ../output/t.patch || true
