@@ -58,7 +58,7 @@ svn_co() {
 	else
 		k="package/A/${2##*/}"
 	fi
-	if svn export $1 $2 $k 1>/dev/null 2>&1; then
+	if svn export --force $1 $2 $k 1>/dev/null 2>&1; then
 	# $1="-rxxx" $2="url" $k="path"
 		if [[ $k = $g ]]; then
 			echo -e "$(color cg 替换) ${2##*/} [ $(color cg ✔) ]" | _printf
@@ -67,8 +67,8 @@ svn_co() {
 		fi
 	else
 		echo -e "$(color cr 拉取) ${2##*/} [ $(color cr ✕) ]" | _printf
-		[[ -d ../${g##*/} ]] && mv -f ../${g##*/} ${g%/*}/ && \
-		echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+		[[ -d ../${g##*/} ]] && (mv -f ../${g##*/} ${g%/*}/ && \
+			echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf)
 	fi
 	unset -v k g
 }
@@ -79,14 +79,13 @@ clone_url() {
 		if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|xiaorouji|hong")" ]]; then
 			g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
 			if [[ -d $g ]]; then
-				mv -f $g ../
-				k="$g"
+				mv -f $g ../ && k="$g"
 			else
 				k="package/A/${x##*/}"
 			fi
 
 			if [[ "$(egrep "trunk|branches" <<<$x)" ]]; then
-				svn export --force $x $k 1>/dev/null 2>&1 && f="1"
+				svn export $x $k 1>/dev/null 2>&1 && f="1"
 			else
 				git clone -q $x $k && f="1"
 			fi
@@ -99,8 +98,10 @@ clone_url() {
 				fi
 			else
 				echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
-				[[ -d ../${g##*/} ]] && mv -f ../${g##*/} ${g%/*}/ && \
-				echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+				if [[ -d ../${g##*/} ]]; then
+					mv -f ../${g##*/} ${g%/*}/ && \
+					echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+				fi
 			fi
 			unset -v f k g
 		else
@@ -108,14 +109,18 @@ clone_url() {
 				git clone -q $w ../${w##*/} && {
 					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding'`; do
 						g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name $x 2>/dev/null)
-						[[ -d $g ]] && k="$g" || k="package/A"
-						mv -f ../${w##*/}/$x $k && {
+						if [[ -d $g ]]; then
+							rm -rf $g && k="$g"
+						else
+							k="package/A"
+						fi
+						if mv -f ../${w##*/}/$x $k; then
 							if [[ $k = $g ]]; then
 								echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf
 							else
 								echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
 							fi
-						}
+						fi
 						unset -v k g
 					done
 				} && rm -rf ../${w##*/}
@@ -148,7 +153,6 @@ if grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
@@ -157,11 +161,11 @@ elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
 		tar --zstd -xf *cache.tar.zst && rm *.zst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 else
-	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV
+	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
 # echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
@@ -295,7 +299,7 @@ color cy "自定义设置.... "
 		sed -i "{
 				/upnp/d;/banner/d;/openwrt_release/d;/shadow/d
 				s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-				s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow|
+				s|indexcache|indexcache\nsed -i 's/root::0:0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\nsed -i 's/root:::0:99999:7:::/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\n[ -f '/bin/bash' ] && sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd|
 				}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 	fi
 	# git diff ./ >> ../output/t.patch || true
@@ -460,9 +464,9 @@ case $TARGET_DEVICE in
 	#luci-app-aliyundrive-fuse
 	#luci-app-aliyundrive-webdav
 	luci-app-deluge
-	#luci-app-netdata
+	luci-app-netdata
 	htop lscpu lsscsi lsusb #nano pciutils screen zstd pv
-	#AmuleWebUI-Reloaded #subversion-client unixodbc #git-http
+	#AmuleWebUI-Reloaded subversion-client unixodbc git-http
 	"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
@@ -475,12 +479,9 @@ case $TARGET_DEVICE in
 		sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
 	fi
 	[[ ${IMG_USER%%-*} =~ coolsnowwolf && $TARGET_DEVICE =~ r1-plus-lts ]] && {
-		# git_apply "raw.githubusercontent.com/hong0980/diy/master/files/uboot-rockchip.patch"
-		# clone_url "https://github.com/hong0980/diy/branches/master/uboot-rockchip" || \
-		# svn_co "-r220227" "https://github.com/immortalwrt/immortalwrt/branches/master/package/boot/uboot-rockchip"
-		# svn_co "-r5467" "https://github.com/coolsnowwolf/lede/trunk/target/linux/rockchip"
-		git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
-		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.4/' target/linux/rockchip/Makefile
+		clone_url "https://github.com/immortalwrt/immortalwrt/branches/master/target/linux/rockchip"
+		# git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
+		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.10/' target/linux/rockchip/Makefile
 		# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	}
 	;;
@@ -562,6 +563,7 @@ case $TARGET_DEVICE in
 	# sed -i 's/:qbittorrent/:qBittorrent-Enhanced-Edition/g' package/lean/luci-app-qbittorrent/Makefile
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
+	: >package/kernel/rtw88-usb/Makefile
 	;;
 "armvirt_64_Default")
 	FIRMWARE_TYPE="armvirt-64-default"

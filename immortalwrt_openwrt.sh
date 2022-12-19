@@ -30,13 +30,19 @@ status() {
 	fi
 }
 
+git_apply() {
+	for z in $@; do
+		[[ $z =~ \# ]] || wget -qO- $z | git apply --reject --ignore-whitespace
+	done
+}
+
 _packages() {
 	for z in $@; do
 		[[ $z =~ ^# ]] || echo "CONFIG_PACKAGE_$z=y" >>.config
 	done
 }
 
-_dlpackages() {
+_delpackages() {
 	for z in $@; do
 		[[ $z =~ ^# ]] || sed -i "/^CONFIG.*$z=y$/ s/=y/ is not set/; s/^/# /" .config
 	done
@@ -47,76 +53,78 @@ _printf() {
 }
 
 svn_co() {
-	g=$(find package/ feeds/ -maxdepth 5 -type d -name ${2##*/} 2>/dev/null)
-	if [[ -d $g ]] && mv -f $g ../; then
-		p="1"; k="$g"
+	g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name ${2##*/} 2>/dev/null)
+	if [[ -d $g ]]; then
+		k="$g"
+		mv -f $g ../
 	else
 		k="package/A/${2##*/}"
 	fi
-	if svn co $1 $2 $k 1>/dev/null 2>&1; then
-		if [[ x$p = x1 ]]; then
+	if svn export --force $1 $2 $k 1>/dev/null 2>&1; then
+	# $1="-rxxx" $2="url" $k="path"
+		if [[ $k = $g ]]; then
 			echo -e "$(color cg 替换) ${2##*/} [ $(color cg ✔) ]" | _printf
 		else
 			echo -e "$(color cb 添加) ${2##*/} [ $(color cb ✔) ]" | _printf
 		fi
 	else
 		echo -e "$(color cr 拉取) ${2##*/} [ $(color cr ✕) ]" | _printf
-		[[ -d ../${g##*/} ]] && mv -f ../${g##*/} ${g%/*}/ && \
-		echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+		[[ -d ../${g##*/} ]] && (mv -f ../${g##*/} ${g%/*}/ && \
+			echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf)
 	fi
-	unset -v p
+	unset -v k g
 }
 
 clone_url() {
 	for x in $@; do
 		if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|xiaorouji|hong")" ]]; then
-			g=$(find package/ feeds/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
-			if ([[ -d $g ]] && ([[ -d ../${g##*/} ]] && rm -rf $g || mv -f $g ../)); then
-				p="1"; k="$g"
+			g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
+			if [[ -d $g ]]; then
+				mv -f $g ../ && k="$g"
 			else
 				k="package/A/${x##*/}"
 			fi
 
 			if [[ "$(egrep "trunk|branches" <<<$x)" ]]; then
-				svn export --force $x $k 1>/dev/null 2>&1 && f="1"
+				svn export $x $k 1>/dev/null 2>&1 && f="1"
 			else
 				git clone -q $x $k && f="1"
 			fi
 
-			if [[ $f ]]; then
-				if [[ $p ]]; then
+			if [[ x$f = x1 ]]; then
+				if [[ $k = $g ]]; then
 					echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf
 				else
 					echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
 				fi
 			else
 				echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
-				[[ -d ../${g##*/} ]] && mv -f ../${g##*/} ${g%/*}/ && \
-				echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+				if [[ -d ../${g##*/} ]]; then
+					mv -f ../${g##*/} ${g%/*}/ && \
+					echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+				fi
 			fi
-			unset -v p f
+			unset -v f k g
 		else
 			for w in $(grep "^https" <<<$x); do
-				if git clone -q $w ../${w##*/}; then
+				git clone -q $w ../${w##*/} && {
 					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding'`; do
-						g=$(find package/ feeds/ -maxdepth 5 -type d -name $x 2>/dev/null)
-						if ([[ -d $g ]] && ([[ -d ../${g##*/} ]] && rm -rf $g || mv -f $g ../)); then
-							k="$g"
+						g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name $x 2>/dev/null)
+						if [[ -d $g ]]; then
+							rm -rf $g && k="$g"
 						else
 							k="package/A"
 						fi
-
-						mv -f ../${w##*/}/$x $k && {
-							if [[ $k == $g ]]; then
+						if mv -f ../${w##*/}/$x $k; then
+							if [[ $k = $g ]]; then
 								echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf
 							else
 								echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
 							fi
-						}
+						fi
 						unset -v k g
 					done
-				fi
-				rm -rf ../${w##*/}
+				} && rm -rf ../${w##*/}
 			done
 		fi
 	done
@@ -134,7 +142,7 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 
-cd $REPO_FLODER || exit
+[[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
 DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
@@ -145,7 +153,6 @@ if grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
@@ -154,14 +161,14 @@ elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
 		tar --zstd -xf *cache.tar.zst && rm *.zst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 else
-	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV
+	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
-echo "FETCH_CACHE=true" >>$GITHUB_ENV; #echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+# echo "FETCH_CACHE=true" >>$GITHUB_ENV; #echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -183,7 +190,7 @@ case "$TARGET_DEVICE" in
 		# CONFIG_GRUB_EFI_IMAGES is not set
 		# CONFIG_VMDK_IMAGES is not set
 		EOF
-	;;
+		;;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s")
 		cat<<-EOF >.config
 		CONFIG_TARGET_rockchip=y
@@ -201,14 +208,14 @@ case "$TARGET_DEVICE" in
 		"r4s"|"r2c"|"r2s")
 		echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >>.config ;;
 		esac
-	;;
+		;;
 	"newifi-d2")
 		cat >.config<<-EOF
 		CONFIG_TARGET_ramips=y
 		CONFIG_TARGET_ramips_mt7621=y
 		CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 		EOF
-	;;
+		;;
 	"phicomm_k2p")
 		cat >.config<<-EOF
 		CONFIG_TARGET_ramips=y
@@ -216,7 +223,7 @@ case "$TARGET_DEVICE" in
 		CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 		EOF
 		clone_url "https://github.com/openwrt/routing/branches/openwrt-19.07/batman-adv"
-	;;
+		;;
 	"asus_rt-n16")
 		if [[ "${REPO_BRANCH#*-}" = "18.06" ]]; then
 			cat >.config<<-EOF
@@ -231,14 +238,14 @@ case "$TARGET_DEVICE" in
 			CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
 			EOF
 		fi
-	;;
+		;;
 	"armvirt_64_Default")
 		cat >.config<<-EOF
 		CONFIG_TARGET_armvirt=y
 		CONFIG_TARGET_armvirt_64=y
 		CONFIG_TARGET_armvirt_64_Default=y
 		EOF
-	;;
+		;;
 esac
 
 cat >>.config <<-EOF
@@ -378,71 +385,69 @@ sed -i "{
 		#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
 	"
-rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
+	rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
+	# [[ -e package/A/luci-app-ddnsto/root/etc/init.d/ddnsto ]] || \
+	# svn export --force https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/A/ddnsto
+	[[ -e feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
+	sed -i '/log_check/s/^/#/' feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
+	# https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
+	# echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
+	# tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" 2>/dev/null | grep "ss") >/dev/null
+	echo -e '\nwww.nicept.net' | \
+	tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" 2>/dev/null | grep "ss") >/dev/null
 
-# [[ -e package/A/luci-app-ddnsto/root/etc/init.d/ddnsto ]] || \
-# svn export --force https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/A/ddnsto
-[[ -e feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
-sed -i '/log_check/s/^/#/' feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
-# https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
-# echo -e 'pthome.net\nchdbits.co\nhdsky.me\nourbits.club' | \
-# tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" 2>/dev/null | grep "ss") >/dev/null
-echo -e '\nwww.nicept.net' | \
-tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" 2>/dev/null | grep "ss") >/dev/null
+	[[ -f package/A/qBittorrent/Makefile ]] && grep -q "rblibtorrent" package/A/qBittorrent/Makefile && \
+	sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
+	# if wget -qO feeds/luci/modules/luci-mod-admin-full/luasrc/view/myip.htm \
+	# raw.githubusercontent.com/hong0980/diy/master/myip.htm; then
+		# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr" 2>/dev/null)/luasrc/model/cbi/vssr/client.lua" ]] && {
+			# sed -i '/vssr\/status_top/am:section(SimpleSection).template  = "myip"' \
+			# $(find package/A/ feeds/luci/ -type d -name "luci-app-vssr" 2>/dev/null)/luasrc/model/cbi/vssr/client.lua
+		# }
+		# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus" 2>/dev/null)/luasrc/model/cbi/shadowsocksr/client.lua" ]] && {
+			# sed -i '/shadowsocksr\/status/am:section(SimpleSection).template  = "myip"' \
+			# $(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus" 2>/dev/null)/luasrc/model/cbi/shadowsocksr/client.lua
+		# }
+		# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass" 2>/dev/null)/luasrc/model/cbi/bypass/base.lua" ]] && {
+			# sed -i '/bypass\/status"/am:section(SimpleSection).template  = "myip"' \
+			# $(find package/A/ feeds/luci/ -type d -name "luci-app-bypass" 2>/dev/null)/luasrc/model/cbi/bypass/base.lua
+		# }
+		# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall" 2>/dev/null)/luasrc/model/cbi/passwall/client/global.lua" ]] && {
+			# sed -i '/global\/status/am:section(SimpleSection).template  = "myip"' \
+			# $(find package/A/ feeds/luci/ -type d -name "luci-app-passwall" 2>/dev/null)/luasrc/model/cbi/passwall/client/global.lua
+		# }
+	# fi
 
-[[ -f package/A/qBittorrent/Makefile ]] && grep -q "rblibtorrent" package/A/qBittorrent/Makefile && \
-sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
-# if wget -qO feeds/luci/modules/luci-mod-admin-full/luasrc/view/myip.htm \
-# raw.githubusercontent.com/hong0980/diy/master/myip.htm; then
-	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-vssr" 2>/dev/null)/luasrc/model/cbi/vssr/client.lua" ]] && {
-		# sed -i '/vssr\/status_top/am:section(SimpleSection).template  = "myip"' \
-		# $(find package/A/ feeds/luci/ -type d -name "luci-app-vssr" 2>/dev/null)/luasrc/model/cbi/vssr/client.lua
-	# }
-	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus" 2>/dev/null)/luasrc/model/cbi/shadowsocksr/client.lua" ]] && {
-		# sed -i '/shadowsocksr\/status/am:section(SimpleSection).template  = "myip"' \
-		# $(find package/A/ feeds/luci/ -type d -name "luci-app-ssr-plus" 2>/dev/null)/luasrc/model/cbi/shadowsocksr/client.lua
-	# }
-	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-bypass" 2>/dev/null)/luasrc/model/cbi/bypass/base.lua" ]] && {
-		# sed -i '/bypass\/status"/am:section(SimpleSection).template  = "myip"' \
-		# $(find package/A/ feeds/luci/ -type d -name "luci-app-bypass" 2>/dev/null)/luasrc/model/cbi/bypass/base.lua
-	# }
-	# [[ -e "$(find package/A/ feeds/luci/ -type d -name "luci-app-passwall" 2>/dev/null)/luasrc/model/cbi/passwall/client/global.lua" ]] && {
-		# sed -i '/global\/status/am:section(SimpleSection).template  = "myip"' \
-		# $(find package/A/ feeds/luci/ -type d -name "luci-app-passwall" 2>/dev/null)/luasrc/model/cbi/passwall/client/global.lua
-	# }
-# fi
-
-[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
-	sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
-	# sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
-	clone_url "
-	#https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-samba
-	#https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/network/services/samba36
-	https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba
-	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork
-	https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
-	https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
-	https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
-	# sed -i 's/samba4/samba/' package/*/autosamba/Makefile
-} || {
-	_packages "luci-app-argon-config"
-	clone_url "
-	https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
-	https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config
-	https://github.com/brvphoenix/wrtbwmon
-	https://github.com/firker/luci-app-wrtbwmon-zh/trunk/luci-app-wrtbwmon-zh"
-	sed -i "s/argonv3/argon/" feeds/luci/applications/luci-app-argon-config/Makefile
-	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
-	sed -i 's/option dports.*/option enabled 2/' feeds/*/*/*/*/upnpd.config
-	for d in $(find feeds/ package/ -type f -name "index.htm" 2>/dev/null); do
-		if grep -q "Kernel Version" $d; then
-			sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' $d
-			sed -i '/<%+footer%>/i<%-\n\tlocal incdir = util.libpath() .. "/view/admin_status/index/"\n\tif fs.access(incdir) then\n\t\tlocal inc\n\t\tfor inc in fs.dir(incdir) do\n\t\t\tif inc:match("%.htm$") then\n\t\t\t\tinclude("admin_status/index/" .. inc:gsub("%.htm$", ""))\n\t\t\tend\n\t\tend\n\t\end\n-%>\n' $d
-			# sed -i '/<%+footer%>/i<fieldset class="cbi-section">\n\t<legend><%:天气%></legend>\n\t<table width="100%" cellspacing="10">\n\t\t<tr><td width="10%"><%:本地天气%></td><td > <iframe width="900" height="120" frameborder="0" scrolling="no" hspace="0" src="//i.tianqi.com/?c=code&a=getcode&id=22&py=xiaoshan&icon=1"></iframe>\n\t\t<tr><td width="10%"><%:柯桥天气%></td><td > <iframe width="900" height="120" frameborder="0" scrolling="no" hspace="0" src="//i.tianqi.com/?c=code&a=getcode&id=22&py=keqiaoqv&icon=1"></iframe>\n\t\t<tr><td width="10%"><%:指数%></td><td > <iframe width="400" height="270" frameborder="0" scrolling="no" hspace="0" src="https://i.tianqi.com/?c=code&a=getcode&id=27&py=xiaoshan&icon=1"></iframe><iframe width="400" height="270" frameborder="0" scrolling="no" hspace="0" src="https://i.tianqi.com/?c=code&a=getcode&id=27&py=keqiaoqv&icon=1"></iframe>\n\t</table>\n</fieldset>\n' $d
-		fi
-	done
+	[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
+		sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
+		# sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
+		clone_url "
+		#https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-samba
+		#https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/network/services/samba36
+		https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba
+		https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork
+		https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
+		https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
+		https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
+		# sed -i 's/samba4/samba/' package/*/autosamba/Makefile
+	} || {
+		_packages "luci-app-argon-config"
+		clone_url "
+		https://github.com/liuran001/openwrt-packages/trunk/luci-theme-argon
+		https://github.com/liuran001/openwrt-packages/trunk/luci-app-argon-config
+		https://github.com/brvphoenix/wrtbwmon
+		https://github.com/firker/luci-app-wrtbwmon-zh/trunk/luci-app-wrtbwmon-zh"
+		sed -i "s/argonv3/argon/" feeds/luci/applications/luci-app-argon-config/Makefile
+		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
+		sed -i 's/option dports.*/option enabled 2/' feeds/*/*/*/*/upnpd.config
+		for d in $(find feeds/ package/ -type f -name "index.htm" 2>/dev/null); do
+			if grep -q "Kernel Version" $d; then
+				sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' $d
+				sed -i '/<%+footer%>/i<%-\n\tlocal incdir = util.libpath() .. "/view/admin_status/index/"\n\tif fs.access(incdir) then\n\t\tlocal inc\n\t\tfor inc in fs.dir(incdir) do\n\t\t\tif inc:match("%.htm$") then\n\t\t\t\tinclude("admin_status/index/" .. inc:gsub("%.htm$", ""))\n\t\t\tend\n\t\tend\n\t\end\n-%>\n' $d
+				# sed -i '/<%+footer%>/i<fieldset class="cbi-section">\n\t<legend><%:天气%></legend>\n\t<table width="100%" cellspacing="10">\n\t\t<tr><td width="10%"><%:本地天气%></td><td > <iframe width="900" height="120" frameborder="0" scrolling="no" hspace="0" src="//i.tianqi.com/?c=code&a=getcode&id=22&py=xiaoshan&icon=1"></iframe>\n\t\t<tr><td width="10%"><%:柯桥天气%></td><td > <iframe width="900" height="120" frameborder="0" scrolling="no" hspace="0" src="//i.tianqi.com/?c=code&a=getcode&id=22&py=keqiaoqv&icon=1"></iframe>\n\t\t<tr><td width="10%"><%:指数%></td><td > <iframe width="400" height="270" frameborder="0" scrolling="no" hspace="0" src="https://i.tianqi.com/?c=code&a=getcode&id=27&py=xiaoshan&icon=1"></iframe><iframe width="400" height="270" frameborder="0" scrolling="no" hspace="0" src="https://i.tianqi.com/?c=code&a=getcode&id=27&py=keqiaoqv&icon=1"></iframe>\n\t</table>\n</fieldset>\n' $d
+			fi
+		done
 	}
-
 	xa=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr" 2>/dev/null)
 	[[ -d $xa ]] && sed -i "/dports/s/1/2/;/ip_data_url/s|'.*'|'https://ispip.clang.cn/all_cn.txt'|" $xa/root/etc/config/vssr
 	xb=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)
@@ -459,7 +464,6 @@ sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile
 		sed -i "s|-c pushbot|/usr/bin/pushbot/pushbot|" $xg/luasrc/controller/pushbot.lua
 		sed -i '/start()/a[ "$(uci get pushbot.@pushbot[0].pushbot_enable)" -eq "0" ] && return 0' $xg/root/etc/init.d/pushbot
 	}
-
 }
 
 # clone_url "https://github.com/immortalwrt/packages/branches/openwrt-21.02/libs/libtorrent-rasterbar" && {
@@ -511,14 +515,6 @@ case "$TARGET_DEVICE" in
 		kmod-mt76x0u kmod-gpu-lima wpad-wolfssl iwinfo iw collectd-mod-ping collectd-mod-thermal
 		luci-app-cpufreq luci-app-uhttpd luci-app-pushbot luci-app-wrtbwmon luci-app-vssr"
 		echo -e "CONFIG_DRIVER_11AC_SUPPORT=y\nCONFIG_DRIVER_11N_SUPPORT=y\nCONFIG_DRIVER_11W_SUPPORT=y" >>.config
-	}
-	[[ $VERSION = mini ]] && {
-	cat > .config <<-EOF
-		CONFIG_TARGET_rockchip=y
-		CONFIG_TARGET_rockchip_armv8=y
-		CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-r1-plus-lts=y
-		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-	EOF
 	}
 	# [[ $TARGET_DEVICE =~ r1-plus-lts ]] && sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	;;
@@ -595,19 +591,7 @@ case "$TARGET_DEVICE" in
 		# [[ "${REPO_BRANCH#*-}" == "21.02" ]] || _packages "luci-app-easyupdate luci-app-nginx-manager luci-app-supervisord"
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	}
-	[ $VERSION = mini ] && {
-	cat > .config <<-EOF
-		CONFIG_TARGET_x86=y
-		CONFIG_TARGET_x86_64=y
-		CONFIG_TARGET_ROOTFS_PARTSIZE=$PARTSIZE
-		CONFIG_BUILD_NLS=y
-		CONFIG_BUILD_PATENTED=y
-		CONFIG_TARGET_IMAGES_GZIP=y
-		CONFIG_GRUB_IMAGES=y
-		# CONFIG_GRUB_EFI_IMAGES is not set
-		# CONFIG_VMDK_IMAGES is not set
-		EOF
+		[[ $REPO_BRANCH == master ]] && rm -f package/kernel/{rtl8188eu,rtl8812au-ac,rtl8821cu,rtl8812au-ct}
 	}
 	;;
 "armvirt_64_Default")
@@ -653,14 +637,6 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 		fi
 	fi
 done
-
-[[ $VERSION = "mini" ]] && {
-	# sed -i '/DEVICE_TYPE/d' include/target.mk
-	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
-	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
-	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
-	echo "UPLOAD_RELEASE=" >>$GITHUB_ENV
-}
 
 # cat >>.config <<-EOF
 # CONFIG_DEVEL=y
