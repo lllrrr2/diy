@@ -484,7 +484,7 @@ case $TARGET_DEVICE in
 		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.10/' target/linux/rockchip/Makefile
 		# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	}
-	rm -rf package/kernel/rt*
+	# rm -rf package/kernel/rt*
 	;;
 "asus_rt-n16")
 	FIRMWARE_TYPE="n16"
@@ -564,7 +564,7 @@ case $TARGET_DEVICE in
 	# sed -i 's/:qbittorrent/:qBittorrent-Enhanced-Edition/g' package/lean/luci-app-qbittorrent/Makefile
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	rm -rf package/kernel/rt*
+	# rm -rf package/kernel/rt*
 	;;
 "armvirt_64_Default")
 	FIRMWARE_TYPE="armvirt-64-default"
