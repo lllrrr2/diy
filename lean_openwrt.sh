@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '{print $(NF)}' > xd
+curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '/cache/{print $(NF)}' > xd
 #cat xd
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
@@ -98,7 +98,7 @@ clone_url() {
 				fi
 			else
 				echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
-				if [[ -d ../${g##*/} ]]; then
+				if [[ $k = $g ]]; then
 					mv -f ../${g##*/} ${g%/*}/ && \
 					echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
 				fi
@@ -299,7 +299,7 @@ color cy "自定义设置.... "
 		sed -i "{
 				/upnp/d;/banner/d;/openwrt_release/d;/shadow/d
 				s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-				s|indexcache|indexcache\nsed -i 's/root::.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\n[ -f '/bin/bash' ] && sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd|
+				s,indexcache,indexcache\nsed -i 's/root::.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\n[ -f '/bin/bash' ] && sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd,
 				}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 	fi
 	# git diff ./ >> ../output/t.patch || true
@@ -463,7 +463,7 @@ case $TARGET_DEVICE in
 	#luci-app-smartdns
 	#luci-app-aliyundrive-fuse
 	#luci-app-aliyundrive-webdav
-	luci-app-deluge
+	#luci-app-deluge
 	luci-app-netdata
 	htop lscpu lsscsi lsusb #nano pciutils screen zstd pv
 	#AmuleWebUI-Reloaded subversion-client unixodbc git-http
@@ -484,6 +484,7 @@ case $TARGET_DEVICE in
 		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.10/' target/linux/rockchip/Makefile
 		# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	}
+	rm -rf package/kernel/rt*
 	;;
 "asus_rt-n16")
 	FIRMWARE_TYPE="n16"
@@ -496,11 +497,11 @@ case $TARGET_DEVICE in
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.150"/' $config_generate
-	[[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
+	#[[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
 	[[ $VERSION = plus ]] && _packages "
 	luci-app-adbyby-plus
 	#luci-app-amule
-	luci-app-deluge
+	#luci-app-deluge
 	luci-app-passwall2
 	luci-app-dockerman
 	luci-app-netdata
@@ -563,7 +564,7 @@ case $TARGET_DEVICE in
 	# sed -i 's/:qbittorrent/:qBittorrent-Enhanced-Edition/g' package/lean/luci-app-qbittorrent/Makefile
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	: >package/kernel/rtw88-usb/Makefile
+	rm -rf package/kernel/rt*
 	;;
 "armvirt_64_Default")
 	FIRMWARE_TYPE="armvirt-64-default"
@@ -615,8 +616,9 @@ done
 	# sed -i '/DEVICE_TYPE/d' include/target.mk
 	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
 	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
-	echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
-	echo "UPLOAD_RELEASE=" >>$GITHUB_ENV
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV
+	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+	echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
 }
 
 # cat >>.config <<-EOF
@@ -650,5 +652,6 @@ echo "REPO_BRANCH=${REPO_BRANCH#*-}" >>$GITHUB_ENV || \
 echo "REPO_BRANCH=18.06" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
+echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"

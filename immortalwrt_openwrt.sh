@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '{print $(NF)}' > xd
+curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '/cache/{print $(NF)}' > xd
 # set -x
 [[ $REPO_FLODER ]] || REPO_FLODER="openwrt"; echo "REPO_FLODER=openwrt" >>$GITHUB_ENV
 [[ $VERSION ]] || VERSION=plus
@@ -99,7 +99,7 @@ clone_url() {
 				fi
 			else
 				echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
-				if [[ -d ../${g##*/} ]]; then
+				if [[ $k = $g ]]; then
 					mv -f ../${g##*/} ${g%/*}/ && \
 					echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
 				fi
@@ -168,7 +168,7 @@ else
 	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
-# echo "FETCH_CACHE=true" >>$GITHUB_ENV; #echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+# echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -591,7 +591,7 @@ case "$TARGET_DEVICE" in
 		# [[ "${REPO_BRANCH#*-}" == "21.02" ]] || _packages "luci-app-easyupdate luci-app-nginx-manager luci-app-supervisord"
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-		[[ $REPO_BRANCH == master ]] && rm -f package/kernel/{rtl8188eu,rtl8812au-ac,rtl8821cu,rtl8812au-ct}
+		[[ $REPO_BRANCH == master ]] && rm -rf package/kernel/rt*
 	}
 	;;
 "armvirt_64_Default")
