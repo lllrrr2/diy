@@ -306,7 +306,7 @@ color cy "自定义设置.... "
 	[[ $VERSION = plus ]] && {
 		clone_url "
 			https://github.com/hong0980/build
-			https://github.com/fw876/helloworld
+			#https://github.com/fw876/helloworld
 			https://github.com/xiaorouji/openwrt-passwall
 			https://github.com/xiaorouji/openwrt-passwall2
 			https://github.com/destan19/OpenAppFilter
@@ -323,6 +323,7 @@ color cy "自定义设置.... "
 			https://github.com/immortalwrt/luci/trunk/applications/luci-app-passwall
 			https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 			https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
+			https://github.com/immortalwrt/packages/branches/openwrt-18.06/lang/python
 			#https://github.com/sirpdboy/luci-app-netdata
 			#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 			#https://github.com/linkease/istore/trunk/luci/luci-app-store
