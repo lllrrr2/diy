@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '/cache/{print $(NF)}' > xd
-# set -x
-[[ $REPO_FLODER ]] || REPO_FLODER="openwrt"; echo "REPO_FLODER=openwrt" >>$GITHUB_ENV
+curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
@@ -131,7 +129,7 @@ clone_url() {
 }
 
 REPO_URL=https://github.com/immortalwrt/immortalwrt
-export SOURCE_USER=$(awk -F/ '{print $(NF-1)}' <<<$REPO_URL)
+export SOURCE_USER=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
 echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
 export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
@@ -153,6 +151,7 @@ if grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
@@ -161,6 +160,7 @@ elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
 		tar --zstd -xf *cache.tar.zst && rm *.zst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 else
@@ -287,11 +287,14 @@ cat >>.config <<-EOF
 EOF
 
 config_generate="package/base-files/files/bin/config_generate"
+export TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
+export DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
+export LINUX_VERSION=$(awk -F'=' '/KERNEL_PATCHVER/{print $2}' target/linux/$TARGET/Makefile)
 color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
-sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
+sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk}
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 sed -i 's/UTC/UTC-8/' Makefile
@@ -506,7 +509,7 @@ case "$TARGET_DEVICE" in
 		[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
 		# _packages "odhcp6c odhcpd-ipv6only"
 		sed -i '/bridge/d' .config
-		} || wget -qO target/linux/rockchip/armv8/config-5.4 raw.githubusercontent.com/coolsnowwolf/lede/master/target/linux/rockchip/armv8/config-5.4
+		} #|| wget -qO target/linux/rockchip/armv8/config-5.4 raw.githubusercontent.com/coolsnowwolf/lede/master/target/linux/rockchip/armv8/config-5.4
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	} || {
@@ -516,7 +519,7 @@ case "$TARGET_DEVICE" in
 		luci-app-cpufreq luci-app-uhttpd luci-app-pushbot luci-app-wrtbwmon luci-app-vssr"
 		echo -e "CONFIG_DRIVER_11AC_SUPPORT=y\nCONFIG_DRIVER_11N_SUPPORT=y\nCONFIG_DRIVER_11W_SUPPORT=y" >>.config
 	}
-	# [[ $TARGET_DEVICE =~ r1-plus-lts ]] && sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
+	[[ $TARGET_DEVICE =~ r1-plus-lts ]] && sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	;;
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
@@ -651,7 +654,7 @@ done
 # CONFIG_MAKE_TOOLCHAIN=y
 # EOF
 
-echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$DEVICE_NAME-$VERSION)"
+echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
@@ -669,6 +672,5 @@ echo "CLEAN=false" >>$GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
-echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-curl -Ls api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F/ '/cache/{print $(NF)}' > xd
-#cat xd
+curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
@@ -131,7 +130,7 @@ clone_url() {
 }
 
 REPO_URL="https://github.com/coolsnowwolf/lede"
-export SOURCE_USER=coolsnowwolf
+export SOURCE_USER=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
 echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
 export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
@@ -143,6 +142,7 @@ git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
+sed -i '/ packages/s/$/.git^12674bd/; /fw876/s/^#//' feeds.conf.default
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
 DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
@@ -153,6 +153,7 @@ if grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && rm *.tzst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
@@ -161,6 +162,7 @@ elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
 	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
 		tar --zstd -xf *cache.tar.zst && rm *.zst
 		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 	}
 	status
 else
@@ -283,16 +285,14 @@ cat >>.config <<-EOF
 	EOF
 
 config_generate="package/base-files/files/bin/config_generate"
-TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
-DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
-
+export TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
+export DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 color cy "自定义设置.... "
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
 	if [[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]]; then
 		REPO_BRANCH="18.06"
 		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
-		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-		sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+		sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 		sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 		sed -i 's/UTC/UTC-8/' Makefile
@@ -463,7 +463,7 @@ case $TARGET_DEVICE in
 	#luci-app-smartdns
 	#luci-app-aliyundrive-fuse
 	#luci-app-aliyundrive-webdav
-	#luci-app-deluge
+	luci-app-deluge
 	luci-app-netdata
 	htop lscpu lsscsi lsusb #nano pciutils screen zstd pv
 	#AmuleWebUI-Reloaded subversion-client unixodbc git-http
@@ -480,9 +480,9 @@ case $TARGET_DEVICE in
 	fi
 	[[ ${IMG_USER%%-*} =~ coolsnowwolf && $TARGET_DEVICE =~ r1-plus-lts ]] && {
 		clone_url "https://github.com/immortalwrt/immortalwrt/branches/master/target/linux/rockchip"
-		# git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
+		git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
+		sed -i "/lan_wan/ s/'.*' '.*'/'eth0' 'eth1'/g" target/*/rockchip/*/*/*/*/02_network
 		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.10/' target/linux/rockchip/Makefile
-		# sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
 	}
 	# rm -rf package/kernel/rt*
 	;;
@@ -501,7 +501,7 @@ case $TARGET_DEVICE in
 	[[ $VERSION = plus ]] && _packages "
 	luci-app-adbyby-plus
 	#luci-app-amule
-	#luci-app-deluge
+	luci-app-deluge
 	luci-app-passwall2
 	luci-app-dockerman
 	luci-app-netdata
@@ -634,11 +634,14 @@ done
 # CONFIG_MAKE_TOOLCHAIN=y
 # EOF
 
-echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$TARGET_DEVICE-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
+
+export LINUX_VERSION=$(awk -F'=' '/KERNEL_PATCHVER/{print $2}' target/linux/$TARGET/Makefile)
+echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
+sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 echo "CLEAN=false" >>$GITHUB_ENV
 echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
@@ -652,6 +655,5 @@ echo "REPO_BRANCH=${REPO_BRANCH#*-}" >>$GITHUB_ENV || \
 echo "REPO_BRANCH=18.06" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
-echo "ARCH=`awk -F'"' '/^CONFIG_TARGET_ARCH_PACKAGES/{print $2}' .config`" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
