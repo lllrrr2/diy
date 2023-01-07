@@ -587,7 +587,7 @@ case "$TARGET_DEVICE" in
 		kmod-mmc-spi kmod-rtl8xxxu kmod-sdhci
 		kmod-tg3 lm-sensors-detect qemu-ga snmpd
 		"
-		[[ "${REPO_BRANCH#*-}" == "openwrt-18.06-k5.4" ]] && sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/*/Makefile
+		[[ "${REPO_BRANCH}" =~ "openwrt-18.06-k5.4" ]] && sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/*/Makefile
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 		[[ $REPO_BRANCH == master ]] && rm -rf package/kernel/rt*
