@@ -388,7 +388,7 @@ sed -i "{
 		#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
 		https://github.com/coolsnowwolf/packages/trunk/admin/netdata
 		#https://github.com/sirpdboy/luci-app-netdata
-		https://github.com/coolsnowwolf/packages/trunk/lang/python
+		#https://github.com/coolsnowwolf/packages/trunk/lang/python
 		#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
 	"
