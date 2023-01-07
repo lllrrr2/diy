@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
+i=0
+while true; do
+	curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
+	i=$[i+1]
+	echo $i
+	[[ -s xd || $i == 5 ]] && break
+done
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
@@ -168,7 +174,8 @@ else
 	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
-# echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+# echo "FETCH_CACHE=true" >>$GITHUB_ENV
+# echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -287,21 +294,18 @@ cat >>.config <<-EOF
 EOF
 
 config_generate="package/base-files/files/bin/config_generate"
-export TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
-export DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
-export LINUX_VERSION=$(awk -F'=' '/KERNEL_PATCHVER/{print $2}' target/linux/$TARGET/Makefile)
 color cy "自定义设置.... "
 wget -qO package/base-files/files/etc/banner git.io/JoNK8
 sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk}
+sed -i 's/option enabled.*/option enabled 1/' feeds/packages/*/*/files/upnpd.config
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 sed -i 's/UTC/UTC-8/' Makefile
 sed -i "{
 		/upnp/d;/banner/d
 		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-		s^.*shadow$^sed -i 's/root::.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow^
+		\$i sed -i 's/root::.*:::/root:\$1\$pn1ABFaI\$vt5cmIjlr6M7Z79Eds2lV0:16821:0:99999:7:::/g' /etc/shadow
 		}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 
 # git diff ./ >> ../output/t.patch || true
@@ -384,7 +388,7 @@ sed -i "{
 		#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-nginx-manager
 		https://github.com/coolsnowwolf/packages/trunk/admin/netdata
 		#https://github.com/sirpdboy/luci-app-netdata
-		https://github.com/coolsnowwolf/lede/trunk/package/utils/ucode
+		https://github.com/coolsnowwolf/packages/trunk/lang/python
 		#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
 	"
@@ -425,14 +429,10 @@ sed -i "{
 		sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
 		# sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
 		clone_url "
-		#https://github.com/immortalwrt/luci/branches/openwrt-18.06-k5.4/applications/luci-app-samba
-		#https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/network/services/samba36
-		https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba
 		https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork
 		https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
 		https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 		https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
-		# sed -i 's/samba4/samba/' package/*/autosamba/Makefile
 	} || {
 		_packages "luci-app-argon-config"
 		clone_url "
@@ -498,18 +498,14 @@ case "$TARGET_DEVICE" in
 		luci-app-cpufreq
 		#luci-app-adguardhome
 		#luci-app-amule
-		#luci-app-deluge
+		luci-app-deluge
 		#luci-app-netdata
 		#luci-app-smartdns
 		#luci-app-adbyby-plus
 		#luci-app-unblockneteasemusic
-		htop lscpu lsscsi nano screen #webui-aria2 zstd pv ethtool
-		#AmuleWebUI-Reloaded #subversion-client #unixodbc #git-http
+		htop lscpu lsscsi nano screen zstd pv ethtool
 		"
-		[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
-		# _packages "odhcp6c odhcpd-ipv6only"
-		sed -i '/bridge/d' .config
-		} #|| wget -qO target/linux/rockchip/armv8/config-5.4 raw.githubusercontent.com/coolsnowwolf/lede/master/target/linux/rockchip/armv8/config-5.4
+		[[ "${REPO_BRANCH#*-}" == "21.02" ]] && sed -i '/bridge/d' .config
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	} || {
@@ -569,7 +565,7 @@ case "$TARGET_DEVICE" in
 		luci-app-frpc
 		luci-app-aliyundrive-webdav
 		#AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
-		#subversion-server #unixodbc #git-http
+		subversion-server #unixodbc git-http
 		#USB3.0支持
 		kmod-usb2 kmod-usb2-pci kmod-usb3
 		kmod-fs-nfsd kmod-fs-nfs kmod-fs-nfs-v4
@@ -654,11 +650,15 @@ done
 # CONFIG_MAKE_TOOLCHAIN=y
 # EOF
 
-echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
 echo -e "$(color cy '更新配置....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
+
+LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
+DEVICE_NAME=`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*T_(.*)_DEVI.*/\1/'`-`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/'`
+echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
+sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 
 # echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
@@ -672,5 +672,6 @@ echo "CLEAN=false" >>$GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
+echo "DELETE_RELEASE=" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"

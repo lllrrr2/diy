@@ -29,7 +29,7 @@ grep -q "$IMG_USER-$TOOLS_HASH-cache" xd || {
 	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 	[[ $hx ]] && cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true
 	[[ $xx ]] && cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true
-	pushd $REPO_FLODER
+	[[ $REPO_FLODER ]] && pushd $REPO_FLODER || pushd openwrt
 	[[ -d ".ccache" ]] && (ccache=".ccache"; ls -alh .ccache)
 	tar --zstd -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache || \
 	tar -I zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* $ccache
@@ -39,7 +39,8 @@ grep -q "$IMG_USER-$TOOLS_HASH-cache" xd || {
 	ls -lh output
 }
 [[ "$TARGET_DEVICE" =~ r[1-9] && "$SOURCE_USER" =~ coolsnowwolf ]] && {
-	cd $REPO_FLODER
+	[[ $REPO_FLODER ]] && cd $REPO_FLODER || cd openwrt
+	cp -fv $(find build_dir -type f -name 'motorcomm.c') ../output
 	cp -fv $(find dl -name 'u-boot-202*' -o -name 'linux-5.[0-9][0-9]*' -o -name '*rockchip*') ../output
 	tar -zcf ../output/rockchip.tar.gz target/linux/rockchip
 	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV

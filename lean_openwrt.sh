@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
+i=0
+while true; do
+	curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
+	i=$[i+1]
+	echo $i
+	[[ -s xd || $i == 5 ]] && break
+done
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
@@ -142,7 +148,6 @@ git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
-sed -i '/ packages/s/$/.git^12674bd/; /fw876/s/^#//' feeds.conf.default
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
 DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
@@ -170,8 +175,8 @@ else
 	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
-# echo "FETCH_CACHE=true" >>$GITHUB_ENV; echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
-#[[ ${IMG_USER%%-*} =~ "coolsnowwolf" && $TARGET_DEVICE =~ r1-plus ]] && git reset --hard b0ea2f3 #&& VERSION="mini"
+# echo "FETCH_CACHE=true" >>$GITHUB_ENV
+# echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -285,28 +290,26 @@ cat >>.config <<-EOF
 	EOF
 
 config_generate="package/base-files/files/bin/config_generate"
-export TARGET=$(awk '/^CONFIG_TARGET/{print $1;exit;}' .config | sed -r 's/.*TARGET_(.*)=y/\1/')
-export DEVICE_NAME=$(grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/')
 color cy "自定义设置.... "
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
 	if [[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]]; then
 		REPO_BRANCH="18.06"
 		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
-		sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 		sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 		sed -i 's/UTC/UTC-8/' Makefile
 		sed -i "{
 				/upnp/d;/banner/d;/openwrt_release/d;/shadow/d
 				s|zh_cn|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
-				s,indexcache,indexcache\nsed -i 's/root::.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\n[ -f '/bin/bash' ] && sed -i 's|root:x:0:0:root:/root:/bin/ash|root:x:0:0:root:/root:/bin/bash|g' /etc/passwd,
+				\$i sed -i 's/root::.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow\n[ -f '/bin/bash' ] && sed -i '/\\\/ash$/s/ash/bash/' /etc/passwd
 				}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 	fi
 	# git diff ./ >> ../output/t.patch || true
 	[[ $VERSION = plus ]] && {
 		clone_url "
 			https://github.com/hong0980/build
-			#https://github.com/fw876/helloworld
+			https://github.com/fw876/helloworld
 			https://github.com/xiaorouji/openwrt-passwall
 			https://github.com/xiaorouji/openwrt-passwall2
 			https://github.com/destan19/OpenAppFilter
@@ -323,7 +326,6 @@ color cy "自定义设置.... "
 			https://github.com/immortalwrt/luci/trunk/applications/luci-app-passwall
 			https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 			https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
-			https://github.com/immortalwrt/packages/branches/openwrt-18.06/lang/python
 			#https://github.com/sirpdboy/luci-app-netdata
 			#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 			#https://github.com/linkease/istore/trunk/luci/luci-app-store
@@ -467,7 +469,7 @@ case $TARGET_DEVICE in
 	luci-app-deluge
 	luci-app-netdata
 	htop lscpu lsscsi lsusb #nano pciutils screen zstd pv
-	#AmuleWebUI-Reloaded subversion-client unixodbc git-http
+	#AmuleWebUI-Reloaded #subversion-client unixodbc git-http
 	"
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
@@ -479,13 +481,21 @@ case $TARGET_DEVICE in
 		clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
 		sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
 	fi
-	[[ ${IMG_USER%%-*} =~ coolsnowwolf && $TARGET_DEVICE =~ r1-plus-lts ]] && {
-		clone_url "https://github.com/immortalwrt/immortalwrt/branches/master/target/linux/rockchip"
-		git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
-		sed -i "/lan_wan/ s/'.*' '.*'/'eth0' 'eth1'/g" target/*/rockchip/*/*/*/*/02_network
-		# sed -i 's/KERNEL_PATCHVER=.*/KERNEL_PATCHVER=5.10/' target/linux/rockchip/Makefile
+	# sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/rockchip/Makefile
+	[[ $TARGET_DEVICE =~ r1-plus-lts ]] && {
+		grep -q 'KERNEL_PATCHVER:=5.15' target/linux/rockchip/Makefile && \
+	 	clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip"
+		grep -q 'KERNEL_PATCHVER:=5.4' target/linux/rockchip/Makefile && {
+			clone_url "https://github.com/immortalwrt/immortalwrt/trunk/target/linux/rockchip"
+			sed -i '/KERNEL_PATCHVER/s/=.*/=5.4/' target/linux/rockchip/Makefile
+		}
+	 	grep -q 'KERNEL_PATCHVER:=5.10' target/linux/rockchip/Makefile && {
+			clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip"
+			sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/rockchip/Makefile
+		}
 	}
-	# rm -rf package/kernel/rt*
+	sed -i "/interfaces_lan_wan/s/'eth1' 'eth0'/'eth0' 'eth1'/" target/linux/rockchip/*/*/*/*/02_network
+	# git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
 	;;
 "asus_rt-n16")
 	FIRMWARE_TYPE="n16"
@@ -640,9 +650,10 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
-export LINUX_VERSION=$(awk -F'=' '/KERNEL_PATCHVER/{print $2}' target/linux/$TARGET/Makefile)
+LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
+DEVICE_NAME=`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*T_(.*)_DEVI.*/\1/'`-`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/'`
 echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
-sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
+sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 echo "CLEAN=false" >>$GITHUB_ENV
 echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
