@@ -655,7 +655,7 @@ BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
-LINUX_VERSION=$(grep 'KERNEL_PATCHVER' target/linux/x86/Makefile | sed -r 's/KERNEL_PATCHVER:=(.*)/\1/')
+LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
 DEVICE_NAME=`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*T_(.*)_DEVI.*/\1/'`-`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/'`
 echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
 sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
