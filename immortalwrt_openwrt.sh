@@ -500,7 +500,6 @@ case "$TARGET_DEVICE" in
 		#luci-app-adguardhome
 		#luci-app-amule
 		luci-app-deluge
-		#luci-app-netdata
 		#luci-app-smartdns
 		#luci-app-adbyby-plus
 		#luci-app-unblockneteasemusic

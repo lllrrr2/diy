@@ -31,8 +31,8 @@ grep -q "$IMG_USER-$TOOLS_HASH-cache" xd || {
 	[[ $xx ]] && cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true
 	[[ $REPO_FLODER ]] && pushd $REPO_FLODER || pushd openwrt
 	[[ -d ".ccache" ]] && (ccache=".ccache"; ls -alh .ccache)
-	tar --zstd -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache || \
-	tar -I zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* $ccache
+	tar -I zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* $ccache || \
+	tar --zstd -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache
 	du -h --max-depth=1 ./ --exclude=staging_dir
 	du -h --max-depth=1 ./staging_dir
 	popd

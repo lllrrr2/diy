@@ -292,7 +292,7 @@ cat >>.config <<-EOF
 config_generate="package/base-files/files/bin/config_generate"
 color cy "自定义设置.... "
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
-	if [[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]]; then
+	if [[ $IMG_USER =~ "coolsnowwolf" ]]; then
 		REPO_BRANCH="18.06"
 		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
@@ -328,9 +328,6 @@ color cy "自定义设置.... "
 			https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 			#https://github.com/sirpdboy/luci-app-netdata
 			#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
-			#https://github.com/linkease/istore/trunk/luci/luci-app-store
-			#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
-			#https://gitee.com/hong0980/deluge
 		"
 		[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
 		sed -i '/log_check/s/^/#/' package/A/*/*/*/init.d/unblockneteasemusic
@@ -340,6 +337,8 @@ color cy "自定义设置.... "
 		done
 
 		[[ ${REPO_BRANCH#*-} == "18.06" ]] && {
+			wget -qO package/lean/autocore/files/x86/index.htm \
+			https://raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06-k5.4/modules/luci-mod-admin-full/luasrc/view/admin_status/index.htm
 			for d in $(find feeds/ package/ -type f -name "index.htm" 2>/dev/null); do
 				if grep -q "Kernel Version" $d; then
 					sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' $d
