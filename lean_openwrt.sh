@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-i=0
-while true; do
-	curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
-	i=$[i+1]
-	echo $i
-	[[ -s xd || $i == 5 ]] && break
-done
+curl -sL api.github.com/repos/hong0980/chinternet/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xc
+curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
@@ -141,35 +136,46 @@ echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
 export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
 
-echo -e "$(color cy '拉取源码....')\c"
+echo -e "$(color cy '拉取源码....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-BEGIN_TIME=$(date '+%H:%M:%S')
 git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
-DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
+DOWNLOAD_URL_1="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
+DOWNLOAD_URL_2="$GITHUB_SERVER_URL/hong0980/chinternet/releases/download/Cache"
 
-if grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
-	echo -e "$(color cy '部署tz-cache')\c"
-	BEGIN_TIME=$(date '+%H:%M:%S')
-	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
-		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && rm *.tzst
-		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+xv=
+if (grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xc || grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd); then
+	echo -e "$(color cy '下载zst-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+	grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd && \
+	(wget -qc -t=3 $DOWNLOAD_URL_1/$IMG_USER-$TOOLS_HASH-cache.tar.zst && xv=0) || \
+	(wget -qc -t=3 $DOWNLOAD_URL_2/$IMG_USER-$TOOLS_HASH-cache.tar.zst && xv=1)
+	[ -n "$xv" ] && {
+		status; echo -e "$(color cy '部署zst-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+		tar --zstd -xf *cache.tar.zst && {
+			[[ $xv == 1 ]] && (echo "CACHE_ACTIONS=true" >>$GITHUB_ENV; echo "FETCH_CACHE=true" >>$GITHUB_ENV) || echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+			rm *.zst
+			sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		}
+		status
 	}
-	status
-elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
-	echo -e "$(color cy '部署zst-cache')\c"
-	BEGIN_TIME=$(date '+%H:%M:%S')
-	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
-		tar --zstd -xf *cache.tar.zst && rm *.zst
-		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+elif (grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xc || grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd); then
+	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+	grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd && \
+	(wget -qc -t=3 $DOWNLOAD_URL_1/$IMG_USER-$TOOLS_HASH-cache.tzst && xv=0) || \
+	(wget -qc -t=3 $DOWNLOAD_URL_2/$IMG_USER-$TOOLS_HASH-cache.tzst && xv=1)
+	[ -n "$xv" ] && {
+		status; echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
+			[[ $xv == 1 ]] && (echo "CACHE_ACTIONS=true" >>$GITHUB_ENV; echo "FETCH_CACHE=true" >>$GITHUB_ENV) || echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+			rm *.tzst
+			sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		}
+		status
 	}
-	status
 else
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
 	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
@@ -261,13 +267,13 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-oaf=y
 	CONFIG_PACKAGE_luci-app-passwall=y
-	CONFIG_PACKAGE_luci-app-rebootschedule=y
+	CONFIG_PACKAGE_luci-app-timedtask=y
 	CONFIG_PACKAGE_luci-app-ssr-plus=y
 	CONFIG_PACKAGE_luci-app-wrtbwmon=y
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
-	CONFIG_PACKAGE_luci-app-wizard=y
+	#CONFIG_PACKAGE_luci-app-wizard=y
 	CONFIG_PACKAGE_luci-app-simplenetwork=y
 	CONFIG_PACKAGE_luci-app-opkg=y
 	CONFIG_PACKAGE_automount=y
@@ -309,11 +315,11 @@ color cy "自定义设置.... "
 	[[ $VERSION = plus ]] && {
 		clone_url "
 			https://github.com/hong0980/build
-			https://github.com/fw876/helloworld
 			https://github.com/xiaorouji/openwrt-passwall
 			https://github.com/xiaorouji/openwrt-passwall2
 			https://github.com/destan19/OpenAppFilter
 			https://github.com/jerrykuku/luci-app-vssr
+			https://github.com/fw876/helloworld
 			https://github.com/jerrykuku/lua-maxminddb
 			https://github.com/zzsj0928/luci-app-pushbot
 			https://github.com/yaof2/luci-app-ikoolproxy
@@ -336,9 +342,7 @@ color cy "自定义设置.... "
 			clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
 		done
 
-		[[ ${REPO_BRANCH#*-} == "18.06" ]] && {
-			wget -qO package/lean/autocore/files/x86/index.htm \
-			https://raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06-k5.4/modules/luci-mod-admin-full/luasrc/view/admin_status/index.htm
+		[[ $REPO_BRANCH =~ "18.06" ]] && {
 			for d in $(find feeds/ package/ -type f -name "index.htm" 2>/dev/null); do
 				if grep -q "Kernel Version" $d; then
 					sed -i 's|os.date(.*|os.date("%F %X") .. " " .. translate(os.date("%A")),|' $d
@@ -480,12 +484,12 @@ case $TARGET_DEVICE in
 		clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
 		sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
 	fi
-	# sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/rockchip/Makefile
+	sed -i '/KERNEL_PATCHVER/s/=.*/=5.4/' target/linux/rockchip/Makefile
 	[[ $TARGET_DEVICE =~ r1-plus-lts ]] && {
 		grep -q 'KERNEL_PATCHVER:=5.15' target/linux/rockchip/Makefile && \
-	 	clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip"
+	 	clone_url "https://github.com/immortalwrt/immortalwrt/trunk/target/linux/rockchip"
 		grep -q 'KERNEL_PATCHVER:=5.4' target/linux/rockchip/Makefile && {
-			clone_url "https://github.com/immortalwrt/immortalwrt/trunk/target/linux/rockchip"
+			clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip"
 			sed -i '/KERNEL_PATCHVER/s/=.*/=5.4/' target/linux/rockchip/Makefile
 		}
 	 	grep -q 'KERNEL_PATCHVER:=5.10' target/linux/rockchip/Makefile && {
@@ -569,12 +573,11 @@ case $TARGET_DEVICE in
 	"
 	sed -i '/easymesh/d' .config
 	rm -rf package/lean/rblibtorrent
-	# rm -rf feeds/packages/libs/libtorrent-rasterbar
-	# sed -i 's/||x86_64//g' package/lean/luci-app-qbittorrent/Makefile
-	# sed -i 's/:qbittorrent/:qBittorrent-Enhanced-Edition/g' package/lean/luci-app-qbittorrent/Makefile
+	#sed -i '/KERNEL_PATCHVER/s/=.*/=6.1/' target/linux/x86/Makefile
+	wget -qO package/lean/autocore/files/x86/index.htm \
+	https://raw.githubusercontent.com/immortalwrt/luci/openwrt-18.06-k5.4/modules/luci-mod-admin-full/luasrc/view/admin_status/index.htm
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	# rm -rf package/kernel/rt*
 	;;
 "armvirt_64_Default")
 	FIRMWARE_TYPE="armvirt-64-default"

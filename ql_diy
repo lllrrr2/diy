@@ -38,13 +38,13 @@ grep -q "$IMG_USER-$TOOLS_HASH-cache" xd || {
 	popd
 	ls -lh output
 }
-[[ "$TARGET_DEVICE" =~ r[1-9] && "$SOURCE_USER" =~ coolsnowwolf ]] && {
-	[[ $REPO_FLODER ]] && cd $REPO_FLODER || cd openwrt
-	cp -fv $(find build_dir -type f -name 'motorcomm.c') ../output
-	cp -fv $(find dl -name 'u-boot-202*' -o -name 'linux-5.[0-9][0-9]*' -o -name '*rockchip*') ../output
-	tar -zcf ../output/rockchip.tar.gz target/linux/rockchip
-	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
-}
+# [[ "$TARGET_DEVICE" =~ r[1-9] && "$SOURCE_USER" =~ coolsnowwolf ]] && {
+	# [[ $REPO_FLODER ]] && cd $REPO_FLODER || cd openwrt
+	# cp -fv $(find build_dir -type f -name 'motorcomm.c') ../output
+	# cp -fv $(find dl -name 'u-boot-202*' -o -name 'linux-5.[0-9][0-9]*' -o -name '*rockchip*') ../output
+	# tar -zcf ../output/rockchip.tar.gz target/linux/rockchip
+	# echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+# }
 # up_github || true
 echo "SAVE_CACHE=''" >>$GITHUB_ENV
 # export -p

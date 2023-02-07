@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-i=0
-while true; do
-	curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
-	i=$[i+1]
-	echo $i
-	[[ -s xd || $i == 5 ]] && break
-done
+curl -sL api.github.com/repos/hong0980/chinternet/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xc
+curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
@@ -112,7 +107,7 @@ clone_url() {
 		else
 			for w in $(grep "^https" <<<$x); do
 				git clone -q $w ../${w##*/} && {
-					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest|*Deny|*dog|*ding'`; do
+					for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest'`; do
 						g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name $x 2>/dev/null)
 						if [[ -d $g ]]; then
 							rm -rf $g && k="$g"
@@ -140,35 +135,47 @@ echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
 export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
 echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
 
-echo -e "$(color cy '拉取源码....')\c"
+echo -e "$(color cy '拉取源码....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-BEGIN_TIME=$(date '+%H:%M:%S')
+# [ "$TARGET_DEVICE" = r1-plus-lts -a "$REPO_BRANCH" = master ] && git reset --hard b5193291bdde00e91c58e59029d5c68b0bc605db
 git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
-DOWNLOAD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
+DOWNLOAD_URL_1="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
+DOWNLOAD_URL_2="https://github.com/hong0980/chinternet/releases/download/Cache"
 
-if grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd; then
-	echo -e "$(color cy '部署tz-cache')\c"
-	BEGIN_TIME=$(date '+%H:%M:%S')
-	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tzst && {
-		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && rm *.tzst
-		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+xv=
+if (grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xc || grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd); then
+	echo -e "$(color cy '下载zst-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+	grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd && \
+	(wget -qc -t=3 $DOWNLOAD_URL_1/$IMG_USER-$TOOLS_HASH-cache.tar.zst && xv=0) || \
+	(wget -qc -t=3 $DOWNLOAD_URL_2/$IMG_USER-$TOOLS_HASH-cache.tar.zst && xv=1)
+	[ -n "$xv" ] && {
+		status; echo -e "$(color cy '部署zst-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+		tar --zstd -xf *cache.tar.zst && {
+			[[ $xv == 1 ]] && (echo "CACHE_ACTIONS=true" >>$GITHUB_ENV; echo "FETCH_CACHE=true" >>$GITHUB_ENV) || echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+			rm *.zst
+			sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		}
+		status
 	}
-	status
-elif grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd; then
-	echo -e "$(color cy '部署zst-cache')\c"
-	BEGIN_TIME=$(date '+%H:%M:%S')
-	wget -qc -t=3 $DOWNLOAD_URL/$IMG_USER-$TOOLS_HASH-cache.tar.zst && {
-		tar --zstd -xf *cache.tar.zst && rm *.zst
-		sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+elif (grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xc || grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd); then
+	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+	grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd && \
+	(wget -qc -t=3 $DOWNLOAD_URL_1/$IMG_USER-$TOOLS_HASH-cache.tzst && xv=0) || \
+	(wget -qc -t=3 $DOWNLOAD_URL_2/$IMG_USER-$TOOLS_HASH-cache.tzst && xv=1)
+	[ -n "$xv" ] && {
+		status; echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
+			[[ $xv == 1 ]] && (echo "CACHE_ACTIONS=true" >>$GITHUB_ENV; echo "FETCH_CACHE=true" >>$GITHUB_ENV) || echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+			rm *.tzst
+			sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		}
+		status
 	}
-	status
 else
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
 	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
@@ -176,6 +183,8 @@ fi
 
 # echo "FETCH_CACHE=true" >>$GITHUB_ENV
 # echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+
+# [[ "${REPO_BRANCH#*-}" == "21.02" ]] && sed -i '/luci.git/s/immortalwrt/openwrt/' feeds.conf.default
 echo -e "$(color cy '更新软件....')\c"
 BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
@@ -263,7 +272,6 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-app-accesscontrol=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
 	CONFIG_PACKAGE_luci-app-wizard=y
-	CONFIG_PACKAGE_luci-app-simplenetwork=y
 	CONFIG_PACKAGE_luci-app-cowb-speedlimit=y
 	CONFIG_PACKAGE_luci-app-diskman=y
 	CONFIG_PACKAGE_luci-app-cowbping=y
@@ -276,7 +284,7 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-app-appfilter=y
 	CONFIG_PACKAGE_luci-app-passwall=y
 	CONFIG_PACKAGE_luci-app-commands=y
-	CONFIG_PACKAGE_luci-app-rebootschedule=y
+	CONFIG_PACKAGE_luci-app-timedtask=y
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-opkg=y
@@ -342,6 +350,9 @@ sed -i "{
 	luci-app-wrtbwmon
 	luci-theme-material
 	luci-theme-opentomato
+	luci-app-pwdHackDeny
+	luci-app-control-webrestriction
+	luci-app-cowbbonding
 	"
 	trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile`
 	[[ $trv ]] && wget -qO feeds/packages/net/transmission/patches/tr$trv.patch \
@@ -432,7 +443,7 @@ sed -i "{
 		https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork
 		https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
 		https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
-		https://github.com/x-wrt/com.x-wrt/trunk/luci-app-simplenetwork"
+		"
 	} || {
 		_packages "luci-app-argon-config"
 		clone_url "
@@ -674,4 +685,5 @@ echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
 echo "DELETE_RELEASE=" >>$GITHUB_ENV
 
+# while true; do make package/download -j && break || true; done
 echo -e "\e[1;35m脚本运行完成！\e[0m"
