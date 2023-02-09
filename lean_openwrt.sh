@@ -315,14 +315,16 @@ color cy "自定义设置.... "
 				}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 	fi
 	# git diff ./ >> ../output/t.patch || true
-	[[ $VERSION = plus ]] && {
+	clone_url "
+	https://github.com/hong0980/build
+	https://github.com/xiaorouji/openwrt-passwall2
+	https://github.com/xiaorouji/openwrt-passwall
+	https://github.com/fw876/helloworld
+	"
+	[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 		clone_url "
-			https://github.com/hong0980/build
-			https://github.com/xiaorouji/openwrt-passwall
-			https://github.com/xiaorouji/openwrt-passwall2
 			https://github.com/destan19/OpenAppFilter
 			https://github.com/jerrykuku/luci-app-vssr
-			https://github.com/fw876/helloworld
 			https://github.com/jerrykuku/lua-maxminddb
 			https://github.com/zzsj0928/luci-app-pushbot
 			https://github.com/yaof2/luci-app-ikoolproxy

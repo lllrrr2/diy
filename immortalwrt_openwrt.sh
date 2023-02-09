@@ -320,7 +320,13 @@ sed -i "{
 		}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 
 # git diff ./ >> ../output/t.patch || true
-[[ $VERSION = plus ]] && {
+clone_url "
+	https://github.com/hong0980/build
+	https://github.com/xiaorouji/openwrt-passwall2
+	https://github.com/xiaorouji/openwrt-passwall
+	https://github.com/fw876/helloworld
+"
+[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 	_packages "
 	attr axel bash blkid bsdtar btrfs-progs cfdisk chattr collectd-mod-ping
 	collectd-mod-thermal curl diffutils dosfstools e2fsprogs f2fs-tools f2fsck
@@ -375,10 +381,6 @@ sed -i "{
 	EOF
 
 	clone_url "
-		https://github.com/hong0980/build
-		https://github.com/xiaorouji/openwrt-passwall2
-		#https://github.com/xiaorouji/openwrt-passwall
-		#https://github.com/fw876/helloworld
 		https://github.com/destan19/OpenAppFilter
 		https://github.com/messense/aliyundrive-webdav
 		https://github.com/jerrykuku/luci-app-vssr
