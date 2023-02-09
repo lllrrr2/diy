@@ -15,7 +15,7 @@ up_github() {
 		ls output | parallel --wc 'while true; do curl -T {} -H "$AUTH" -H "Content-Type: application/octet-stream" "https://uploads.$cache_path/$cache_repo_id/assets?name={}" && break || true; done'
 		set +e
 		for i in {1..5}; do
-			curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/${IMG_NAME%%-*}-Cache/$IMG_NAME.img.zst.0$i || break
+			curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/$SOURCE_NAME-Cache/$IMG_NAME.img.zst.0$i || break
 		done | zstdmt -d -o /dev/null
 		if [ $? -eq 0 ]; then
 			break
