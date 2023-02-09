@@ -160,23 +160,22 @@ case "$TARGET_DEVICE" in
 esac
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 
-if (grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xc || grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xd); then
+if (grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xc || \
+	grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xd); then
 	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 	grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xd && {
 		wget -qc -t=3 $DOWNLOAD_URL_1/$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst && xv=0
-		[ -e *.tzst ]; status
 	} || {
 		wget -qc -t=3 $DOWNLOAD_URL_2/$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst && xv=1
-		[ -e *.tzst ]; status
 	}
+	[ -e *.tzst ]; status
 	[ -e *.tzst ] && {
 		echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
 			[ "$xv" = 1 ] && {
 				echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 				echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
-				mkdir output
-				cp *.tzst output/ || true
+				mkdir output && (cp *.tzst output/ || true)
 			} || {
 				echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 				rm *.tzst
