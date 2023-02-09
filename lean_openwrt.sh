@@ -131,10 +131,10 @@ clone_url() {
 }
 
 REPO_URL="https://github.com/coolsnowwolf/lede"
-export SOURCE_USER=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
-echo "SOURCE_USER=$SOURCE_USER" >>$GITHUB_ENV
-export IMG_USER=$SOURCE_USER-${REPO_BRANCH#*-}-$TARGET_DEVICE
-echo "IMG_USER=$IMG_USER" >>$GITHUB_ENV
+export SOURCE_NAME=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
+echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
+export IMG_NAME=$SOURCE_NAME-${REPO_BRANCH#*-}-$TARGET_DEVICE
+echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
 
 echo -e "$(color cy '拉取源码....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
@@ -144,37 +144,46 @@ status
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
-DOWNLOAD_URL_1="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_USER%%-*}-Cache"
+DOWNLOAD_URL_1="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/${IMG_NAME%%-*}-Cache"
 DOWNLOAD_URL_2="$GITHUB_SERVER_URL/hong0980/chinternet/releases/download/Cache"
+case "$TARGET_DEVICE" in
+	"x86_64")
+		export CACHE_NAME="x86-64";;
+	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s")
+		export CACHE_NAME="rockchip-armv8";;
+	"newifi-d2"|"phicomm_k2p")
+		export CACHE_NAME="ramips_mt7621";;
+	"asus_rt-n16")
+		export CACHE_NAME="bcm47xx_mips74k";;
+	"armvirt_64_Default")
+		export CACHE_NAME="armvirt_64";;
+esac
+echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 
-xv=
-if (grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xc || grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd); then
-	echo -e "$(color cy '下载zst-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
-	grep -q "$IMG_USER-$TOOLS_HASH-cache.tar.zst" ../xd && \
-	(wget -qc -t=3 $DOWNLOAD_URL_1/$IMG_USER-$TOOLS_HASH-cache.tar.zst && xv=0) || \
-	(wget -qc -t=3 $DOWNLOAD_URL_2/$IMG_USER-$TOOLS_HASH-cache.tar.zst && xv=1)
-	[ -n "$xv" ] && {
-		status; echo -e "$(color cy '部署zst-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
-		tar --zstd -xf *cache.tar.zst && {
-			[[ $xv == 1 ]] && (echo "CACHE_ACTIONS=true" >>$GITHUB_ENV; echo "FETCH_CACHE=true" >>$GITHUB_ENV) || echo "CACHE_ACTIONS=" >>$GITHUB_ENV
-			rm *.zst
-			sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-		}
-		status
-	}
-elif (grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xc || grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd); then
+if (grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xc || grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xd); then
 	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
-	grep -q "$IMG_USER-$TOOLS_HASH-cache.tzst" ../xd && \
-	(wget -qc -t=3 $DOWNLOAD_URL_1/$IMG_USER-$TOOLS_HASH-cache.tzst && xv=0) || \
-	(wget -qc -t=3 $DOWNLOAD_URL_2/$IMG_USER-$TOOLS_HASH-cache.tzst && xv=1)
-	[ -n "$xv" ] && {
-		status; echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+	grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xd && {
+		wget -qc -t=3 $DOWNLOAD_URL_1/$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst && xv=0
+		[ -e *.tzst ]; status
+	} || {
+		wget -qc -t=3 $DOWNLOAD_URL_2/$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst && xv=1
+		[ -e *.tzst ]; status
+	}
+	[ -e *.tzst ] && {
+		echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
-			[[ $xv == 1 ]] && (echo "CACHE_ACTIONS=true" >>$GITHUB_ENV; echo "FETCH_CACHE=true" >>$GITHUB_ENV) || echo "CACHE_ACTIONS=" >>$GITHUB_ENV
-			rm *.tzst
+			[ "$xv" = 1 ] && {
+				echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+				echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+				mkdir output
+				cp *.tzst output/ || true
+			} || {
+				echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+				rm *.tzst
+			}
 			sed -i 's/ $(tool.*stamp-compile)//g' Makefile
 		}
-		status
+		[ -d staging_dir ]; status
 	}
 else
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
@@ -183,8 +192,7 @@ fi
 
 # echo "FETCH_CACHE=true" >>$GITHUB_ENV
 # echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
-echo -e "$(color cy '更新软件....')\c"
-BEGIN_TIME=$(date '+%H:%M:%S')
+echo -e "$(color cy '更新软件....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
 ./scripts/feeds install -a 1>/dev/null 2>&1
 status
@@ -298,9 +306,9 @@ cat >>.config <<-EOF
 config_generate="package/base-files/files/bin/config_generate"
 color cy "自定义设置.... "
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
-	if [[ $IMG_USER =~ "coolsnowwolf" ]]; then
+	if [[ $IMG_NAME =~ "coolsnowwolf" ]]; then
 		REPO_BRANCH="18.06"
-		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_USER%%-*}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
+		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${IMG_NAME%%-*}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 		sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
 		sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
@@ -511,7 +519,7 @@ case $TARGET_DEVICE in
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.150"/' $config_generate
-	#[[ ${IMG_USER%%-*} =~ "coolsnowwolf" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
+	#[[ ${IMG_NAME%%-*} =~ "coolsnowwolf" ]] && sed -i 's/5.15/5.4/g' target/linux/x86/Makefile
 	[[ $VERSION = plus ]] && _packages "
 	luci-app-adbyby-plus
 	#luci-app-amule
@@ -646,16 +654,16 @@ done
 # CONFIG_AUTOREMOVE=y
 # CONFIG_MAKE_TOOLCHAIN=y
 # EOF
+rm -rf package/kernel/rt*
 
-echo -e "$(color cy '更新配置....')\c"
-BEGIN_TIME=$(date '+%H:%M:%S')
+echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
 LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
 DEVICE_NAME=`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*T_(.*)_DEVI.*/\1/'`-`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/'`
-echo -e "$(color cy 当前机型) $(color cb ${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
-sed -i "/IMG_PREFIX:/ {s/=/=${IMG_USER%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+echo -e "$(color cy 当前机型) $(color cb ${IMG_NAME%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
+sed -i "/IMG_PREFIX:/ {s/=/=${IMG_NAME%%-*}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 echo "CLEAN=false" >>$GITHUB_ENV
 echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV

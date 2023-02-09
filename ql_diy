@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* 2>/dev/null | sed "s/openwrt/$IMG_USER/g" 2>/dev/null`
-xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* 2>/dev/null | sed "s/openwrt/$IMG_USER/g" 2>/dev/null`
+hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* 2>/dev/null | sed "s/openwrt/$IMG_NAME/g" 2>/dev/null`
+xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* 2>/dev/null | sed "s/openwrt/$IMG_NAME/g" 2>/dev/null`
 
 up_github() {
 	echo "上传到github"
@@ -11,11 +11,11 @@ up_github() {
 		ret=$(curl -sH "$AUTH" "https://api.$cache_path/tags/cache")
 		echo $ret | jq -r '.assets[] | select(.name == "${hx##*/}").id' | xargs -n1 -i curl -X DELETE -H "$AUTH" "https://api.$cache_path/assets/{}"
 		echo $ret | jq -r '.assets[] | select(.name == "${xx##*/}").id' | xargs -n1 -i curl -X DELETE -H "$AUTH" "https://api.$cache_path/assets/{}"
-		echo $ret | jq -r '.assets[] | select(.name | contains ("'$IMG_USER'.img")).id' | xargs -n1 -i curl -X DELETE -H "$AUTH" "https://api.$cache_path/assets/{}"
+		echo $ret | jq -r '.assets[] | select(.name | contains ("'$IMG_NAME'.img")).id' | xargs -n1 -i curl -X DELETE -H "$AUTH" "https://api.$cache_path/assets/{}"
 		ls output | parallel --wc 'while true; do curl -T {} -H "$AUTH" -H "Content-Type: application/octet-stream" "https://uploads.$cache_path/$cache_repo_id/assets?name={}" && break || true; done'
 		set +e
 		for i in {1..5}; do
-			curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/${IMG_USER%%-*}-Cache/$IMG_USER.img.zst.0$i || break
+			curl -sL --fail https://github.com/hong0980/Actions-OpenWrt/releases/download/${IMG_NAME%%-*}-Cache/$IMG_NAME.img.zst.0$i || break
 		done | zstdmt -d -o /dev/null
 		if [ $? -eq 0 ]; then
 			break
@@ -24,21 +24,21 @@ up_github() {
 	set -e
 }
 
-grep -q "$IMG_USER-$TOOLS_HASH-cache" xd || {
+grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache" xd || {
 	echo "打包cache"
 	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 	[[ $hx ]] && cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true
 	[[ $xx ]] && cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true
 	[[ $REPO_FLODER ]] && pushd $REPO_FLODER || pushd openwrt
 	[[ -d ".ccache" ]] && (ccache=".ccache"; ls -alh .ccache)
-	tar -I zstdmt -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* $ccache || \
-	tar --zstd -cf ../output/$IMG_USER-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache
+	tar -I zstdmt -cf ../output/$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst staging_dir/host* staging_dir/tool* $ccache || \
+	tar --zstd -cf ../output/$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache
 	du -h --max-depth=1 ./ --exclude=staging_dir
 	du -h --max-depth=1 ./staging_dir
 	popd
 	ls -lh output
 }
-# [[ "$TARGET_DEVICE" =~ r[1-9] && "$SOURCE_USER" =~ coolsnowwolf ]] && {
+# [[ "$TARGET_DEVICE" =~ r[1-9] && "$SOURCE_NAME" =~ coolsnowwolf ]] && {
 	# [[ $REPO_FLODER ]] && cd $REPO_FLODER || cd openwrt
 	# cp -fv $(find build_dir -type f -name 'motorcomm.c') ../output
 	# cp -fv $(find dl -name 'u-boot-202*' -o -name 'linux-5.[0-9][0-9]*' -o -name '*rockchip*') ../output
