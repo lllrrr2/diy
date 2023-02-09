@@ -146,17 +146,13 @@ export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
 DOWNLOAD_URL_1="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_NAME-Cache"
 DOWNLOAD_URL_2="https://github.com/hong0980/chinternet/releases/download/Cache"
+
 case "$TARGET_DEVICE" in
-	"x86_64")
-		export CACHE_NAME="x86-64";;
-	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s")
-		export CACHE_NAME="rockchip-armv8";;
-	"newifi-d2"|"phicomm_k2p")
-		export CACHE_NAME="ramips_mt7621";;
-	"asus_rt-n16")
-		export CACHE_NAME="bcm47xx_mips74k";;
-	"armvirt_64_Default")
-		export CACHE_NAME="armvirt_64";;
+	"x86_64") export CACHE_NAME="x86_64";;
+	"asus_rt-n16") export CACHE_NAME="bcm47xx_mips74k";;
+	"armvirt_64_Default") export CACHE_NAME="armvirt_64";;
+	"newifi-d2"|"phicomm_k2p") export CACHE_NAME="ramips_mt7621";;
+	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export CACHE_NAME="rockchip_armv8";;
 esac
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 
@@ -689,7 +685,6 @@ echo "CLEAN=false" >>$GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
-echo "DELETE_RELEASE=" >>$GITHUB_ENV
 
 # while true; do make package/download -j && break || true; done
 echo -e "\e[1;35m脚本运行完成！\e[0m"
