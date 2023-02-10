@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
+curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xa
 curl -sL api.github.com/repos/hong0980/chinternet/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xc
-curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xd
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 [[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
+mkdir firmware output
 
 color() {
 	case $1 in
@@ -18,7 +19,7 @@ color() {
 status() {
 	CHECK=$?
 	END_TIME=$(date '+%H:%M:%S')
-	_date=" ==>用时 $(($(date +%s -d "$END_TIME") - $(date +%s -d "$BEGIN_TIME"))) 秒"
+	_date=" ==>用时 $[$(date +%s -d "$END_TIME") - $(date +%s -d "$BEGIN_TIME")] 秒"
 	[[ $_date =~ [0-9]+ ]] || _date=""
 	if [ $CHECK = 0 ]; then
 		printf "%35s %s %s %s %s %s %s\n" \
@@ -129,49 +130,47 @@ clone_url() {
 	done
 }
 
-REPO_URL=https://github.com/immortalwrt/immortalwrt
-export SOURCE_NAME=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
-echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
-export IMG_NAME=$SOURCE_NAME-${REPO_BRANCH#*-}-$TARGET_DEVICE
-echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
-
+REPO_URL="https://github.com/immortalwrt/immortalwrt"
 echo -e "$(color cy '拉取源码....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
 # [ "$TARGET_DEVICE" = r1-plus-lts -a "$REPO_BRANCH" = master ] && git reset --hard b5193291bdde00e91c58e59029d5c68b0bc605db
 git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
-
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
+
+export SOURCE_NAME=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
+export IMG_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TARGET_DEVICE"
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
-echo "TOOLS_HASH=$TOOLS_HASH" >>$GITHUB_ENV
-DOWNLOAD_URL_1="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_NAME-Cache"
-DOWNLOAD_URL_2="https://github.com/hong0980/chinternet/releases/download/Cache"
-
 case "$TARGET_DEVICE" in
-	"x86_64") export CACHE_NAME="x86_64";;
-	"asus_rt-n16") export CACHE_NAME="bcm47xx_mips74k";;
-	"armvirt_64_Default") export CACHE_NAME="armvirt_64";;
-	"newifi-d2"|"phicomm_k2p") export CACHE_NAME="ramips_mt7621";;
-	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export CACHE_NAME="rockchip_armv8";;
+	"x86_64") export DEVICE_NAME="x86_64";;
+	"asus_rt-n16") export DEVICE_NAME="bcm47xx_mips74k";;
+	"armvirt_64_Default") export DEVICE_NAME="armvirt_64";;
+	"newifi-d2"|"phicomm_k2p") export DEVICE_NAME="ramips_mt7621";;
+	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export DEVICE_NAME="rockchip_armv8";;
 esac
+export CACHE_NAME="$SOURCE_NAME-$DEVICE_NAME-$TOOLS_HASH"
+echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
+echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
+DOWNLOAD_URL_1="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_NAME-Cache"
+DOWNLOAD_URL_2="$GITHUB_SERVER_URL/hong0980/chinternet/releases/download/Cache"
 
-if (grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xc || \
-	grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xd); then
+if (grep -q "$CACHE_NAME-cache.tzst" ../xa || \
+	grep -q "$CACHE_NAME-cache.tzst" ../xc); then
 	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
-	grep -q "$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst" ../xd && {
-		wget -qc -t=3 $DOWNLOAD_URL_1/$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst && xv=0
+	grep -q "$CACHE_NAME-cache.tzst" ../xa && {
+		wget -qc -t=3 $DOWNLOAD_URL_1/$CACHE_NAME-cache.tzst && xv=0
 	} || {
-		wget -qc -t=3 $DOWNLOAD_URL_2/$SOURCE_NAME-$CACHE_NAME-$TOOLS_HASH-cache.tzst && xv=1
+		wget -qc -t=3 $DOWNLOAD_URL_2/$CACHE_NAME-cache.tzst && xv=1
 	}
 	[ -e *.tzst ]; status
 	[ -e *.tzst ] && {
 		echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
 			[ "$xv" = 1 ] && {
+				cp *.tzst output/ && \
+				echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV || true
 				echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
-				echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
-				mkdir output && (cp *.tzst output/ || true)
 			} || {
 				echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 				rm *.tzst
