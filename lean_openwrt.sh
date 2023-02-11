@@ -169,7 +169,7 @@ if (grep -q "$CACHE_NAME-cache.tzst" ../xa || \
 		echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
 			[ "$xv" = 1 ] && {
-				cp *.tzst output/ && \
+				cp *.tzst ../output && \
 				echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV || true
 				echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 			} || {

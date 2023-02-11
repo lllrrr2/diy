@@ -168,7 +168,7 @@ if (grep -q "$CACHE_NAME-cache.tzst" ../xa || \
 		echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
 			[ "$xv" = 1 ] && {
-				cp *.tzst output/ && \
+				cp *.tzst ../output && \
 				echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV || true
 				echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 			} || {
@@ -240,7 +240,6 @@ case "$TARGET_DEVICE" in
 		CONFIG_TARGET_ramips_mt7621=y
 		CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 		EOF
-		clone_url "https://github.com/openwrt/routing/branches/openwrt-19.07/batman-adv"
 		;;
 	"asus_rt-n16")
 		if [[ "${REPO_BRANCH#*-}" = "18.06" ]]; then
@@ -541,9 +540,9 @@ case "$TARGET_DEVICE" in
 	;;
 "phicomm_k2p")
 	DEVICE_NAME="Phicomm-K2P"
-	_packages "luci-app-wrtbwmon"
+	_packages "luci-app-wifischedule"
 	FIRMWARE_TYPE="sysupgrade"
-	sed -i '/diskman/d;/auto/d;/ikoolproxy/d;/speedlimit/d' .config
+	sed -i '/diskman/d;/autom/d;/ikoolproxy/d;/autos/d' .config
 	[[ $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.1.1"/' $config_generate
@@ -664,7 +663,6 @@ done
 # CONFIG_AUTOREMOVE=y
 # CONFIG_MAKE_TOOLCHAIN=y
 # EOF
-
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
