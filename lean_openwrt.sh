@@ -287,6 +287,7 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-theme-material=y
 	CONFIG_PACKAGE_luci-app-tinynote=y
 	CONFIG_PACKAGE_luci-app-arpbind=y
+	CONFIG_PACKAGE_luci-app-wifischedule=y
 	# CONFIG_PACKAGE_luci-app-unblockmusic is not set
 	# CONFIG_PACKAGE_luci-app-wireguard is not set
 	# CONFIG_PACKAGE_luci-app-autoreboot is not set

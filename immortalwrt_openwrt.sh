@@ -292,6 +292,7 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-app-arpbind=y
 	CONFIG_PACKAGE_luci-app-vlmcsd=y
 	CONFIG_PACKAGE_luci-app-tinynote=y
+	CONFIG_PACKAGE_luci-app-wifischedule=y
 	CONFIG_PACKAGE_automount=y
 	CONFIG_PACKAGE_autosamba=y
 	CONFIG_TARGET_IMAGES_GZIP=y
