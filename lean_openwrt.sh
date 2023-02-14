@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xa
-curl -sL api.github.com/repos/hong0980/chinternet/releases | awk -F'"' '/browser_download_url/{print $4}' | awk -F'/' '/cache/{print $(NF)}' >xc
+curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' >xa
+curl -sL api.github.com/repos/hong0980/chinternet/releases | awk -F'"' '/browser_download_url/{print $4}' >xc
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
-[[ $TARGET_DEVICE == "phicomm_k2p" || $TARGET_DEVICE == "asus_rt-n16" ]] && VERSION=pure
 mkdir firmware output
 
 color() {
@@ -153,24 +152,22 @@ export CACHE_NAME="$SOURCE_NAME-$DEVICE_NAME-$TOOLS_HASH"
 echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
-DOWNLOAD_URL_1="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$SOURCE_NAME-Cache"
-DOWNLOAD_URL_2="$GITHUB_SERVER_URL/hong0980/chinternet/releases/download/Cache"
 
 if (grep -q "$CACHE_NAME-cache.tzst" ../xa || \
 	grep -q "$CACHE_NAME-cache.tzst" ../xc); then
 	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 	grep -q "$CACHE_NAME-cache.tzst" ../xa && {
-		wget -qc -t=3 $DOWNLOAD_URL_1/$CACHE_NAME-cache.tzst && xv=0
+		wget -qc -t=3 $(grep "$CACHE_NAME" ../xa) && xv=0
 	} || {
-		wget -qc -t=3 $DOWNLOAD_URL_2/$CACHE_NAME-cache.tzst && xv=1
+		wget -qc -t=3 $(grep "$CACHE_NAME" ../xc) && xv=1
 	}
 	[ -e *.tzst ]; status
 	[ -e *.tzst ] && {
 		echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 		(tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
 			[ "$xv" = 1 ] && {
-				cp *.tzst ../output && \
-				echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV || true
+				cp *.tzst ../output || true && \
+				echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 				echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 			} || {
 				echo "CACHE_ACTIONS=" >>$GITHUB_ENV
@@ -185,8 +182,6 @@ else
 	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
-# echo "FETCH_CACHE=true" >>$GITHUB_ENV
-# echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 echo -e "$(color cy '更新软件....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 ./scripts/feeds update -a 1>/dev/null 2>&1
 ./scripts/feeds install -a 1>/dev/null 2>&1
@@ -318,9 +313,9 @@ color cy "自定义设置.... "
 	# git diff ./ >> ../output/t.patch || true
 	clone_url "
 	https://github.com/hong0980/build
+	https://github.com/fw876/helloworld
 	https://github.com/xiaorouji/openwrt-passwall2
 	https://github.com/xiaorouji/openwrt-passwall
-	https://github.com/fw876/helloworld
 	"
 	[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 		clone_url "
