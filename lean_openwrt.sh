@@ -593,7 +593,7 @@ case $TARGET_DEVICE in
 	kmod-fs-exfat kmod-fs-ext4 kmod-fs-vfat kmod-mac80211 kmod-rt2800-usb kmod-usb-net
 	kmod-usb-net-asix-ax88179 kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 kmod-usb-storage
 	kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb2 kmod-usb3 lm-sensors losetup
-	lsattr lsblk lscpu lsscsi #luci-app-adguardhome luci-app-cpufreq luci-app-dockerman
+	lsattr lsblk lscpu lsscsi luci-app-adguardhome luci-app-cpufreq luci-app-dockerman
 	luci-app-qbittorrent mkf2fs ntfs-3g parted pv python3 resize2fs tune2fs unzip
 	uuidgen wpa-cli wpad wpad-basic xfs-fsck xfs-mkf"
 
