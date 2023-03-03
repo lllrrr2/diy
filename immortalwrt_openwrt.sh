@@ -388,7 +388,7 @@ clone_url "
 		https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
 		https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
 		https://github.com/kuoruan/luci-app-frpc
-		https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
+		#https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-bypass
 		#https://github.com/sundaqiang/openwrt-packages/trunk/luci-app-easyupdate
