@@ -4,7 +4,7 @@
 
 return view.extend({
 	load: function() {
-		var list_files = ['conf', 'session'],
+		var list_files = ['conf', 'qBittorrent'],
 		    actions = [];
 		for (var index = 0; index < list_files.length; ++index) {
 			actions.push(
@@ -27,7 +27,7 @@ return view.extend({
 		var textareaEl = function(id, data, descr) {
 			return E('div', {'class': 'cbi-section'}, [
 				E('div', {'class': 'cbi-section-descr'}, descr.format(data.file)),
-				E('div', { 'id' : id},
+				E('div', { 'id': id},
 					E('textarea', {
 						'id': 'widget.' + id,
 						'style': 'width: 100%',
@@ -40,10 +40,10 @@ return view.extend({
 		};
 
 		return E('div', {'class': 'cbi-map'}, [
-			E('h2', {'name': 'content'}, '%s - %s'.format(_('Aria2'), _('Files'))),
-			E('div', {'class': 'cbi-map-descr'}, _('Here shows the files used by aria2.')),
-			textareaEl('config_area', data[0], _('Content of config file: <code>%s</code>')),
-			textareaEl('session_area', data[1], _('Content of session file: <code>%s</code>'))
+			E('h2', {'name': 'content'}, '%s - %s'.format( _('qBittorrent'), _('Files'))),
+			E('div', {'class': 'cbi-map-descr'}, _('Here shows the files used by qbittorrent.')),
+			textareaEl('config_area', data[0], _('Content of the system config file: <code>%s</code>')),
+			textareaEl('qBittorrent_area', data[1], _('Content of qBittorrent file: <code>%s</code>'))
 		]);
 	},
 

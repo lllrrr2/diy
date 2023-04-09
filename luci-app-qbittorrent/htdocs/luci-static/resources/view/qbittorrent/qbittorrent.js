@@ -43,7 +43,7 @@ var CBIQBitStatus = form.DummyValue.extend({
                     btn.textContent = _('Open Web Interface');
                     btn.onclick = onclickAction.bind(this, 'webui');
                 } else {
-                    btn.textContent = _('qBittorrent 未运行');
+                    btn.textContent = _('qBittorrent NOT RUNNING');
                 }
             });
         });
@@ -117,7 +117,7 @@ return view.extend({
     },
     render: function(ver) {
         var m, s, o;
-        m = new form.Map('qbittorrent', _('qBittorrent'), '%s.<br\><b style="color:green">%s</b>'.format(_('A BT/PT downloader base on Qt.'), _('Current Version: %s.').format(ver[0])));
+        m = new form.Map('qbittorrent', _('qBittorrent'), '%s.<br\><b style="color:green">%s</b>'.format(_('A BT/PT downloader base on Qt.'), _('Current Version: %s').format(ver[0])));
 
         s = m.section(form.TypedSection);
         s.anonymous = true;
@@ -142,7 +142,7 @@ return view.extend({
         o.default = '/tmp';
         o.placeholder = '/tmp';
 
-        o = s.taboption('basic', form.Value, 'SavePath', _('Save Path'), _('Specify the path of the downloaded files.'));
+        o = s.taboption('basic', form.Value, 'SavePath', _('Save Path'), _('The directory to store the downloaded file. For example <code>/mnt/sda1</code>.'));
         o.placeholder = '/tmp/download';
         
         o = s.taboption('basic', form.Value, 'Locale', _('Locale Language'), _('The supported language codes can be used to customize the setting.'));
@@ -207,7 +207,7 @@ return view.extend({
         o.depends('Enabled', 'true');
         o.placeholder = '66560';
 
-        o = s.taboption('logger', form.Value, 'SaveTime', _('Log Keep Time'), _('Give the ' + 'time for keeping the old log, refer the setting \'Delete Old Backup\', eg. 1d' + ' for one day, 1m for one month and 1y for one year.'));
+        o = s.taboption('logger', form.Value, 'SaveTime', _('Log Keep Time'), _('Give the ' + 'time for keeping the old log, refer the setting "Delete Old Backup", eg. 1d' + ' for one day, 1m for one month and 1y for one year.'));
         o.depends('Enabled', 'true');
         o.datatype = 'string';
 

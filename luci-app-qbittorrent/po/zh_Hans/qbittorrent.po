@@ -1,685 +1,601 @@
-msgid ""
-msgstr ""
+msgid "Current Version: %s"
+msgstr "当前的版本: %s"
 
-msgid "<abbr title=\"Local Peer Discovery\">LPD</abbr> enabled"
-msgstr "启用 <abbr title=\"本地对等发现\">LPD</abbr>"
+msgid "A BT/PT downloader base on Qt."
+msgstr "一个基于QT的BT/PT下载器。"
 
-msgid "Additional BT tracker"
-msgstr "附加的 BT Tracker"
+msgid "Open Web Interface"
+msgstr "打开 Web 管理界面"
 
-msgid "Advanced Options"
-msgstr "高级选项"
+msgid "qBittorrent NOT RUNNING"
+msgstr "qBittorrent 未运行"
 
-msgid "All proxy"
-msgstr "全局代理"
+msgid "Downloads Settings"
+msgstr "下载设置"
 
-msgid "Append HEADERs to HTTP request header."
-msgstr "附加的 HTTP 请求头。"
+msgid "Bittorrent Settings"
+msgstr "BT设置"
 
-msgid "Aria2"
-msgstr "Aria2"
+msgid "WebUI Settings"
+msgstr "WebUI设置"
 
-msgid ""
-"Aria2 is a lightweight multi-protocol &amp; multi-source, cross platform "
-"download utility."
-msgstr "Aria2 是一个轻量、多线程，跨平台的下载工具。"
+msgid "Advance Settings"
+msgstr "其他设置"
 
-msgid "Auto save interval"
-msgstr "自动保存间隔"
+msgid "Log Settings"
+msgstr "日志设置"
 
-msgid "Basic Options"
-msgstr "基本选项"
+msgid "Connection Settings"
+msgstr "连接设置"
 
-msgid "BitTorrent Options"
-msgstr "BT 选项"
-
-msgid "BitTorrent listen port"
-msgstr "BT监听端口"
-
-msgid "CA certificate"
-msgstr "CA 证书"
-
-msgid "Certificate"
-msgstr "证书"
-
-msgid "Check certificate"
-msgstr "检查证书"
-
-msgid ""
-"Close connection if download speed is lower than or equal to this value "
-"(bytes per sec). 0 means has no lowest speed limit."
-msgstr ""
-"如果速度小于或等于这个速度（字节/秒），关闭下载下载连接。0 表示不限制下载速"
-"度。"
-
-msgid "Collecting data..."
-msgstr "正在收集数据…"
-
-msgid "Config file directory"
-msgstr "配置文件目录"
-
-msgid "Configuration"
-msgstr "配置"
-
-msgid "Connect timeout"
-msgstr "连接超时时间"
-
-msgid "Content of config file: <code>%s</code>"
-msgstr "配置文件的内容：<code>%s</code>"
-
-msgid "Content of session file: <code>%s</code>"
-msgstr "会话文件的内容：<code>%s</code>"
-
-msgid "DHT Listen port"
-msgstr "DHT 监听端口"
-
-msgid "Debug"
-msgstr "调试"
-
-msgid ""
-"Disable IPv6. This is useful if you have to use broken DNS and want to avoid "
-"terribly slow AAAA record lookup."
-msgstr ""
-"禁用 IPv6。如果你的 DNS 有问题并希望避免 AAAA 查询过慢，可以启用此选项。"
-
-msgid "Disk cache"
-msgstr "磁盘缓存"
-
-msgid "Don't split less than 2*SIZE byte range. Possible values: 1M-1024M."
-msgstr "当数据小于 2*SIZE 时不分割。可能的值：1M-1024M。"
-
-msgid "Download a file using N connections."
-msgstr "使用 N 个线程下载文件。"
-
-msgid "Download directory"
-msgstr "下载目录"
-
-msgid "Enable IPv4 DHT functionality. It also enables UDP tracker support."
-msgstr "启用 IPv4 DHT 功能。会同时启用 UDP Tracker 支持。"
-
-msgid "Enable IPv6 DHT functionality."
-msgstr "启用 IPv6 DHT 功能。"
-
-msgid "Enable Local Peer Discovery."
-msgstr "启用本地 Peer 查找。"
-
-msgid "Enable Peer Exchange extension."
-msgstr "启用 Peer 交换扩展。"
-
-msgid "Enable disk cache (in bytes), set 0 to disabled."
-msgstr "启用硬盘缓存（以字节为单位），0 表示禁用。"
-
-msgid "Enable logging"
-msgstr "启用日志"
-
-msgid "Enable peer exchange"
-msgstr "启用对等交换"
-
-msgid "Enable proxy"
-msgstr "启用代理"
+msgid "Basic Settings"
+msgstr "基本设置"
 
 msgid "Enabled"
-msgstr "已开启"
-
-msgid "Error"
-msgstr "错误"
-
-msgid "Extra Settings"
-msgstr "附加选项"
-
-msgid "False"
-msgstr "否"
-
-msgid "File allocation"
-msgstr "文件分配"
-
-msgid "Files"
-msgstr "文件"
-
-msgid "Follow torrent"
-msgstr "自动添加下载的种子"
-
-msgid "For more information, please visit: %s."
-msgstr "更多信息，请访问：%s。"
-
-msgid "Force save"
-msgstr "强制保存"
-
-msgid "Generate Randomly"
-msgstr "随机生成"
-
-msgid "Grant UCI access for luci-app-aria2"
-msgstr "允许 luci-app-aria2 访问 UCI"
-
-msgid "HTTP accept gzip"
-msgstr "HTTP 接受 Gzip"
-
-msgid "HTTP no cache"
-msgstr "HTTP 无缓存"
-
-msgid "HTTP/FTP/SFTP Options"
-msgstr "HTTP/FTP/SFTP 选项"
-
-msgid "Header"
-msgstr "请求头"
-
-msgid "Here shows the files used by aria2."
-msgstr "这里展示了 Aria2 使用的文件。"
-
-msgid "IPv4 <abbr title=\"Distributed Hash Table\">DHT</abbr> enabled"
-msgstr "启用 IPv4 <abbr title=\"分布式哈希表\">DHT</abbr>"
-
-msgid "IPv6 <abbr title=\"Distributed Hash Table\">DHT</abbr> enabled"
-msgstr "启用 IPv6 <abbr title=\"分布式哈希表\">DHT</abbr>"
-
-msgid "IPv6 disabled"
-msgstr "禁用 IPv6"
-
-msgid ""
-"If the whole download speed of every torrent is lower than SPEED, aria2 "
-"temporarily increases the number of peers to try for more download speed. "
-"Configuring this option with your preferred download speed can increase your "
-"download speed in some cases."
-msgstr ""
-"如果某个 BT 任务的下载速度小于配置的速度，Aria2 会临时提高对端的数量来尝试获"
-"得更大的下载速度。在某些情况下，配置此选项能提高你的下载速度。"
-
-msgid "Info"
-msgstr "信息"
-
-msgid "Installed web interface:"
-msgstr "已安装的 WEB 界面："
-
-msgid "Json-RPC URL"
-msgstr "Json-RPC 统一资源定位地址"
-
-msgid "Keep in memory"
-msgstr "保存在内存中"
-
-msgid "Last 50 lines of log file:"
-msgstr "日志文件的最新 50 行："
-
-msgid "Last 50 lines of syslog:"
-msgstr "系统日志的最新 50 行："
-
-msgid "Leave blank to use default user."
-msgstr "留空以使用默认用户。"
-
-msgid "List of additional BitTorrent tracker's announce URI."
-msgstr "额外的 BT Tracker 通告链接。"
-
-msgid ""
-"List of extra settings. Format: option=value, eg. <code>netrc-path=/tmp/."
-"netrc</code>."
-msgstr ""
-"额外设置的列表。格式：选项=值，例如：<code>netrc-path=/tmp/.netrc</code>。"
-
-msgid "Loading"
-msgstr "加载中"
-
-msgid "Log"
-msgstr "日志"
-
-msgid "Log Data"
-msgstr "日志数据"
-
-msgid "Log file"
-msgstr "日志文件"
-
-msgid "Log level"
-msgstr "日志记录等级"
-
-msgid "Lowest speed limit"
-msgstr "最低限速"
-
-msgid "Max concurrent downloads"
-msgstr "最大同时下载任务数"
-
-msgid "Max connection per server"
-msgstr "单服务器最大连接数"
-
-msgid "Max download limit"
-msgstr "最大下载限速"
-
-msgid "Max number of split"
-msgstr "单文件最大线程数"
-
-msgid "Max open files"
-msgstr "最大打开文件数"
-
-msgid "Max overall download limit"
-msgstr "最大全局下载限速"
-
-msgid "Max overall upload limit"
-msgstr "最大全局上传限速"
-
-msgid "Max peers"
-msgstr "最大 Peer 数量"
-
-msgid "Max tries"
-msgstr "最大重试次数"
-
-msgid "Max upload limit"
-msgstr "最大上传限速"
-
-msgid "Min split size"
-msgstr "最小文件分片大小"
-
-msgid "No Authentication"
-msgstr "无认证"
-
-msgid "No log data."
-msgstr "无日志数据。"
-
-msgid "None"
-msgstr "无"
-
-msgid "Notice"
-msgstr "注意"
-
-msgid "Pause"
-msgstr "暂停"
-
-msgid "Pause download after added."
-msgstr "在下载任务添加后暂停。"
-
-msgid "Pause downloads created as a result of metadata download."
-msgstr "暂停下载内容为元数据的下载（磁力链接和 Matalink）。"
-
-msgid "Pause metadata"
-msgstr "暂停元数据"
-
-msgid "Please input token length:"
-msgstr "请输入密钥长度："
-
-msgid "Prefix of peer ID"
-msgstr "对端 ID 前缀"
-
-msgid "Private key"
-msgstr "私钥"
-
-msgid "Proxy password"
-msgstr "代理密码"
-
-msgid "Proxy user"
-msgstr "代理用户名"
-
-msgid "RPC Options"
-msgstr "RPC 选项"
-
-msgid "RPC authentication method"
-msgstr "RPC 认证方式"
-
-msgid "RPC certificate"
-msgstr "RPC 证书"
-
-msgid "RPC password"
-msgstr "RPC 密码"
-
-msgid "RPC port"
-msgstr "RPC 端口"
-
-msgid "RPC private key"
-msgstr "RPC 私钥"
-
-msgid "RPC secure"
-msgstr "RPC 加密"
-
-msgid "RPC token"
-msgstr "RPC 令牌"
-
-msgid ""
-"RPC transport will be encrypted by SSL/TLS. The RPC clients must use https "
-"scheme to access the server. For WebSocket client, use wss scheme."
-msgstr ""
-"用 SSL/TLS 加密 RPC 连接。RPC 客户端必须使用 HTTPS 协议来连接服务端，对于 "
-"WebSocket 客户端，则使用 WSS 协议。"
-
-msgid "RPC username"
-msgstr "RPC 用户名"
-
-msgid "Refresh every %s seconds."
-msgstr "每 %s 秒刷新。"
-
-msgid "Remove unselected file"
-msgstr "删除未选择的文件"
-
-msgid ""
-"Removes the unselected files when download is completed in BitTorrent. "
-"Please use this option with care because it will actually remove files from "
-"your disk."
-msgstr "BT 下载完成时删除未选择的文件。文件将从磁盘中被完全删除，请谨慎使用。"
-
-msgid "Request peer speed limit"
-msgstr "单个 Peer 限速"
-
-msgid "Retry wait"
-msgstr "重试等待"
+msgstr "启用"
 
 msgid "Run daemon as user"
 msgstr "以此用户权限运行"
 
-msgid "Running Status"
-msgstr "运行状态"
+msgid "Root Path of the Profile"
+msgstr "配置保存目录"
 
-msgid ""
-"Save a control file (*.aria2) every N seconds. If 0 is given, a control file "
-"is not saved during download."
-msgstr ""
-"每 N 秒保存下载“控制文件”（*.aria2）。设置 0 表示在下载过程中不保存控制文件。"
+msgid "Specify the root path of all profiles which is equivalent to the commandline parameter: <b>--profile [PATH]</b>. The default value is /tmp."
+msgstr "指定profile的保存路径，等效于命令行参数：<b>--profile [PATH]</b>。默认值是/tmp。"
 
-msgid ""
-"Save download to session file even if the download is completed or removed. "
-"This option also saves control file in that situations. This may be useful "
-"to save BitTorrent seeding which is recognized as completed state."
-msgstr ""
-"即使下载已完成或已删除，也将其保存到会话文件。开启此选项也会同时保存“控制文"
-"件”。此选项可能有助于保持被识别为已完成状态的 BT 做种。"
+msgid "Save Path"
+msgstr "下载目录"
 
-msgid ""
-"Save error/unfinished downloads to session file every N seconds. If 0 is "
-"given, file will be saved only when aria2 exits."
-msgstr ""
-"每 N 秒将失败的/未完成的下载保存到 Session 文件。设置 0 则仅在 Aria2 退出时保"
-"存。"
-
-msgid ""
-"Save meta data as \".torrent\" file. This option has effect only when "
-"BitTorrent Magnet URI is used. The file name is hex encoded info hash with "
-"suffix \".torrent\"."
-msgstr ""
-"将元数据保存到 \".torrent\" 文件。此选项仅在下载连接为 BT 磁力链接时生效。文"
-"件名为 Hash 值，后缀为 \".torrent\"。"
-
-msgid "Save metadata"
-msgstr "保存元数据"
-
-msgid "Save session interval"
-msgstr "会话保存间隔"
-
-msgid "Seed previously downloaded files without verifying piece hashes."
-msgstr "继续之前的BT任务时, 无需再次校验分片 Hash。"
-
-msgid "Seed ratio"
-msgstr "做种比率"
-
-msgid "Seed time"
-msgstr "做种时间"
-
-msgid "Seed unverified"
-msgstr "不校验种子"
-
-msgid ""
-"Send <code>Accept: deflate, gzip</code> request header and inflate response "
-"if remote server responds with <code>Content-Encoding: gzip</code> or "
-"<code>Content-Encoding: deflate</code>."
-msgstr ""
-"发送 <code>Accept: deflate, gzip</code> 请求头，当服务器响应头包含 "
-"<code>Content-Encoding: gzip</code> 或者 <code>Content-Encoding: deflate</"
-"code> 时解压响应数据。"
-
-msgid ""
-"Send <code>Cache-Control: no-cache</code> and <code>Pragma: no-cache</code> "
-"header to avoid cached content. If disabled, these headers are not sent and "
-"you can add Cache-Control header with a directive you like using \"Header\" "
-"option."
-msgstr ""
-"发送 <code>Cache-Control: no-cache</code> 和 <code>Pragma: no-cache</code> 请"
-"求头来防止缓存内容，禁用则不发送。你也可用使用“请求头”选项来设置 Cache-"
-"Control 请求头。"
-
-msgid ""
-"Set TCP port number for BitTorrent downloads. Accept format: \"6881,6885\", "
-"\"6881-6999\" and \"6881-6889,6999\". Make sure that the specified ports are "
-"open for incoming TCP traffic."
-msgstr ""
-"为 BT 下载设置 TCP 端口。支持的格式：\"6881,6885\"，\"6881-6999\" 和 "
-"\"6881-6889,6999\"。请确保正确放行了这些端口的 TCP 入站通信。"
-
-msgid ""
-"Set UDP listening port used by DHT (IPv4, IPv6) and UDP tracker. Make sure "
-"that the specified ports are open for incoming UDP traffic."
-msgstr ""
-"为 DHT（IPv4，IPv6）和 UDP tracker 设置 UDP 监听端口。请确保正确放行了这些端"
-"口的 UDP 入站通信。"
-
-msgid ""
-"Set max download speed per each download in bytes/sec. 0 means unrestricted."
-msgstr "设置每个任务的最大下载速度（字节/秒），0 表示不限制。"
-
-msgid "Set max overall download speed in bytes/sec. 0 means unrestricted."
-msgstr "设置全局最大下载速度（字节/秒），0 表示不限制。"
-
-msgid "Set max overall upload speed in bytes/sec. 0 means unrestricted."
-msgstr "设置全局最大上传速度，0 表示不限制。"
-
-msgid ""
-"Set max upload speed per each torrent in bytes/sec. 0 means unrestricted."
-msgstr "设置每个任务的最大上传速度（字节/秒），0 表示不限制。"
-
-msgid ""
-"Set the connect timeout in seconds to establish connection to HTTP/FTP/proxy "
-"server. After the connection is established, this option makes no effect and "
-"\"Timeout\" option is used instead."
-msgstr ""
-"设置 HTTP、FTP 和代理服务器的连接超时时间。当连接建立后，该选项失去作用，"
-"而“超时时间”选项会被使用。"
-
-msgid "Set the seconds to wait between retries."
-msgstr "设置重试的时间间隔。"
-
-msgid "Set user agent for HTTP(S) downloads."
-msgstr "为 HTTP(S) 下载设置用户代理。"
-
-msgid "Settings"
-msgstr "设置"
-
-msgid "Settings in this section will be added to config file."
-msgstr "这个区域中的配置信息将被添加到配置文件中。"
-
-msgid "Settings list"
-msgstr "设置列表"
-
-msgid ""
-"Specify file allocation method. If you are using newer file systems such as "
-"ext4 (with extents support), btrfs, xfs or NTFS (MinGW build only), \"falloc"
-"\" is your best choice. It allocates large(few GiB) files almost instantly, "
-"but it may not be available if your system doesn't have posix_fallocate(3) "
-"function. Don't use \"falloc\" with legacy file systems such as ext3 and "
-"FAT32 because it takes almost same time as \"prealloc\" and it blocks aria2 "
-"entirely until allocation finishes."
-msgstr ""
-"指定文件分配方式。如果你使用的文件系统较新，例如：ext4（支持扩展分区），"
-"btrfs，xfs 或者 NTFS（仅限 MinGW 版本），强烈推荐 \"falloc\"，这种方式几乎能"
-"立即分配比较大的文件（GB），但是它要求你的系统支持 posix_fallocate(3) 函数。"
-"不要在 ext3 或者 FAT32 这些旧文件系统中使用 \"falloc\"，因为它花费的时间和 "
-"\"prealloc\" 几乎一样多，而且在文件分配过程中会阻塞整个 Aria2 进程。"
-
-msgid ""
-"Specify maximum number of files to open in multi-file BitTorrent download "
-"globally."
-msgstr "设置 BT 全局最大同时下载的文件数量。"
-
-msgid ""
-"Specify seeding time in minutes. If \"Seed ratio\" option is specified along "
-"with this option, seeding ends when at least one of the conditions is "
-"satisfied. Specifying 0 disables seeding after download completed."
-msgstr ""
-"指定做种时间（分钟）。如果同时指定了“做种比率”选项，那么将在任一条件满足时停"
-"止做种。设置 0 表示下载完成后停止做种。"
-
-msgid ""
-"Specify share ratio. Seed completed torrents until share ratio reaches "
-"RATIO. You are strongly encouraged to specify equals or more than 1.0 here. "
-"Specify 0.0 if you intend to do seeding regardless of share ratio."
-msgstr ""
-"指定做种比率。BT 下载完成之后持续做种，直到比率达到指定值。强烈建议将此选项设"
-"置为大于或等于 1.0。设置为 0.0 来无限做种。"
-
-msgid "Specify the maximum number of peers per torrent, 0 means unlimited."
-msgstr "设置每个 BT 任务的最大 Peer 数量，0 表示不限制。"
-
-msgid ""
-"Specify the prefix of peer ID. The peer ID in BitTorrent is 20 byte length. "
-"If more than 20 bytes are specified, only first 20 bytes are used. If less "
-"than 20 bytes are specified, random byte data are added to make its length "
-"20 bytes."
-msgstr ""
-"配置对端 ID 前缀。对端 ID 的长度为 20 字节。如果配置超过了 20 字节，将仅使用"
-"前面的 20 字节。如果配置少于 20 字节，将添加额外的随机字符来让长度达到 20 字"
-"节。"
-
-msgid ""
-"Stop BitTorrent download if download speed is 0 in consecutive N seconds. If "
-"0 is given, this feature is disabled."
-msgstr ""
-"当 BT 任务在 N 秒的持续时间内的下载速度一直为 0，则停止下载。0 表示禁用。"
-
-msgid "Stop timeout"
-msgstr "停止超时时间"
-
-msgid "The Aria2 service is not running."
-msgstr "Aria2 服务未运行。"
-
-msgid "The Aria2 service is running."
-msgstr "Aria2 服务正在运行。"
-
-msgid "The directory to store the config file, session file and DHT file."
-msgstr "用于放置配置文件，会话文件和 DHT 文件的目录。"
-
-msgid ""
-"The directory to store the downloaded file. For example <code>/mnt/sda1</"
-"code>."
+msgid "The directory to store the downloaded file. For example <code>/mnt/sda1</code>."
 msgstr "用于放置下载文件的目录。例如：<code>/mnt/sda1</code>。"
 
-msgid "The file name of the log file."
-msgstr "日志文件名。"
+msgid "Locale Language"
+msgstr "WebUI语言"
 
-msgid "The maximum number of connections to one server for each download."
-msgstr "单一服务器最大连接数量。"
+msgid "Simplified Chinese"
+msgstr "简体中文"
 
-msgid "This option will be ignored if a private flag is set in a torrent."
-msgstr "如果种子文件具有“私有”属性，该选项将会被忽略。"
+msgid "English"
+msgstr "英文"
 
-msgid "Timeout"
-msgstr "超时"
+msgid "The supported language codes can be used to customize the setting."
+msgstr "可以使用支持的语言代码来自定义设置。"
 
-msgid "Token"
-msgstr "令牌"
+msgid "Listening Port"
+msgstr "监听端口"
 
-msgid "True"
-msgstr "是"
+msgid "The listening port for WebUI."
+msgstr "WebUI的连接端口。"
 
-msgid "Use a proxy server for all protocols."
-msgstr "为所有协议设置代理服务器。"
+msgid "Username"
+msgstr "用户名"
+
+msgid "The login name for WebUI."
+msgstr "WebUI的登录名。"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "The login password for WebUI."
+msgstr "WebUI的登陆密码。"
+
+msgid "The Suffix of the Profile Root Path"
+msgstr "配置文件根路径的后缀"
+
+msgid "Specify the suffix of the profile root path and a new profile root path will be formated as <b>[ROOT_PROFILE_PATH]_[SUFFIX]</b>. This value is empty by default."
+msgstr "指定配置文件根路径的后缀，生成以下格式的新的根路径：<b>[ROOT_PROFILE_PATH]_[SUFFIX]</b>。该值默认为空。"
+
+msgid "Customized Location"
+msgstr "二进制目录"
+
+msgid "Specify the binary location of qBittorrent."
+msgstr "指定 qBittorrent 二进制文件的路径"
+
+msgid "Overwrite the settings"
+msgstr "优先设置"
+
+msgid "If this option is enabled, the configuration set in WebUI will be replaced by the one in the LuCI."
+msgstr "如启用，LuCI的配置优先于WebUI配置。"
+
+msgid "Enable Log"
+msgstr "启用日志"
+
+msgid "Enable logger to log file."
+msgstr "将运行日志记录到日志文件"
+
+msgid "Log Path"
+msgstr "日志路径"
+
+msgid "The path for qBittorrent log."
+msgstr "保存qBittorrent日志文件的路径"
+
+msgid "Enable Backup"
+msgstr "启用日志备份"
+
+msgid "Backup log file when oversize the given size."
+msgstr "超过指定大小自动备份日志文件"
+
+msgid "Delete Old Backup"
+msgstr "删除旧备份"
+
+msgid "When enabled, the overdue log files will be deleted after given keep time."
+msgstr "如启用，超过给定的保存时间，过期的日志文件将自动删除。"
+
+msgid "Log Max Size"
+msgstr "日志最大大小"
+
+msgid "The max size for qBittorrent log (Unit: Bytes)."
+msgstr "qBittorrent日志文件的最大大小（单位：字节）。"
+
+msgid "Log Keep Time"
+msgstr "日志保存时间"
 
 msgid ""
-"Use the certificate authorities in FILE to verify the peers. The certificate "
-"file must be in PEM format and can contain multiple CA certificates."
+"Give the "
+"time for keeping the old log, refer the setting \"Delete Old Backup\", eg. 1d"
+" for one day, 1m for one month and 1y for one year."
 msgstr ""
-"使用文件中的证书来验证对端。证书文件必须为 PEM 格式并且可以包含多个证书。"
+"给出保存旧日志文件的时间, "
+"参考设置 \"删除旧备份\", 例如， 1d代表1天，"
+" 1m代表1个月， 1y代表一年。"
+
+msgid "Use UPnP for Connections"
+msgstr "启用UPnP"
+
+msgid "Use UPnP/ NAT-PMP port forwarding from the router."
+msgstr "使用路由器的UPnP/NAT-PMP进行端口转发。"
+
+msgid "Use Random Port"
+msgstr "使用随机端口"
 
 msgid ""
-"Use the certificate in FILE for RPC server. The certificate must be either "
-"in PKCS12 (.p12, .pfx) or in PEM format.<br/>PKCS12 files must contain the "
-"certificate, a key and optionally a chain of additional certificates. Only "
-"PKCS12 files with a blank import password can be opened!<br/>When using PEM, "
-"you have to specify the \"RPC private key\" as well."
+"Assign a different port randomly every time when qBittorrent starts up,"
+" which will invalidate the customized options."
 msgstr ""
-"使用文件中的证书作为 RPC 服务器。证书必须为 PKCS12 (.p12, .pfx) 或者 PEM 格"
-"式。<br/>PKCS12 文件必须包含证书，一个密钥和可选的附加证书链。只有导入密码为"
-"空白的 PKCS12 文件才能被打开。<br/>使用 PEM 时，你必须同时指定“RPC 私钥”。"
+"每次qBittorrent启动时，随机分配一个不同端口，"
+"这将使自定义选项无效。"
 
-msgid ""
-"Use the client certificate in FILE. The certificate must be either in PKCS12 "
-"(.p12, .pfx) or in PEM format.<br/>PKCS12 files must contain the "
-"certificate, a key and optionally a chain of additional certificates. Only "
-"PKCS12 files with a blank import password can be opened!<br/>When using PEM, "
-"you have to specify the \"Private key\" as well."
-msgstr ""
-"使用文件中的客户端证书。证书必须为 PKCS12 (.p12, .pfx) 或者 PEM 格式。<br/"
-">PKCS12 文件必须包含证书，一个密钥和可选的附加证书链。只有导入密码为空白的 "
-"PKCS12 文件才能被打开。<br/>使用 PEM 时，你必须同时指定“RPC 私钥”。"
+msgid "PortRangeMin"
+msgstr "连接端口"
 
-msgid ""
-"Use the private key in FILE for RPC server. The private key must be "
-"decrypted and in PEM format."
-msgstr "使用文件中的私钥作为 RPC 服务器。私钥必须解密并且为 PEM 格式。"
+msgid "Connection Port"
+msgstr "随机生成"
 
-msgid ""
-"Use the private key in FILE. The private key must be decrypted and in PEM "
-"format. The behavior when encrypted one is given is undefined."
-msgstr "使用文件中的私钥。私钥必须解密并且为 PEM 格式，不支持加密的私钥。"
+msgid "Global Download Speed"
+msgstr "全局下行速度"
 
-msgid "User agent"
-msgstr "用户代理"
+msgid "Global Download Speed Limit(KiB/s)."
+msgstr "全局下行速度限制（KiB/s）， "
 
-msgid "Username & Password"
-msgstr "用户名与密码"
+msgid "0 means has no limit."
+msgstr "0代表不限制。"
 
-msgid ""
-"Verify the peer using certificates specified in \"CA certificate\" option."
-msgstr "使用“CA 证书”里配置的证书来验证对端。"
+msgid "Global Upload Speed"
+msgstr "全局上行速度"
 
-msgid "Warn"
-msgstr "警告"
+msgid "Global Upload Speed Limit(KiB/s)."
+msgstr "全局上行速度限制（KiB/s），"
 
-msgid "You can append K or M."
-msgstr "你可以追加 K 或者 M。"
+msgid "Alternative Download Speed"
+msgstr "备用下行速度"
 
-msgid "falloc"
-msgstr "falloc系统调测"
+msgid "Alternative Download Speed Limit(KiB/s)."
+msgstr "备用下行速度限制（KiB/s），"
 
-msgid "prealloc"
+msgid "Alternative Upload Speed"
+msgstr "备用上行速度"
+
+msgid "Alternative Upload Speed Limit(KiB/s)."
+msgstr "备用上行速度限制（KiB/s）， "
+
+msgid "Protocol Enabled"
+msgstr "传输协议"
+
+msgid "The protocol that was enabled."
+msgstr "已经启用的协议"
+
+msgid "Inet Address"
+msgstr "提交的地址"
+
+msgid "The address that respond to the trackers."
+msgstr "向trackers提交的地址（IP/域名）"
+
+msgid "Create Subfolder"
+msgstr "创建子目录"
+
+msgid "Create subfolder for torrents with multiple files."
+msgstr "为多文件torrents创建子目录"
+
+msgid "Start In Pause"
+msgstr "暂停立即下载"
+
+msgid "Do not start the download automatically."
+msgstr "读入torrent文件时不立即自动下载"
+
+msgid "Auto Delete Torrent File"
+msgstr "自动删除torrent文件"
+
+msgid "The .torrent files will be deleted afterwards."
+msgstr "完成后.torrent文件会被自动删除"
+
+msgid "Pre Allocation"
 msgstr "预分配"
 
-msgid "trunc"
-msgstr "trunc系统调测"
+msgid "Pre-allocate disk space for all files."
+msgstr "为所有文件预分配硬盘空间"
 
-#~ msgid "Empty file."
-#~ msgstr "文件为空。"
+msgid "Use Incomplete Extension"
+msgstr "使用未完成扩展名"
 
-#~ msgid "Error: Can't find aria2c in PATH, please reinstall aria2."
-#~ msgstr "错误：未在 PATH 中找到 aria2c，请重新安装 Aria2。"
+msgid "The incomplete tasks will be added the extension of !qB."
+msgstr "为不完整的文件添加扩展名<code>!qB</code>"
 
-#~ msgid "Failed to load log data."
-#~ msgstr "获取日志数据失败。"
+msgid "Enable Temp Path"
+msgstr "启用临时文件路径"
 
-#~ msgid "File does not exist."
-#~ msgstr "文件不存在。"
+msgid "Temp Path"
+msgstr "临时文件路径"
 
-#~ msgid "For more information, please visit: %s"
-#~ msgstr "获取更多信息，请访问：%s"
+msgid "The absolute and relative path can be set."
+msgstr "可以设置绝对和相对路径"
 
-#~ msgid "Refresh every 10 seconds."
-#~ msgstr "每 10 秒刷新。"
+msgid "Disk Cache Size"
+msgstr "磁盘缓存大小"
 
-#~ msgid "Show URL"
-#~ msgstr "显示 URL"
+msgid "By default, this value 64. Besides, -1 is auto and 0 is disable. (Unit: MiB)"
+msgstr "默认值是64。此外，-1表示自动设置，0表示禁用缓存。（单位：MiB）"
 
-#~ msgid "Use WebSocket"
-#~ msgstr "使用 WebSocket"
+msgid "Disk Cache TTL"
+msgstr "磁盘缓存TTL"
+
+msgid "By default, this value is 60. (Unit: s)"
+msgstr "默认值是60（单位：秒）"
+
+msgid "Saving Management"
+msgstr "保存管理"
+
+msgid "Default Torrent Management Mode"
+msgstr "默认torrent管理模式"
+
+msgid "Manual"
+msgstr "手动"
+
+msgid "Automaic"
+msgstr "自动"
+
+msgid "Torrent Category Changed"
+msgstr "torrent分类修改时"
+
+msgid "Choose the action when torrent category changed."
+msgstr "选择默认保存路径修改时的行为"
+
+msgid "Switch torrent to Manual Mode"
+msgstr "切换torrent到手动模式"
+
+msgid "Relocate torrent"
+msgstr "重新定位torrent"
+
+msgid "Default Save Path Changed"
+msgstr "默认保存路径修改时"
+
+msgid "Choose the action when default save path changed."
+msgstr "选择默认保存路径修改时的行为"
+
+msgid "Switch affected torrent to Manual Mode"
+msgstr "将受影响的torrent切换到手动模式"
+
+msgid "Relocate affected torrent"
+msgstr "重新定位受影响的torrent"
+
+msgid "Category Save Path Changed"
+msgstr "分类的保存路径修改时"
+
+msgid "Choose the action when category save path changed."
+msgstr "选择分类的保存路径修改时的行为"
+
+msgid "Torrent Export Dir"
+msgstr "未完成torrent文件导出路径"
+
+msgid "The .torrent files will be copied to the target directory."
+msgstr "未完成的.torrent文件会被自动复制到目标目录"
+
+msgid "Finished Torrent Export Dir"
+msgstr "已完成torrent文件导出路径"
+
+msgid "The .torrent files for finished downloads will be copied to the target directory."
+msgstr "已完成的.torrent文件会被自动复制到目标目录"
+
+msgid "Enable DHT"
+msgstr "启用DHT"
+
+msgid "Enable DHT (decentralized network) to find more peers."
+msgstr "启用DHT（分散网络）以获取更多资源"
+
+msgid "Enable PeX"
+msgstr "启用PeX"
+
+msgid "Enable Peer Exchange (PeX) to find more peers."
+msgstr "启用用户交换（PeX）以获取更多资源"
+
+msgid "Enable LSD"
+msgstr "启用LSD"
+
+msgid "Enable Local Peer Discovery to find more peers."
+msgstr "启用本地资源搜索以获取更多资源"
+
+msgid "μTP Rate Limit"
+msgstr "μTP速度限制"
+
+msgid "Apply rate limit to μTP protocol."
+msgstr "对μTP协议进行速度限制"
+
+msgid "Encryption Mode"
+msgstr "加密模式"
+
+msgid "Prefer Encryption"
+msgstr "偏好加密"
+
+msgid "Require Encryption"
+msgstr "强制加密"
+
+msgid "Disable Encryption"
+msgstr "禁用加密"
+
+msgid "Max Connections"
+msgstr "最大连接数"
+
+msgid "The max number of connections."
+msgstr "最大连接数"
+
+msgid "Max Connections Per Torrent"
+msgstr "单torrent最大连接数"
+
+msgid "The max number of connections per torrent."
+msgstr "每个torrent的最大连接数"
+
+msgid "Max Uploads"
+msgstr "全局最大上传数"
+
+msgid "The max number of connected peers."
+msgstr "全局最大上传线程数"
+
+msgid "Max Uploads Per Torrent"
+msgstr "单torrent最大上传线程数"
+
+msgid "The max number of connected peers per torrent."
+msgstr "每个torrent最大上传线程数"
+
+msgid "Max Ratio"
+msgstr "最大分享率"
+
+msgid "The max ratio for seeding. -1 is not to limit the seeding."
+msgstr "做种的最大比率，-1代表不限制做种比率。"
+
+msgid "Max Ratio Action"
+msgstr "达到最大分享率时"
+
+msgid "The action when reach the max seeding ratio."
+msgstr "达到最大分享率时的行为"
+
+msgid "Pause them"
+msgstr "暂停"
+
+msgid "Remove them"
+msgstr "删除"
+
+msgid "Max Seeding Minutes"
+msgstr "最大做种时长"
+
+msgid "Units: minutes"
+msgstr "单位：分钟"
+
+msgid "Queueing Setting"
+msgstr "排队设置"
+
+msgid "Enable Torrent Queueing"
+msgstr "启用种子排队"
+
+msgid "Maximum Active Downloads"
+msgstr "最大活动下载数"
+
+msgid "Max Active Uploads"
+msgstr "最大活动上传数"
+
+msgid "Max Active Torrents"
+msgstr "最大活动torrent数"
+
+msgid "Ignore Slow Torrents"
+msgstr "忽略慢速torrent"
+
+msgid "Do not count slow torrents in these limits."
+msgstr "不将慢速种子计算在这些限制里"
+
+msgid "Download rate threshold"
+msgstr "下载速率阈值"
+
+msgid "Units: KiB/s"
+msgstr "单位：KiB/s"
+
+msgid "Units: s"
+msgstr "单位：秒"
+
+msgid "Upload rate threshold"
+msgstr "上传速率阈值"
+
+msgid "Torrent inactivity timer"
+msgstr "torrent不活动时长"
+
+msgid "Use UPnP for WebUI"
+msgstr "启用WebUI的UPnP"
+
+msgid "Using the UPnP / NAT-PMP port of the router for connecting to WebUI."
+msgstr "使用路由器的UPnP/NAT-PMP端口转发连接WebUI"
+
+msgid "Listening Address"
+msgstr "监听地址"
+
+msgid "The listening IP address for WebUI."
+msgstr "监听WebUI的IP地址"
+
+msgid "Enable HTTPS"
+msgstr "启用HTTPS"
 
 msgid ""
+"Encrypt the connections with qbittorrent by SSL/TLS. The web clients must use https"
+" scheme to access the WebUI."
 msgstr ""
+"使用SSL/TLS加密与qbittorrent的连接，"
+" web客户端必须使用https接入WebUI。"
 
-msgid ""
-msgstr ""
+msgid "Path to the Certificate"
+msgstr "证书路径"
 
-msgid ""
-msgstr ""
+msgid "Path to the Key"
+msgstr "密钥路径"
 
-msgid ""
-msgstr ""
+msgid "Clickjacking Protection"
+msgstr "点击劫持防护"
 
-msgid ""
-msgstr ""
+msgid "Enable clickjacking protection."
+msgstr "启用“点击劫持”防护"
 
-msgid ""
-msgstr ""
+msgid "CSRF Protection"
+msgstr "CSRF防护"
 
-msgid ""
-msgstr ""
+msgid "Enable Cross-Site Request Forgery (CSRF) protection."
+msgstr "启用跨站点请求伪造(CSRF)防护"
+
+msgid "Cookie Secure flag"
+msgstr "Cookie安全标志"
+
+msgid "Enable cookie secure flag (require HTTPS)."
+msgstr "启用cookie安全标志（需要HTTPS）"
+
+msgid "Host Header Validation"
+msgstr "主机标头验证"
+
+msgid "Validate the host header."
+msgstr "验证主机连接的header"
+
+msgid "Server Domains"
+msgstr "服务器域名"
+
+msgid "Bypass Local Host Authentication"
+msgstr "跳过本地主机验证"
+
+msgid "Bypass authentication for clients on localhost."
+msgstr "对本地主机上的客户端跳过身份验证"
+
+msgid "Bypass authentication for clients in Whitelisted IP Subnets."
+msgstr "对 IP 子网白名单中的客户端跳过身份验证"
+
+msgid "Subnet Whitelist"
+msgstr "子网白名单地址"
+
+msgid "Add Custom HTTP Headers"
+msgstr "添加自定义HTTP头字段"
+
+msgid "Custom HTTP Headers"
+msgstr "自定义的HTTP头字段"
+
+msgid "Header: value pairs, one per line"
+msgstr "HTTP头字段键值，一行一个。"
+
+msgid "Anonymous Mode"
+msgstr "匿名模式"
+
+msgid "When enabled, qBittorrent will take certain measures to try to mask its identity."
+msgstr "当启用时, qBittorrent会采用某些手段来隐藏客户端特征，"
+
+msgid "Refer to the"
+msgstr "参考："
+
+msgid "Limit Overhead Usage"
+msgstr "总开销限制"
+
+msgid "The overhead usage is been limitted."
+msgstr "对传送总开销进行速度限制"
+
+msgid "Ignore LAN Limit"
+msgstr "取消LAN限制"
+
+msgid "Ignore the speed limit to LAN."
+msgstr "忽略限制本地用户带宽"
+
+msgid "Use os Cache"
+msgstr "使用系统缓存"
+
+msgid "Max Outgoing Port"
+msgstr "最大端口"
+
+msgid "The max outgoing port."
+msgstr "最大的对外连接端口"
+
+msgid "Min Outgoing Port"
+msgstr "最小端口"
+
+msgid "The min outgoing port."
+msgstr "最小的对外连接端口"
+
+msgid "Choking Algorithm"
+msgstr "上传连接策略"
+
+msgid "The strategy of choking algorithm."
+msgstr "上传连接算法的策略"
+
+msgid "Round Robin"
+msgstr "轮流上传"
+
+msgid "Fastest Upload"
+msgstr "快速上传"
+
+msgid "Anti-Leech"
+msgstr "反吸血"
+
+msgid "Announce To All Trackers"
+msgstr "响应所有Trackers"
+
+msgid "Announce To all trackers of per tier."
+msgstr "响应单层的所有Trackers。"
+
+msgid "Announce To All Tiers"
+msgstr "响应所有层"
+
+msgid "The first tier (0 tier) is announced by default."
+msgstr "默认响应第一个层（0层）"
+
+msgid "Here shows the files used by qbittorrent."
+msgstr "这里显示的是 qBittorrent 使用的配置文件。"
+
+msgid "Content of the system config file: <code>%s</code>"
+msgstr "系统配置文件的内容：<code>%s</code>"
+
+msgid "Content of qBittorrent file: <code>%s</code>"
+msgstr "qBittorrent配置文件的内容：<code>%s</code>"
+
+msgid "Last 50 lines of log file:"
+msgstr "日志文件最新的 50 行："
+
+msgid "Last 50 lines of syslog:"
+msgstr "系统日志最新的 50 行："
+
+msgid "No log data."
+msgstr "无日志数据"
+
+msgid "Loading"
+msgstr "加载中"
+
+msgid "Collecting data..."
+msgstr "正在收集数据…"
+
+msgid "Log Data"
+msgstr "日志数据"
+
+msgid "Refresh every %s seconds."
+msgstr "页面以每 %s 秒刷新"
+
+msgid "Files"
+msgstr "文件"
 
 msgid ""
 msgstr ""
