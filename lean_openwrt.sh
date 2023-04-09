@@ -335,6 +335,7 @@ color cy "自定义设置.... "
 			https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 			#https://github.com/sirpdboy/luci-app-netdata
 			#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+			https://github.com/hong0980/diy/trunk/luci-app-qbittorrent
 		"
 		[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
 		sed -i '/log_check/s/^/#/' package/A/*/*/*/init.d/unblockneteasemusic
