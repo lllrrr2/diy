@@ -47,7 +47,7 @@ msgid "Save Path"
 msgstr "下载目录"
 
 msgid "The directory to store the downloaded file. For example <code>/mnt/sda1</code>."
-msgstr "用于放置下载文件的目录。例如：<code>/mnt/sda1</code>。"
+msgstr "用于放置下载文件的目录，例如：<code>/mnt/sda1</code>。"
 
 msgid "Locale Language"
 msgstr "WebUI语言"

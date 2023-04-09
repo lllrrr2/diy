@@ -399,7 +399,6 @@ clone_url "
 		#https://github.com/coolsnowwolf/packages/trunk/lang/python
 		#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
 		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
-		https://github.com/hong0980/diy/trunk/luci-app-qbittorrent
 	"
 	rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
 	# [[ -e package/A/luci-app-ddnsto/root/etc/init.d/ddnsto ]] || \
