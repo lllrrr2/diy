@@ -370,8 +370,8 @@ color cy "自定义设置.... "
 	# echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
 	# tee -a {$(find package/ feeds/luci/applications/ -type d -name "luci-app-vssr" 2>/dev/null)/*/*/*/status_top.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-ssr-plus" 2>/dev/null)/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-passwall" 2>/dev/null)/*/*/*/global/status.htm} >/dev/null
 
-	xa=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr" 2>/dev/null)
-	[[ -d $xa ]] && sed -i "/dports/s/1/2/;/ip_data_url/s|'.*'|'https://ispip.clang.cn/all_cn.txt'|" $xa/root/etc/config/vssr
+	# xa=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-vssr" 2>/dev/null)
+	# [[ -d $xa ]] && sed -i "/dports/s/1/2/;/ip_data_url/s|'.*'|'https://ispip.clang.cn/all_cn.txt'|" $xa/root/etc/config/vssr
 	xb=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)
 	[[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
 	# https://github.com/userdocs/qbittorrent-nox-static/releases
