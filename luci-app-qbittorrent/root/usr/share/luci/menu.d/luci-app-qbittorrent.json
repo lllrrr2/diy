@@ -1,7 +1,7 @@
 {
 	"admin/nas/qbittorrent": {
 		"title": "qBittorrent",
-		"order": 90,
+		"order": 95,
 		"action": {
 			"type": "firstchild"
 		},

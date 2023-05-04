@@ -271,7 +271,7 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
-	#CONFIG_PACKAGE_luci-app-wizard=y
+	CONFIG_PACKAGE_luci-app-wizard=y
 	CONFIG_PACKAGE_luci-app-simplenetwork=y
 	CONFIG_PACKAGE_luci-app-opkg=y
 	CONFIG_PACKAGE_automount=y
@@ -366,6 +366,10 @@ color cy "自定义设置.... "
 	# tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" 2>/dev/null | grep "ss") >/dev/null
 	echo -e '\nwww.nicept.net' | \
 	tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" 2>/dev/null | grep "ss") >/dev/null
+	
+	mwan3=feeds/packages/net/mwan3/files/etc/config/mwan3
+	[[ -f $mwan3 ]] && grep -q "8.8" $mwan3 && \
+	sed -i '/8.8/d' $mwan3
 
 	# echo '<iframe src="https://ip.skk.moe/simple" style="width: 100%; border: 0"></iframe>' | \
 	# tee -a {$(find package/ feeds/luci/applications/ -type d -name "luci-app-vssr" 2>/dev/null)/*/*/*/status_top.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-ssr-plus" 2>/dev/null)/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-bypass" 2>/dev/null)/*/*/*/status.htm,$(find package/ feeds/luci/applications/ -type d -name "luci-app-passwall" 2>/dev/null)/*/*/*/global/status.htm} >/dev/null

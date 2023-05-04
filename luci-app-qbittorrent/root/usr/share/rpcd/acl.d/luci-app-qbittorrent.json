@@ -8,8 +8,8 @@
 			},
 			"file": {
 				"/etc/passwd": [ "read" ],
-				"/usr/bin/qbittorrent-nox": [ "exec" ],
 				"/sbin/logread": [ "exec" ],
+				"/usr/bin/qbittorrent-nox": [ "exec" ],
 				"/usr/libexec/qbittorrent-call": [ "exec" ]
 			},
 			"uci": [ "qbittorrent" ]

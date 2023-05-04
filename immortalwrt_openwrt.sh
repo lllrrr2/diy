@@ -410,6 +410,10 @@ clone_url "
 	# tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "white.list" -o -name "direct_host" 2>/dev/null | grep "ss") >/dev/null
 	echo -e '\nwww.nicept.net' | \
 	tee -a $(find package/A/luci-* feeds/luci/applications/luci-* -type f -name "black.list" -o -name "proxy_host" 2>/dev/null | grep "ss") >/dev/null
+	
+	mwan3=feeds/packages/net/mwan3/files/etc/config/mwan3
+	[[ -f $mwan3 ]] && grep -q "8.8" $mwan3 && \
+	sed -i '/8.8/d' $mwan3
 
 	[[ -f package/A/qBittorrent/Makefile ]] && grep -q "rblibtorrent" package/A/qBittorrent/Makefile && \
 	sed -i 's/+rblibtorrent/+libtorrent-rasterbar/' package/A/qBittorrent/Makefile

@@ -14,14 +14,16 @@ case "$action" in
 				config_dir="$(uci -q get qbittorrent.main.RootProfilePath)/qBittorrent/config/qBittorrent.conf"
 			;;
 		esac
-		json_init
-		json_add_string file "$config_dir"
-		json_add_string content "$(cat "$config_dir")"
-		json_dump
+		[ -s $config_dir ] && {
+			json_init
+			json_add_string file "$config_dir"
+			json_add_string content "$(cat "$config_dir")"
+			json_dump
+		}
 	;;
 	tail)
 		log_file="$(uci -q get qbittorrent.main.Path)/qbittorrent.log" || \
 		log_file="$(uci -q get qbittorrent.main.RootProfilePath)/qBittorrent/data/logs/qbittorrent.log"
-		tail -n 50 "$log_file"
+		[ -s $log_file ] && tail -n 50 "$log_file"
 	;;
 esac

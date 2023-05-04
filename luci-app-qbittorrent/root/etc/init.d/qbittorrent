@@ -49,7 +49,11 @@ init_instance() {
 	local fullTempPath
 	local instance="${NAME}.$1"
 	RootProfilePath=$(echo $RootProfilePath | sed 's/\(.*\)\/$/\1/')
-	[ -z "$BinaryLocation" ] || PROG="$BinaryLocation"
+	[ x"$BinaryLocation" = x ] || {
+		[ -x "$BinaryLocation" ] || \
+		chmod +x "$BinaryLocation"
+		PROG="$BinaryLocation"
+	}
 	local confdir=qBittorrent$([ -z "$ConfigurationName" ] || echo _$ConfigurationName)
 
 	case $TempPath in
@@ -64,7 +68,7 @@ init_instance() {
 	local group=$(id -ng $user)
 	for directory in "$RootProfilePath/$confdir" "$RootProfilePath/$confdir/config" "$SavePath" "$fullTempPath" "$FinishedTorrentExportDir" "$TorrentExportDir"; do
 		if [ -n "$directory" -a ! -d "$directory" ]; then
-			mkdir -m 0755 -p "$directory"
+			mkdir -m 755 -p "$directory"
 			chmod -R g+w "$directory"
 			chown -R "$user:$group" "$directory"
 		fi
@@ -131,7 +135,7 @@ init_instance() {
 				"GlobalDLLimit" "GlobalDLLimitAlt" "GlobalUPLimit"	"GlobalUPLimitAlt" \
 				"PortRangeMin" "InetAddress" "UPnP"
 	sed_options "Preferences" "Bittorrent" \
-				"DHT" "Encryption" "LSD" "MaxConnecs" "MaxConnecsPerTorrent" "MaxRatio" \
+				"DHT" "Encryption" "LSD" "MaxConnecs" "MaxConnecsPerTorrent" "GlobalMaxRatio" \
 				"MaxRatioAction" "MaxUploads" "MaxUploadsPerTorrent" "PeX" "uTP_rate_limited"
 	sed_options "Preferences" "Advanced" \
 				"AnnounceToAllTrackers" "AnonymousMode" "IgnoreLimitsLAN" "IncludeOverhead" "osCache" "OutgoingPortsMax" \
@@ -186,7 +190,7 @@ start_service() {
 		'DiskWriteCacheSize:integer'								\
 		'DiskWriteCacheTTL:integer'									\
 		'EnableService:bool:0'										\
-		'Enabled:or("true","false"):false'							\
+		'Enabled:or("true","false"):true'							\
 		'Encryption:or("0","1","2"):0'								\
 		'FinishedTorrentExportDir:string'							\
 		'GlobalDLLimit:float'										\
@@ -210,8 +214,8 @@ start_service() {
 		'MaxActiveUploads:integer' 									\
 		'MaxConnecs:integer' 										\
 		'MaxConnecsPerTorrent:integer' 								\
-		'MaxRatio:float' 											\
-		'MaxRatioAction:or("0","1")' 								\
+		'GlobalMaxRatio:float' 										\
+		'MaxRatioAction:or("0","1","2","3")' 						\
 		'MaxSizeBytes:integer' 										\
 		'MaxUploads:integer' 										\
 		'MaxUploadsPerTorrent:integer' 								\

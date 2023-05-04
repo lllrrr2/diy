@@ -1,8 +1,6 @@
-msgid "Current Version: %s"
-msgstr "当前的版本: %s"
 
-msgid "A BT/PT downloader base on Qt."
-msgstr "一个基于QT的BT/PT下载器。"
+msgid "A BT/PT downloader base on Qt.</br><b>Current qBittorrent version: </b>"
+msgstr "一个基于QT的BT/PT下载器  </br><b>当前 qBittorrent 版本: </b>"
 
 msgid "Open Web Interface"
 msgstr "打开 Web 管理界面"
@@ -41,7 +39,7 @@ msgid "Root Path of the Profile"
 msgstr "配置保存目录"
 
 msgid "Specify the root path of all profiles which is equivalent to the commandline parameter: <b>--profile [PATH]</b>. The default value is /tmp."
-msgstr "指定profile的保存路径，等效于命令行参数：<b>--profile [PATH]</b>。默认值是/tmp。"
+msgstr "配置目录保存的路径，默认值是/tmp。"
 
 msgid "Save Path"
 msgstr "下载目录"
@@ -50,7 +48,7 @@ msgid "The directory to store the downloaded file. For example <code>/mnt/sda1</
 msgstr "用于放置下载文件的目录，例如：<code>/mnt/sda1</code>。"
 
 msgid "Locale Language"
-msgstr "WebUI语言"
+msgstr "语言"
 
 msgid "Simplified Chinese"
 msgstr "简体中文"
@@ -59,7 +57,7 @@ msgid "English"
 msgstr "英文"
 
 msgid "The supported language codes can be used to customize the setting."
-msgstr "可以使用支持的语言代码来自定义设置。"
+msgstr "WebUI语言的设置。"
 
 msgid "Listening Port"
 msgstr "监听端口"
@@ -71,13 +69,13 @@ msgid "Username"
 msgstr "用户名"
 
 msgid "The login name for WebUI."
-msgstr "WebUI的登录名。"
+msgstr "WebUI的登录名"
 
 msgid "Password"
 msgstr "密码"
 
 msgid "The login password for WebUI."
-msgstr "WebUI的登陆密码。"
+msgstr "WebUI的登陆密码"
 
 msgid "The Suffix of the Profile Root Path"
 msgstr "配置文件根路径的后缀"
@@ -125,7 +123,7 @@ msgid "Log Max Size"
 msgstr "日志最大大小"
 
 msgid "The max size for qBittorrent log (Unit: Bytes)."
-msgstr "qBittorrent日志文件的最大大小（单位：字节）。"
+msgstr "qBittorrent日志文件的最大大小（单位：字节）"
 
 msgid "Log Keep Time"
 msgstr "日志保存时间"
@@ -159,40 +157,40 @@ msgid "PortRangeMin"
 msgstr "连接端口"
 
 msgid "Connection Port"
-msgstr "随机生成"
+msgstr "生成端口"
 
 msgid "Global Download Speed"
-msgstr "全局下行速度"
+msgstr "全局下载速度"
 
 msgid "Global Download Speed Limit(KiB/s)."
-msgstr "全局下行速度限制（KiB/s）， "
+msgstr "全局下载速度限制（KiB/s）， "
 
 msgid "0 means has no limit."
 msgstr "0代表不限制。"
 
 msgid "Global Upload Speed"
-msgstr "全局上行速度"
+msgstr "全局上传速度"
 
 msgid "Global Upload Speed Limit(KiB/s)."
-msgstr "全局上行速度限制（KiB/s），"
+msgstr "全局上传速度限制（KiB/s），"
 
 msgid "Alternative Download Speed"
-msgstr "备用下行速度"
+msgstr "备用下载速度"
 
 msgid "Alternative Download Speed Limit(KiB/s)."
-msgstr "备用下行速度限制（KiB/s），"
+msgstr "备用下载速度限制（KiB/s），"
 
 msgid "Alternative Upload Speed"
-msgstr "备用上行速度"
+msgstr "备用上传速度"
 
 msgid "Alternative Upload Speed Limit(KiB/s)."
-msgstr "备用上行速度限制（KiB/s）， "
+msgstr "备用上传速度限制（KiB/s）， "
 
 msgid "Protocol Enabled"
-msgstr "传输协议"
+msgstr "下载连接协议"
 
-msgid "The protocol that was enabled."
-msgstr "已经启用的协议"
+msgid "TCP and μTP"
+msgstr "TCP 和 μTP"
 
 msgid "Inet Address"
 msgstr "提交的地址"
@@ -231,7 +229,7 @@ msgid "The incomplete tasks will be added the extension of !qB."
 msgstr "为不完整的文件添加扩展名<code>!qB</code>"
 
 msgid "Enable Temp Path"
-msgstr "启用临时文件路径"
+msgstr "启用临时文件"
 
 msgid "Temp Path"
 msgstr "临时文件路径"
@@ -260,7 +258,7 @@ msgstr "默认torrent管理模式"
 msgid "Manual"
 msgstr "手动"
 
-msgid "Automaic"
+msgid "Auto"
 msgstr "自动"
 
 msgid "Torrent Category Changed"
@@ -309,19 +307,19 @@ msgid "Enable DHT"
 msgstr "启用DHT"
 
 msgid "Enable DHT (decentralized network) to find more peers."
-msgstr "启用DHT（分散网络）以获取更多资源"
+msgstr "启用DHT（分散网络）以找到更多用户"
 
 msgid "Enable PeX"
 msgstr "启用PeX"
 
 msgid "Enable Peer Exchange (PeX) to find more peers."
-msgstr "启用用户交换（PeX）以获取更多资源"
+msgstr "启用用户交换（PeX）以找到更多用户"
 
 msgid "Enable LSD"
 msgstr "启用LSD"
 
 msgid "Enable Local Peer Discovery to find more peers."
-msgstr "启用本地资源搜索以获取更多资源"
+msgstr "启用本地资源搜索以找到更多用户"
 
 msgid "μTP Rate Limit"
 msgstr "μTP速度限制"
@@ -342,15 +340,9 @@ msgid "Disable Encryption"
 msgstr "禁用加密"
 
 msgid "Max Connections"
-msgstr "最大连接数"
-
-msgid "The max number of connections."
-msgstr "最大连接数"
+msgstr "全局最大连接数"
 
 msgid "Max Connections Per Torrent"
-msgstr "单torrent最大连接数"
-
-msgid "The max number of connections per torrent."
 msgstr "每个torrent的最大连接数"
 
 msgid "Max Uploads"
@@ -366,28 +358,34 @@ msgid "The max number of connected peers per torrent."
 msgstr "每个torrent最大上传线程数"
 
 msgid "Max Ratio"
-msgstr "最大分享率"
+msgstr "最大做种分享率"
 
 msgid "The max ratio for seeding. -1 is not to limit the seeding."
-msgstr "做种的最大比率，-1代表不限制做种比率。"
+msgstr "做种的最大比率，-1代表不限制。"
 
 msgid "Max Ratio Action"
-msgstr "达到最大分享率时"
+msgstr "做种限制"
 
 msgid "The action when reach the max seeding ratio."
-msgstr "达到最大分享率时的行为"
+msgstr "达到最大分享率或时长的行为"
 
-msgid "Pause them"
-msgstr "暂停"
+msgid "Pause torrent"
+msgstr "暂停 torrent"
 
-msgid "Remove them"
-msgstr "删除"
+msgid "Remove torrent"
+msgstr "删除 torrent"
+
+msgid "Remove torrent and its files"
+msgstr "删除 torrent 及所属文件"
+
+msgid "Enable super seeding for torrent"
+msgstr "为 torrent 启用超级做种"
 
 msgid "Max Seeding Minutes"
 msgstr "最大做种时长"
 
 msgid "Units: minutes"
-msgstr "单位：分钟"
+msgstr "单位：分钟，-1代表不限制。"
 
 msgid "Queueing Setting"
 msgstr "排队设置"
@@ -402,13 +400,13 @@ msgid "Max Active Uploads"
 msgstr "最大活动上传数"
 
 msgid "Max Active Torrents"
-msgstr "最大活动torrent数"
+msgstr "最大活动的torrent个数"
 
 msgid "Ignore Slow Torrents"
-msgstr "忽略慢速torrent"
+msgstr "慢速的torrent"
 
 msgid "Do not count slow torrents in these limits."
-msgstr "不将慢速种子计算在这些限制里"
+msgstr "慢速torrent不计入限制内"
 
 msgid "Download rate threshold"
 msgstr "下载速率阈值"
@@ -426,7 +424,7 @@ msgid "Torrent inactivity timer"
 msgstr "torrent不活动时长"
 
 msgid "Use UPnP for WebUI"
-msgstr "启用WebUI的UPnP"
+msgstr "启用UPnP"
 
 msgid "Using the UPnP / NAT-PMP port of the router for connecting to WebUI."
 msgstr "使用路由器的UPnP/NAT-PMP端口转发连接WebUI"
@@ -481,7 +479,7 @@ msgid "Server Domains"
 msgstr "服务器域名"
 
 msgid "Bypass Local Host Authentication"
-msgstr "跳过本地主机验证"
+msgstr "跳过验证"
 
 msgid "Bypass authentication for clients on localhost."
 msgstr "对本地主机上的客户端跳过身份验证"
@@ -490,16 +488,13 @@ msgid "Bypass authentication for clients in Whitelisted IP Subnets."
 msgstr "对 IP 子网白名单中的客户端跳过身份验证"
 
 msgid "Subnet Whitelist"
-msgstr "子网白名单地址"
+msgstr "子网白名单"
 
 msgid "Add Custom HTTP Headers"
 msgstr "添加自定义HTTP头字段"
 
-msgid "Custom HTTP Headers"
-msgstr "自定义的HTTP头字段"
-
 msgid "Header: value pairs, one per line"
-msgstr "HTTP头字段键值，一行一个。"
+msgstr "在此输入HTTP头字段，每行一个"
 
 msgid "Anonymous Mode"
 msgstr "匿名模式"
@@ -597,14 +592,17 @@ msgstr "页面以每 %s 秒刷新"
 msgid "Files"
 msgstr "文件"
 
-msgid ""
-msgstr ""
+msgid "Expecting: non-empty value"
+msgstr "应该为：非空值"
 
-msgid ""
-msgstr ""
+msgid "Generate Randomly"
+msgstr "随机生成"
 
-msgid ""
-msgstr ""
+msgid "Example: 172.17.32.0/24, fdff:ffff:c8::/40"
+msgstr "示例：172.17.32.0/24，fdff:ffff:c8::/40"
+
+msgid "</br></br><b>Running Status</b>"
+msgstr "</br></br><b>运行状态</b>"
 
 msgid ""
 msgstr ""
