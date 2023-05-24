@@ -271,7 +271,7 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
-	CONFIG_PACKAGE_luci-app-wizard=y
+	#CONFIG_PACKAGE_luci-app-wizard=y
 	CONFIG_PACKAGE_luci-app-simplenetwork=y
 	CONFIG_PACKAGE_luci-app-opkg=y
 	CONFIG_PACKAGE_automount=y
@@ -380,7 +380,7 @@ color cy "自定义设置.... "
 	[[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
 	# https://github.com/userdocs/qbittorrent-nox-static/releases
 	xc=$(find package/A/ feeds/ -type d -name "qBittorrent-static" 2>/dev/null)
-	[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.5.2_v2.0.8/;s/userdocs/hong0980/g' $xc/Makefile
+	[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.5.2_v2.0.8/;s/userdocs/hong0980/;s/ARCH)-qbittorrent/ARCH)-qt6-qbittorrent/' $xc/Makefile
 	xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc" 2>/dev/null)
 	[[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 	xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy" 2>/dev/null)
