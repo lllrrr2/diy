@@ -132,11 +132,11 @@ clone_url() {
 REPO_URL="https://github.com/immortalwrt/immortalwrt"
 echo -e "$(color cy '拉取源码....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 [[ $REPO_BRANCH ]] && cmd="-b $REPO_BRANCH"
-# [ "$TARGET_DEVICE" = r1-plus-lts -a "$REPO_BRANCH" = master ] && git reset --hard b5193291bdde00e91c58e59029d5c68b0bc605db
 git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 
+# [ "$TARGET_DEVICE" = r1-plus-lts -a "$REPO_BRANCH" = master ] && git reset --hard b5193291bdde00e91c58e59029d5c68b0bc605db
 export SOURCE_NAME=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
 export IMG_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TARGET_DEVICE"
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
@@ -437,7 +437,7 @@ clone_url "
 		# }
 	# fi
 
-	[[ "${REPO_BRANCH#*-}" == "21.02" ]] && {
+	[[ "${REPO_BRANCH#*-}" =~ ^2 ]] && {
 		sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
 		# sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
 		clone_url "
@@ -517,7 +517,7 @@ case "$TARGET_DEVICE" in
 		#luci-app-unblockneteasemusic
 		htop lscpu lsscsi nano screen zstd pv ethtool
 		"
-		[[ "${REPO_BRANCH#*-}" == "21.02" ]] && sed -i '/bridge/d' .config
+		[[ "${REPO_BRANCH#*-}" =~ ^2 ]] && sed -i '/bridge/d' .config
 		wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 		wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	} || {
@@ -634,7 +634,7 @@ esac
 
 sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 2>/dev/null
 for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/null); do
-	if [[ "${REPO_BRANCH#*-}" == "21.02" ]]; then
+	if [[ "${REPO_BRANCH#*-}" =~ ^2 ]]; then
 		if [[ ! -d $p/zh_Hans && -d $p/zh-cn ]]; then
 			ln -s zh-cn $p/zh_Hans 2>/dev/null
 			# printf "%-13s %-33s %s %s %s\n" \
