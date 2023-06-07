@@ -484,24 +484,24 @@ case $TARGET_DEVICE in
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-	if [[ `git log --oneline | awk 'NR==1{print $1}'` =~ b0ea2f3 ]]; then
-		svn_co "-r220868" "https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba"
-		clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
-		sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
-	fi
-	sed -i '/KERNEL_PATCHVER/s/=.*/=5.4/' target/linux/rockchip/Makefile
-	[[ $TARGET_DEVICE =~ r1-plus-lts ]] && {
-		grep -q 'KERNEL_PATCHVER:=5.15' target/linux/rockchip/Makefile && \
-	 	clone_url "https://github.com/immortalwrt/immortalwrt/trunk/target/linux/rockchip"
-		grep -q 'KERNEL_PATCHVER:=5.4' target/linux/rockchip/Makefile && {
-			clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip"
-			sed -i '/KERNEL_PATCHVER/s/=.*/=5.4/' target/linux/rockchip/Makefile
-		}
-	 	grep -q 'KERNEL_PATCHVER:=5.10' target/linux/rockchip/Makefile && {
-			clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip"
-			sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/rockchip/Makefile
-		}
-	}
+	# if [[ `git log --oneline | awk 'NR==1{print $1}'` =~ b0ea2f3 ]]; then
+		# svn_co "-r220868" "https://github.com/coolsnowwolf/lede/trunk/package/lean/autosamba"
+		# clone_url "https://github.com/immortalwrt/packages/branches/master/libs/glib2"
+		# sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
+	# fi
+	# sed -i '/KERNEL_PATCHVER/s/=.*/=5.4/' target/linux/rockchip/Makefile
+	# [[ $TARGET_DEVICE =~ r1-plus-lts ]] && {
+		# grep -q 'KERNEL_PATCHVER:=5.15' target/linux/rockchip/Makefile && \
+	 	# clone_url "https://github.com/immortalwrt/immortalwrt/trunk/target/linux/rockchip"
+		# grep -q 'KERNEL_PATCHVER:=5.4' target/linux/rockchip/Makefile && {
+			# clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip"
+			# sed -i '/KERNEL_PATCHVER/s/=.*/=5.4/' target/linux/rockchip/Makefile
+		# }
+	 	# grep -q 'KERNEL_PATCHVER:=5.10' target/linux/rockchip/Makefile && {
+			# clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip"
+			# sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/rockchip/Makefile
+		# }
+	# }
 	sed -i "/interfaces_lan_wan/s/'eth1' 'eth0'/'eth0' 'eth1'/" target/linux/rockchip/*/*/*/*/02_network
 	# git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
 	;;
@@ -651,7 +651,7 @@ done
 # CONFIG_AUTOREMOVE=y
 # CONFIG_MAKE_TOOLCHAIN=y
 # EOF
-rm -rf package/kernel/rt*
+# rm -rf package/kernel/rt*
 
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
