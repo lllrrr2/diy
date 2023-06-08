@@ -445,6 +445,9 @@ clone_url "
 		https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
 		https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 		"
+		[[ "${REPO_BRANCH}" = "openwrt-23.05" ]] && {
+			clone_url "https://github.com/coolsnowwolf/lede/trunk/target/linux/rockchip"
+		}
 	} || {
 		_packages "luci-app-argon-config"
 		clone_url "
