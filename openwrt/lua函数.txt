@@ -1,0 +1,450 @@
+grep -E "function [a-z]" /usr/lib/lua/luci/*.lua | grep :function | cut -d/ -f5- | sed 's/:function//g' > /tmp/6
+
+luci/cbi.lua load(cbimap, ...)：加载配置文件并返回其构造函数。
+luci/cbi.lua compile_datatype(code)：编译数据类型。
+luci/cbi.lua verify_datatype(dt, value)：验证数据类型。
+luci/ccache.lua cache_ondemand(...)：缓存一个命令的输出，以便在需要时重新使用它。
+luci/ccache.lua cache_enable(cachepath, mode)：在给定路径上启用 LuCI 缓存。
+luci/debug.lua trap_memtrace(flags, dest)：跟踪内存分配（通过调试器设置）。
+luci/dispatcher.lua build_url(...)：构建 URL。
+luci/dispatcher.lua error404(message)：返回 404 错误页面。
+luci/dispatcher.lua error500(message)：返回 500 错误页面。
+luci/dispatcher.lua httpdispatch(request, prefix)：HTTP 请求调度。
+luci/dispatcher.lua test_post_security()：测试 POST 安全性。
+luci/dispatcher.lua menu_json(acl)：返回菜单的 JSON 数据。
+luci/dispatcher.lua dispatch(request)：分派 HTTP 请求并返回响应。
+luci/dispatcher.lua createindex()：创建菜单索引。
+luci/dispatcher.lua createtree_json()：创建菜单树的 JSON 数据。
+luci/dispatcher.lua createtree()：创建菜单树。
+luci/dispatcher.lua assign(path, clone, title, order)：指定路径和参数为当前节点的属性。
+luci/dispatcher.lua entry(path, target, title, order)：定义一个菜单入口。
+luci/dispatcher.lua get(...)：获取当前节点的属性值。
+luci/dispatcher.lua node(...)：在当前节点下创建一个子节点。
+luci/dispatcher.lua lookup(...)：查找指定路径的节点。
+luci/dispatcher.lua firstchild()：返回当前节点的第一个子节点。
+luci/dispatcher.lua firstnode()：返回第一个节点。
+luci/dispatcher.lua alias(...)：为节点创建一个别名。
+luci/dispatcher.lua rewrite(n, ...)：重写 URL。
+luci/dispatcher.lua call(name, ...)：调用指定的 Lua 函数。
+luci/dispatcher.lua post_on(params, name, ...)：POST 请求。
+luci/dispatcher.lua post(...)：获取 POST 数据。
+luci/dispatcher.lua template(name)：使用指定名称的模板渲染页面。
+luci/dispatcher.lua view(name)：使用指定名称的视图渲染页面。
+luci/dispatcher.lua cbi(model, config)：使用 CGI 编辑器渲染页面。
+luci/dispatcher.lua arcombine(trg1, trg2)：将两个目标合并为一个新目标。
+luci/dispatcher.lua form(model)：使用表单渲染页面。
+luci/fs.lua glob(...)：返回一个 Lua 表，其中包含匹配给定文件名模式的所有文件和目录的名称。
+luci/fs.lua isfile(filename)：判断指定的文件是否存在并且是一个普通文件。
+luci/fs.lua isdirectory(dirname)：判断指定的路径是否存在并且是一个目录。
+luci/fs.lua mtime(path)：获取路径 path 上一次修改的时间（以秒为单位）。
+luci/fs.lua utime(path, mtime, atime)：设置路径 path 的最后修改时间（mtime）和最后访问时间（atime）。
+luci/fs.lua dir(...)：返回一个迭代器，用于遍历目录中的所有文件和子目录。目录名由函数调用者指定。
+luci/fs.lua mkdir(path, recursive)：创建一个目录。如果 recursive 为真，则会创建所有缺失的路径。
+luci/fs.lua stat(path, key)：获取指定路径的文件状态信息，例如 file mode bits、inode 等等。key 参数是一个字符串，用于指定需要返回的属性。
+luci/fs.lua link(src, dest, sym)：在 dest 中创建一个符号链接，指向 src。如果 sym 为真，则创建一个符号链接；否则，创建一个硬链接。
+luci/http.lua close()：关闭 HTTP 连接。
+luci/http.lua content()：获取 HTTP 请求正文内容。
+luci/http.lua formvalue(name, noparse)：获取 HTTP POST 请求中表单名称为 name 的值，并将其解析为 Lua 变量（如果可能的话）。如果 noparse 为真，则返回未解析的字符串。
+luci/http.lua formvaluetable(prefix)：返回一个 Lua 表，其中包含所有表单名称以指定前缀开头的值。
+luci/http.lua getcookie(name)：获取 HTTP 请求中的 cookie 值。
+luci/http.lua getenv(name)：获取当前 HTTP 请求的环境变量。
+luci/http.lua setfilehandler(callback)：设置文件处理器回调函数。
+luci/http.lua header(key, value)：将 HTTP 响应头添加到输出缓冲区。
+luci/http.lua prepare_content(mime)：设置 MIME 类型并发送 HTTP 响应头。
+luci/http.lua source()：返回当前 HTTP 请求的输入数据源。
+luci/http.lua status(code, message)：设置 HTTP 状态码和消息。
+luci/http.lua write(content, src_err)：将内容添加到 HTTP 响应正文中。
+luci/http.lua splice(fd, size)：从文件描述符 fd 中读取 size 个字节，并将其添加到 HTTP 响应正文中。
+luci/http.lua redirect(url)：将 HTTP 响应重定向到指定的 URL。
+luci/http.lua build_querystring(q)：将一个 Lua 表转换为查询字符串。
+luci/http.lua write_json(x)：将 Lua 值（通常是一个表）编码为 JSON 格式，并将其写入 HTTP 响应正文中。
+luci/http.lua urldecode_params(url, tbl)：将查询字符串解析为 Lua 表。该函数可以处理包含数组值的参数。
+luci/http.lua urlencode_params(tbl)：将 Lua 表转换为 URL 编码的字符串。
+luci/http.lua mimedecode_message_body(src, msg, file_cb)：将 MIME 编码的消息正文解密为原始数据。src 是一个 Lua 文件对象，msg 是包含当前 HTTP 请求的消息头和正文的 Lua 表，file_cb 是可选的回调函数，用于处理文件数据。
+luci/http.lua urldecode_message_body(src, msg)：将 URL 编码的消息正文解码为原始数据。
+luci/http.lua parse_message_body(src, msg, filecb)：解析 HTTP 消息正文。该函数根据消息头中指定的 MIME 类型将消息正文解析为 URL 编码、MIME 编码或未编码的数据。src 是一个 Lua 文件对象，msg 是包含当前 HTTP 请求的消息头和正文的 Lua 表，filecb 是可选的回调函数，用于处理文件数据。
+luci/i18n.lua setlanguage(lang)：设置当前语言环境。lang 是语言代码，例如 en 或 zh-cn。
+luci/i18n.lua translate(key)：翻译指定的字符串 key。如果找不到对应的翻译，则返回原始字符串。
+luci/i18n.lua translatef(key, ...)：翻译指定的字符串 key，并将其中的占位符替换为给定参数的值。
+luci/i18n.lua dump()：输出当前语言环境中所有翻译的键和值。该函数通常用于调试和测试。
+luci/ltn12.lua filter.cycle(low, ctx, extra)：创建一个过滤器，使其在读取源数据时反复运行另一个函数。这对于实现数据加密和解密的循环非常有用。
+luci/ltn12.lua filter.chain(...)：创建一个由多个过滤器组成的链。该函数将多个过滤器函数连接起来，以便在处理数据时依次调用它们。
+luci/ltn12.lua source.empty()：创建一个不返回任何数据的数据源。
+luci/ltn12.lua source.error(err)：创建一个返回给定错误消息的数据源。
+luci/ltn12.lua source.file(handle, io_err)：创建一个从文件中读取数据的数据源。
+luci/ltn12.lua source.simplify(src)：创建一个简化版的数据源，该源仅返回原始数据，忽略元数据。
+luci/ltn12.lua source.string(s)：创建一个从字符串中读取数据的数据源。
+luci/ltn12.lua source.rewind(src)：重置给定数据源的指针，以便重新读取数据。
+luci/ltn12.lua source.chain(src, f)：创建一个新的数据源，其中数据通过给定的源 src 流入，然后通过给定的过滤器 f 进行处理。
+luci/ltn12.lua source.cat(...)：创建一个数据源，将多个数据源串联起来，使它们的数据看起来像一个连续的数据流。
+luci/ltn12.lua sink.table(t)：创建一个将数据写入给定表 t 的接收器（也称为 sink）。
+luci/ltn12.lua sink.simplify(snk)：创建一个简化版的接收器，该接收器仅接收原始数据，忽略元数据。
+luci/ltn12.lua sink.file(handle, io_err)：创建一个将数据写入文件的接收器。
+luci/ltn12.lua sink.null()：创建一个丢弃所有数据的接收器。
+luci/ltn12.lua sink.error(err)：创建一个在写入数据时返回给定错误消息的接收器。
+luci/ltn12.lua sink.chain(f, snk)：创建一个新的接收器，其中数据通过给定的过滤器 f 处理，然后写入给定的接收器 snk。
+luci/ltn12.lua pump.step(src, snk)：将数据从给定的源传输到给定的接收器，并且每次传输一个数据块。该函数返回成功时的状态。
+luci/ltn12.lua pump.all(src, snk, step)：将数据从给定的源传输到给定的接收器。该函数会重复调用 pump.step，直到源中没有剩余数据，或者发生错误。
+luci/sys.lua call(...)：调用一个新的 LuCI HTTP 请求。
+luci/sys.lua hostname(newname)：获取、设置主机名。
+luci/sys.lua httpget(url, stream, target)：从指定的URL下载数据。该函数支持URL重定向和流式传输数据。
+luci/sys.lua reboot()：重新启动设备。
+luci/sys.lua syslog()：以字符串形式返回设备系统日志。
+luci/sys.lua dmesg()：以字符串形式返回设备内核消息缓冲区（dmesg）输出。
+luci/sys.lua uniqueid(bytes)：以指定数量的字节生成唯一标识符。
+luci/sys.lua uptime()：获取设备开机时间。
+luci/sys.lua net.mac_hints(callback)：获取 MAC 地址相关的网络提示信息。
+luci/sys.lua net.ipv4_hints(callback)：获取 IPv4 地址相关的网络提示信息。
+luci/sys.lua net.ipv6_hints(callback)：获取 IPv6 地址相关的网络提示信息。
+luci/sys.lua net.host_hints(callback)：获取主机名相关的网络提示信息。
+luci/sys.lua net.conntrack(callback)：获取 Linux 内核连接跟踪（conntrack）信息。
+luci/sys.lua net.devices()：获取设备上的所有网络接口。
+luci/sys.lua net.duid_to_mac(duid)：根据设备唯一标识符（DUID）获取相应的 MAC 地址。
+luci/sys.lua process.info(key)：获取指定进程的信息。
+luci/sys.lua process.list()：获取当前设备的所有进程列表。
+luci/sys.lua process.setgroup(gid)：设置当前进程的组 ID。
+luci/sys.lua process.setuser(uid)：设置当前进程的用户 ID。
+luci/sys.lua process.exec(command, stdout, stderr, nowait)：执行给定的 shell 命令，并可选择是否等待其完成后返回。
+luci/sys.lua user.getpasswd(username)：获取指定用户的密码。
+luci/sys.lua user.checkpasswd(username, pass)：检查指定用户名和密码是否匹配。
+luci/sys.lua user.setpasswd(username, password)：设置指定用户的密码。
+luci/sys.lua wifi.getiwinfo(ifname)：获取指定 Wi-Fi 接口的 iwinfo 信息。
+luci/sys.lua init.names()：获取当前设备上的所有 init 脚本。
+luci/sys.lua init.index(name)：根据 init 命名约定获取指定 init 脚本的索引号。
+luci/sys.lua init.enabled(name)：检查指定init脚本是否在系统启动时被启用。
+luci/sys.lua init.enable(name)：启用指定 init 脚本。
+luci/sys.lua init.disable(name)：禁用指定 init 脚本。
+luci/sys.lua init.start(name)：启动指定 init 脚本。
+luci/sys.lua init.stop(name)：停止指定 init 脚本。
+luci/sys.lua init.restart(name)：重启指定 init 脚本。
+luci/sys.lua init.reload(name)：重新加载指定 init 脚本。
+luci/template.lua render(name, scope)：使用给定名称的模板文件和作用域来渲染模板。这个函数会在 LuCI 的模板存储目录里查找指定名称的模板文件，并将其与给定的作用域结合起来进行渲染。
+luci/template.lua render_string(template, scope)：使用给定的模板字符串和作用域来渲染模板。这个函数会将给定的模板字符串与作用域结合起来进行渲染。
+luci/util.lua class(base)：定义一个类，可以指定一个基类。
+luci/util.lua instanceof(object, class)：检查一个对象是否是指定类的实例。
+luci/util.lua threadlocal(tbl)：创建一个线程本地存储的 table。
+luci/util.lua perror(obj)：打印 Lua 抛出的异常信息。
+luci/util.lua dumptable(t, maxdepth, i, seen)：将给定的 table 转换为可读的字符串表示，支持多层嵌套，避免循环引用。其中可选参数 maxdepth 表示最大递归深度，可选参数 i 表示当前缩进级别，可选参数 seen 表示已经输出过的 table 集合，避免重复输出。
+luci/util.lua pcdata(value)：将给定字符串包装成 XML CDATA 形式。
+luci/util.lua urlencode(value)：将给定字符串进行 URL 编码。
+luci/util.lua urldecode(value, decode_plus)：将给定字符串进行 URL 解码。其中可选参数 decode_plus 表示是否解码加号(+)为   空格。
+luci/util.lua striptags(value)：去除给定字符串中的 HTML 标签。
+luci/util.lua shellquote(value)：将给定字符串进行 Shell 引用。
+luci/util.lua shellsqescape(value)：将给定字符串转义为 Shell 单引号字符串。
+luci/util.lua shellstartsqescape(value)：将给定字符串转义为 Shell 单引号字符串，并添加单引号。
+luci/util.lua split(str, pat, max, regex)：使用分隔符或正则表达式将给定字符串分割成多个子串。其中可选参数 max 表示最大分割数。
+luci/util.lua trim(str)：去除字符串两边的空白字符。
+luci/util.lua cmatch(str, pat)：在字符串中查找匹配给定正则表达式的子串，并返回第一个捕获分组的值。
+luci/util.lua imatch(v)：判断给定值是否为整型数值。
+luci/util.lua parse_units(ustr)：解析一个带有单位的字符串，并返回其数值和单位。例如，给定字符串 10KB，就会返回 {10, "KB"}。
+luci/util.lua append(src, ...)：将多个 table 合并到给定 table 中，类似于 table.concat。
+luci/util.lua combine(...)：将多个 table 合并到一个新的 table 中，按照参数顺序进行合并，后面的 table 会覆盖前面的 table。
+luci/util.lua contains(table, value)：判断给定的 table 是否包含指定的值。
+luci/util.lua update(t, updates)：使用给定的键值对来更新给定 table 中的元素。
+luci/util.lua keys(t)：返回给定 table 中所有键的列表。
+luci/util.lua clone(object, deep)：克隆一个 table 或 userdata，如果指定了 deep 参数，则进行深度复制。
+luci/util.lua serialize_data(val, seen)：将给定的 Lua 值转换为 JSON 格式的字符串。
+luci/util.lua restore_data(str)：将经过 serialize_data 处理后的字符串还原为 Lua 值。
+luci/util.lua get_bytecode(val)：编译给定的 Lua 函数或表达式，并返回其字节码。
+luci/util.lua strip_bytecode(code)：将给定的字节码转换为对应的 Lua 代码。
+luci/util.lua spairs(t,f)：按照指定函数对 table 进行排序，并返回排序后的键值对迭代器。
+luci/util.lua kspairs(t)：按照键名对 table 进行排序，并返回排序后的键值对迭代器。
+luci/util.lua vspairs(t)：按照值对 table 进行排序，并返回排序后的键值对迭代器。
+luci/util.lua bigendian()：判断当前系统是否为大端字节序。
+luci/util.lua exec(command)：执行给定的 Shell 命令，并返回其标准输出的字符串表示形式。
+luci/util.lua execi(command)：执行和 exec 类似的操作，但不会将输出转换为字符串，而是返回一个文件句柄，可以逐行读取输出。
+luci/util.lua execl(command)：执行和 exec 类似的操作，但会将命令的标准错误输出重定向到标准输出。
+luci/util.lua ubus(object, method, data, path, timeout)：使用 UBUS 远程调用指定对象的方法，并传递给定的数据。其中可选参数 path 表示指定 UBUS 的路径，timeout 表示等待响应的超时时间。
+luci/util.lua serialize_json(x, cb)：将给定的 Lua 值转换为 JSON 格式的字符串，支持回调函数来自定义序列化过程。
+luci/util.lua libpath()：返回当前执行脚本所在目录中 .so 库文件的路径。
+luci/util.lua checklib(fullpathexe, wantedlib)：检查给定的可执行文件是否正确链接了指定的共享库。
+luci/util.lua performResume(err, co, ...)：恢复一个协程，并处理其异常信息。
+luci/util.lua coxpcall(f, err, ...)：使用 xpcall 和协程来运行指定函数，保证可以捕获该函数的所有异常信息。
+luci/util.lua copcall(f, ...)：使用 coroutine.resume 来运行指定函数，可以捕获该函数的异步异常。
+luci/xml.lua pcdata(value)：创建一个包含给定字符串的 Lua table，用于描述 XML 文档中的 PCDATA（纯文本）节点。
+luci/xml.lua striptags(value)：移除给定字符串中的所有 HTML 或 XML 标签，并返回经过处理后的纯文本字符串。
+nixio/fs.lua readfile(path, limit)：从文件中读取指定字节数的内容，并返回一个字符串。可选参数 limit 表示要读取的最大字节数。
+nixio/fs.lua writefile(path, data)：将给定的字符串写入到文件中。
+nixio/fs.lua datacopy(src, dest, size)：在两个文件之间直接复制数据，size 参数表示要复制的字节数。
+nixio/fs.lua copy(src, dest)：将源文件复制到目标文件中。如果目标文件已经存在，则会被覆盖。
+nixio/fs.lua move(src, dest)：将源文件移动到目标文件中。如果目标文件已经存在，则会被覆盖。
+nixio/fs.lua mkdirr(dest, mode)：创建多级目录，并设置指定的权限（如果提供了权限参数）。
+nixio/fs.lua copyr(src, dest)：将源目录和其子目录中的所有内容复制到目标目录中。如果目标目录已经存在，则不会复制其中已经存在的文件。
+nixio/fs.lua mover(src, dest)：将源目录及其子目录中的所有内容移动到目标目录中。如果目标目录已经存在，则不会移动其中已经存在的文件。
+nixio/fs.lua remover(src)：删除给定路径的文件或目录。如果路径是一个目录，则会删除其中的所有文件和子目录。
+nixio/util.lua consume(iter, append)：遍历一个迭代器，并返回其中的每一个值，同时将其添加到给定的 table 中。可选参数 append 表示是否将遍历结果附加到 table 的末尾。
+nixio/util.lua meta.is_socket(self)：检查给定对象是否为一个 socket。
+nixio/util.lua meta.is_tls_socket(self)：检查给定对象是否为一个 TLS socket。
+nixio/util.lua meta.is_file(self)：检查给定对象是否为一个文件描述符。
+nixio/util.lua meta.readall(self, len)：从给定对象中读取指定字节数的数据，并返回一个字符串。如果没有指定要读取的长度，则会读取对象中的所有可用数据。
+nixio/util.lua meta.writeall(self, data)：向给定对象中写入指定的数据，并返回实际写入的字节数。
+nixio/util.lua meta.linesource(self, limit)：创建一个使用 \n 作为分隔符的行迭代器，用于从文件或套接字中提取文本行。
+nixio/util.lua meta.blocksource(self, bs, limit)：创建一个块迭代器，用于从文件或套接字中提取指定大小的块。
+nixio/util.lua meta.sink(self, close)：创建一个消费者，将其用于从生产者那里读取数据并写入到给定对象中。如果 close 参数为真，则在消费者用完后关闭对象。
+nixio/util.lua meta.copy(self, fdout, size)：从给定对象中复制指定大小的数据到目标文件描述符中，并返回实际复制的字节数。
+nixio/util.lua meta.copyz(self, fd, size)：将给定对象中的数据复制到目标文件描述符中，直到读取到 EOF 或复制了指定数量的字节。
+model/firewall.lua init(cursor)：创建防火墙模型，并从数据库中加载所有配置。
+model/firewall.lua save(self, ...)：保存当前防火墙配置到数据库中，并返回是否保存成功。
+model/firewall.lua commit(self, ...)：提交当前防火墙配置到操作系统中，并返回是否提交成功。
+model/firewall.lua get_defaults()：获取防火墙默认配置。
+model/firewall.lua new_zone(self)：创建一个新的防火墙区域。
+model/firewall.lua add_zone(self, n)：添加一个防火墙区域。
+model/firewall.lua get_zone(self, n)：获取指定名称的防火墙区域。
+model/firewall.lua get_zones(self)：获取所有防火墙区域。
+model/firewall.lua get_zone_by_network(self, net)：获取给定网络所在的防火墙区域。
+model/firewall.lua del_zone(self, n)：删除指定名称的防火墙区域。
+model/firewall.lua rename_zone(self, old, new)：重命名指定的防火墙区域。
+model/firewall.lua del_network(self, net)：从防火墙配置中删除指定的网络。
+model/firewall.lua defaults.__init__(self)：初始化防火墙默认配置。
+model/firewall.lua defaults.get(self, opt)：获取指定防火墙选项的默认值。
+model/firewall.lua defaults.set(self, opt, val)：设置指定防火墙选项的默认值。
+model/firewall.lua defaults.syn_flood(self)：获取 SYN Flood 抵御的默认配置。
+model/firewall.lua defaults.drop_invalid(self)：获取丢弃无效数据包的默认配置。
+model/firewall.lua defaults.input(self)：获取输入防火墙规则集的默认配置。
+model/firewall.lua defaults.forward(self)：获取转发防火墙规则集的默认配置。
+model/firewall.lua defaults.output(self)：获取输出防火墙规则集的默认配置。
+model/firewall.lua zone.__init__(self, z)：初始化一个防火墙区域对象。
+model/firewall.lua zone.get(self, opt)：获取指定防火墙区域选项的值。
+model/firewall.lua zone.set(self, opt, val)：设置指定防火墙区域选项的值。
+model/firewall.lua zone.masq(self)：获取当前防火墙区域的MASQUERADE规则。
+model/firewall.lua zone.name(self)：获取当前防火墙区域的名称。
+model/firewall.lua zone.network(self)：获取当前防火墙区域的网络。
+model/firewall.lua zone.input(self)：获取当前防火墙区域的输入规则集。
+model/firewall.lua zone.forward(self)：获取当前防火墙区域的转发规则集。
+model/firewall.lua zone.output(self)：获取当前防火墙区域的输出规则集。
+model/firewall.lua zone.add_network(self, net)：向当前防火墙区域添加网络。
+model/firewall.lua zone.del_network(self, net)：从当前防火墙区域中删除指定网络。
+model/firewall.lua zone.get_networks(self)：获取当前防火墙区域中所有网络。
+model/firewall.lua zone.clear_networks(self)：清除当前防火墙区域中所有网络。
+model/firewall.lua zone.get_forwardings_by(self, what)：获取指定类型的端口转发规则。
+model/firewall.lua zone.add_forwarding_to(self, dest)：添加一个接收端口转发规则。
+model/firewall.lua zone.add_forwarding_from(self, src)：添加一个发送端口转发规则。
+model/firewall.lua zone.del_forwardings_by(self, what)：删除指定类型的所有端口转发规则。
+model/firewall.lua zone.add_redirect(self, options)：添加一个端口重定向规则。
+model/firewall.lua zone.add_rule(self, options)：添加一个防火墙规则。
+model/firewall.lua zone.get_color(self)：获取当前防火墙区域的颜色。
+model/firewall.lua forwarding.__init__(self, f)：初始化一个端口转发对象。
+model/firewall.lua forwarding.src(self)：获取当前端口转发规则的源端口。
+model/firewall.lua forwarding.dest(self)：获取当前端口转发规则的目标端口。
+model/firewall.lua forwarding.src_zone(self)：获取当前端口转发规则的源区域。
+model/firewall.lua forwarding.dest_zone(self)：获取当前端口转发规则的目标区域。
+model/firewall.lua rule.__init__(self, f)：初始化一个防火墙规则对象。
+model/firewall.lua rule.get(self, opt)：获取指定防火墙规则选项的值。
+model/firewall.lua rule.set(self, opt, val)：设置指定防火墙规则选项的值。
+model/firewall.lua rule.src(self)：获取当前防火墙规则的源地址。
+model/firewall.lua rule.dest(self)：获取当前防火墙规则的目标地址。
+model/firewall.lua rule.src_zone(self)：获取当前防火墙规则的源区域。
+model/firewall.lua rule.dest_zone(self)：获取当前防火墙规则的目标区域。
+model/firewall.lua redirect.__init__(self, f)：初始化一个端口重定向对象。
+model/firewall.lua redirect.get(self, opt)：获取指定端口重定向选项的值。
+model/firewall.lua redirect.set(self, opt, val)：设置指定端口重定向选项的值。
+model/firewall.lua redirect.src(self)：获取当前端口重定向规则的源端口。
+model/firewall.lua redirect.dest(self)：获取当前端口重定向规则的目标端口。
+model/firewall.lua redirect.src_zone(self)：获取当前端口重定向规则的源区域。
+model/firewall.lua redirect.dest_zone(self)：获取当前端口重定向规则的目标区域。
+model/ipkg.lua info(pkg)：获取指定软件包的详细信息。
+model/ipkg.lua status(pkg)：获取指定软件包的安装状态。
+model/ipkg.lua install(...)：安装一个或多个软件包。
+model/ipkg.lua installed(pkg)：检查指定软件包是否已经安装。
+model/ipkg.lua remove(...)：卸载一个或多个已安装的软件包。
+model/ipkg.lua update()：更新软件包列表和索引。
+model/ipkg.lua upgrade()：升级所有已安装的软件包。
+model/ipkg.lua list_all(pat, cb)：列出所有可用的软件包，并可选地用正则表达式 pat 进行过滤，回调函数 cb 用于遍历结果列表并对每个元素执行操作。
+model/ipkg.lua list_installed(pat, cb)：列出所有已安装的软件包，并可选地用正则表达式 pat 进行过滤，回调函数 cb 用于遍历结果列表并对每个元素执行操作。
+model/ipkg.lua find(pat, cb)：在所有可用的软件包中查找符合正则表达式 pat 的软件包，并用回调函数 cb 遍历结果列表并对每个元素执行操作。
+model/ipkg.lua overlay_root()：获取软件包安装的目录。
+model/ipkg.lua compare_versions(ver1, comp, ver2)：比较两个版本号 ver1 和 ver2，使用字符串 comp 表示比较操作。比较操作可以是 <，<=，=，>=，或 >。
+model/network.lua init(cursor)：初始化网络配置对象。
+model/network.lua save(self, ...)：将当前网络配置写入系统配置文件中。
+model/network.lua commit(self, ...)：将之前的修改操作提交到数据库中。
+model/network.lua ifnameof(self, x)：获取指定接口的名称。
+model/network.lua get_protocol(self, protoname, netname)：获取指定协议的配置信息。
+model/network.lua get_protocols(self)：获取所有协议的配置信息。
+model/network.lua register_protocol(self, protoname)：注册一个新的协议。
+model/network.lua register_pattern_virtual(self, pat)：注册一个虚拟模式匹配。
+model/network.lua register_error_code(self, code, message)：注册一个错误码以及其对应的错误信息。
+model/network.lua has_ipv6(self)：检查系统是否支持 IPv6。
+model/network.lua add_network(self, n, options)：添加一个新的网络。
+model/network.lua get_network(self, n)：获取指定网络的配置信息。
+model/network.lua get_networks(self)：获取所有网络的配置信息。
+model/network.lua del_network(self, n)：删除指定网络的配置信息。
+model/network.lua rename_network(self, old, new)：将原有的网络名称 old 修改为 new。
+model/network.lua get_interface(self, i)：获取指定接口的配置信息。
+model/network.lua get_interfaces(self)：获取所有接口的配置信息。
+model/network.lua ignore_interface(self, x)：忽略指定接口，使其在其他操作中不可用。
+model/network.lua get_wifidev(self, dev)：获取指定 WiFi 设备的配置信息。
+model/network.lua get_wifidevs(self)：获取所有 WiFi 设备的配置信息。
+model/network.lua get_wifinet(self, net)：获取指定 WiFi 网络的配置信息。
+model/network.lua add_wifinet(self, net, options)：向配置中添加一个新的 WiFi 网络，并附带可选项。
+model/network.lua del_wifinet(self, net)：从配置中删除指定的 WiFi 网络。
+model/network.lua get_status_by_route(self, addr, mask)：获取指定网络地址及掩码在路由表中的状态。
+model/network.lua get_status_by_address(self, addr)：获取指定 IP 地址在路由表中的状态。
+model/network.lua get_wan_networks(self)：获取所有 WAN 网络的配置信息。
+model/network.lua get_wan6_networks(self)：获取所有 WAN6 网络的配置信息。
+model/network.lua get_switch_topologies(self)：获取所有交换机拓扑结构的配置信息。
+model/network.lua network(name, proto)：创建一个新的网络对象，并根据指定的名称和协议进行初始化。
+model/network.lua protocol.__init__(self, name)：初始化协议对象。
+model/network.lua protocol._get(self, opt)：获取指定选项的值。
+model/network.lua protocol._ubus(self, field)：通过 ubus 获取指定字段的值。
+model/network.lua protocol.get(self, opt)：获取指定选项的值。
+model/network.lua protocol.set(self, opt, val)：设置指定选项的值。
+model/network.lua protocol.ifname(self)：获取接口名称。
+model/network.lua protocol.proto(self)：获取协议类型名称。
+model/network.lua protocol.get_i18n(self)：获取国际化信息。
+model/network.lua protocol.type(self)：获取协议类型，默认为 protocol。
+model/network.lua protocol.name(self)：获取协议名称。
+model/network.lua protocol.uptime(self)：获取协议启动时间。
+model/network.lua protocol.expires(self)：获取协议过期时间。
+model/network.lua protocol.metric(self)：获取协议的度量值。
+model/network.lua protocol.zonename(self)：获取时区名称。
+model/network.lua protocol.ipaddr(self)：获取 IPv4 地址。
+model/network.lua protocol.ipaddrs(self)：获取所有 IPv4 地址。
+model/network.lua protocol.netmask(self)：获取子网掩码。
+model/network.lua protocol.gwaddr(self)：获取 IPv4 网关地址。
+model/network.lua protocol.dnsaddrs(self)：获取 DNS 服务器地址列表。
+model/network.lua protocol.ip6addr(self)：获取 IPv6 地址。
+model/network.lua protocol.ip6addrs(self)：获取所有 IPv6 地址。
+model/network.lua protocol.gw6addr(self)：获取 IPv6 网关地址。
+model/network.lua protocol.dns6addrs(self)：获取 DNS IPv6 地址列表。
+model/network.lua protocol.ip6prefix(self)：获取 IPv6 前缀地址（如果适用）。
+model/network.lua protocol.errors(self)：获取协议错误信息。
+model/network.lua protocol.is_bridge(self)：判断是否为桥接协议。
+model/network.lua protocol.opkg_package(self)：获取 opkg 包名称。
+model/network.lua protocol.is_installed(self)：判断协议是否已安装。
+model/network.lua protocol.is_virtual(self)：判断是否为虚拟协议。
+model/network.lua protocol.is_floating(self)：判断是否为浮动协议。
+model/network.lua protocol.is_dynamic(self)：判断是否为动态协议。
+model/network.lua protocol.is_auto(self)：判断是否为自动协议。
+model/network.lua protocol.is_alias(self)：判断是否为别名协议。
+model/network.lua protocol.is_empty(self)：判断协议是否为空。
+model/network.lua protocol.is_up(self)：判断协议是否启动。
+model/network.lua protocol.add_interface(self, ifname)：向协议添加指定的接口。
+model/network.lua protocol.del_interface(self, ifname)：从协议中删除指定的接口。
+model/network.lua protocol.get_interface(self)：获取与协议关联的接口。
+model/network.lua protocol.get_interfaces(self)：获取所有与协议关联的接口。
+model/network.lua protocol.contains_interface(self, ifname)：判断协议是否包含指定的接口。
+model/network.lua protocol.adminlink(self)：获取物理连接状态。
+model/network.lua interface.__init__(self, ifname, network)：初始化接口对象。
+model/network.lua interface._ubus(self, field)：通过 ubus 获取指定字段值。
+model/network.lua interface.name(self)：获取接口名称。
+model/network.lua interface.mac(self)：获取接口 MAC 地址。
+model/network.lua interface.ipaddrs(self)：获取 IPv4 地址列表。
+model/network.lua interface.ip6addrs(self)：获取 IPv6 地址列表。
+model/network.lua interface.type(self)：获取接口类型。
+model/network.lua interface.shortname(self)：获取接口类型的缩写。
+model/network.lua interface.get_i18n(self)：获取国际化信息。
+model/network.lua interface.get_type_i18n(self)：获取接口类型的国际化信息。
+model/network.lua interface.adminlink(self)：获取物理连接状态。
+model/network.lua interface.ports(self)：获取桥接端口列表（如果适用）。
+model/network.lua interface.bridge_id(self)：获取桥接 ID（如果适用）。
+model/network.lua interface.bridge_stp(self)：获取桥接 STP 状态（如果适用）。
+model/network.lua interface.is_up(self)：判断接口是否启动。
+model/network.lua interface.is_bridge(self)：判断接口是否为桥接。
+model/network.lua interface.is_bridgeport(self)：判断接口是否为桥接端口。
+model/network.lua interface.tx_bytes(self)：获取接口发送的总字节数。
+model/network.lua interface.rx_bytes(self)：获取接口接收的总字节数。
+model/network.lua interface.tx_packets(self)：获取接口发送的总包数。
+model/network.lua interface.rx_packets(self)：获取接口接收的总包数。
+model/network.lua interface.get_network(self)：获取与接口关联的网络对象。
+model/network.lua interface.get_networks(self)：获取所有与接口关联的网络对象。
+model/network.lua interface.get_wifinet(self)：获取与接口关联的 WiFi 网络对象（如果适用）。
+model/network.lua wifidev.__init__(self, name)：初始化 WiFi 设备对象。
+model/network.lua wifidev.get(self, opt)：获取指定选项的值。
+model/network.lua wifidev.set(self, opt, val)：设置指定选项的值。
+model/network.lua wifidev.name(self)：获取 WiFi 设备的名称。
+model/network.lua wifidev.hwmodes(self)：获取支持的硬件模式。
+model/network.lua wifidev.get_i18n(self)：获取国际化信息。
+model/network.lua wifidev.is_up(self)：判断 WiFi 设备是否启动。
+model/network.lua wifidev.get_wifinet(self, net)：获取指定的 WiFi 网络对象。
+model/network.lua wifidev.get_wifinets(self)：获取所有 WiFi 网络对象。
+model/network.lua wifidev.add_wifinet(self, options)：添加一个新的 WiFi 网络对象。
+model/network.lua wifidev.del_wifinet(self, net)：删除指定的 WiFi 网络对象。
+model/network.lua wifinet.__init__(self, name, data)：初始化 WiFi 网络对象。
+model/network.lua wifinet.ubus(self, ...)：通过 ubus 与 WiFi 网络对象交互。
+model/network.lua wifinet.get(self, opt)：获取指定选项的值。
+model/network.lua wifinet.set(self, opt, val)：设置指定选项的值。
+model/network.lua wifinet.mode(self)：获取 WiFi 网络的模式。
+model/network.lua wifinet.ssid(self)：获取 WiFi 网络的 SSID。
+model/network.lua wifinet.bssid(self)：获取 WiFi 网络的 BSSID。
+model/network.lua wifinet.network(self)：获取与 WiFi 网络对象关联的网络对象。
+model/network.lua wifinet.id(self)：获取 WiFi 网络的 ID。
+model/network.lua wifinet.name(self)：获取 WiFi 网络的名称。
+model/network.lua wifinet.ifname(self)：获取 WiFi 网络使用的接口名称。
+model/network.lua wifinet.get_device(self)：获取与 WiFi 网络对象关联的设备对象。
+model/network.lua wifinet.is_up(self)：判断 WiFi 网络是否启动。
+model/network.lua wifinet.active_mode(self)：获取当前 WiFi 网络的活动模式。
+model/network.lua wifinet.active_mode_i18n(self)：获取当前 WiFi 网络活动模式的国际化信息。
+model/network.lua wifinet.active_ssid(self)：获取当前 WiFi 网络的活动 SSID。
+model/network.lua wifinet.active_bssid(self)：获取当前 WiFi 网络的活动 BSSID。
+model/network.lua wifinet.active_encryption(self)：获取当前 WiFi 网络的加密方式。
+model/network.lua wifinet.assoclist(self)：获取连接到当前 WiFi 网络的设备列表。
+model/network.lua wifinet.frequency(self)：获取当前 WiFi 网络的频率。
+model/network.lua wifinet.bitrate(self)：获取当前 WiFi 网络的传输速率。
+model/network.lua wifinet.channel(self)：获取当前 WiFi 网络的信道。
+model/network.lua wifinet.signal(self)：获取当前 WiFi 网络的信号强度。
+model/network.lua wifinet.noise(self)：获取当前 WiFi 网络的噪声强度。
+model/network.lua wifinet.country(self)：获取当前 WiFi 网络的国家代码。
+model/network.lua wifinet.txpower(self)：获取当前 WiFi 网络的发射功率。
+model/network.lua wifinet.txpower_offset(self)：获取当前 WiFi 网络发射功率和规定最大功率之间的差值。
+model/network.lua wifinet.signal_level(self, s, n)：根据信号强度和噪声强度计算信号水平。
+model/network.lua wifinet.signal_percent(self)：获取当前 WiFi 网络的信号强度百分比。
+model/network.lua wifinet.shortname(self)：获取当前 WiFi 网络的短名称。
+model/network.lua wifinet.get_i18n(self)：获取国际化信息。
+model/network.lua wifinet.adminlink(self)：获取管理链接信息。
+model/network.lua wifinet.get_network(self)：获取与当前 WiFi 网络对象关联的网络对象。
+model/network.lua wifinet.get_networks(self)：获取所有 WiFi 网络对象。
+model/network.lua wifinet.get_interface(self)：获取与当前 WiFi 网络对象关联的接口对象。
+model/network.lua get_all_wan_networks(self)：获取所有 WAN 类型的网络对象列表。
+model/network.lua get_all_wan6_networks(self)：获取所有 IPv6 WAN 类型的网络对象列表。
+model/network.lua get_all_status_by_route(self, addr, mask)：根据路由表中给定的目标地址和掩码获取所有与之匹配的网络状态
+model/uci.lua cursor()：创建并返回一个新的 UCI（Unified Configuration Interface）游标对象。
+model/uci.lua cursor_state()：获取 UCI 游标对象的状态。
+model/uci.lua substate(self)：获取子状态。
+model/uci.lua get_confdir(self)：获取 UCI 配置文件目录路径。
+model/uci.lua get_savedir(self)：获取 UCI 保存的文件夹路径。
+model/uci.lua get_session_id(self)：获取当前 UCI 会话 ID。
+model/uci.lua set_confdir(self, directory)：设置 UCI 配置文件目录路径。
+model/uci.lua set_savedir(self, directory)：设置 UCI 保存的文件夹路径。
+model/uci.lua set_session_id(self, id)：设置 UCI 会话 ID。
+model/uci.lua load(self, config)：加载指定的 UCI 配置文件。
+model/uci.lua save(self, config)：保存对指定 UCI 配置文件的修改。
+model/uci.lua unload(self, config)：卸载指定的 UCI 配置文件。
+model/uci.lua changes(self, config)：获取指定 UCI 配置文件的所有修改。
+model/uci.lua revert(self, config)：还原指定 UCI 配置文件的所有修改。
+model/uci.lua commit(self, config)：提交指定 UCI 配置文件的修改。
+model/uci.lua apply(self, rollback)：应用指定 UCI 配置文件的修改。
+model/uci.lua confirm(self, token)：确认一个 UCI 事务。
+model/uci.lua rollback(self)：回滚一个 UCI 事务。
+model/uci.lua rollback_pending(self)：检查是否有未解决的 UCI 事务。
+model/uci.lua foreach(self, config, stype, callback) 是一个用于对指定 UCI 配置文件中的指定类型节点进行迭代，并调用指定的回调函数的方法。它需要传入三个参数：
+config：需要迭代的 UCI 配置文件的名称。
+stype：需要迭代的 UCI 节点的类型。
+callback：每次迭代所调用的回调函数。
+该方法会按照指定的节点类型和顺序，对配置文件中每个符合条件的节点调用回调函数，并将节点的名称、选项和值作为参数传递给回调函数。回调函数应该定义为接受三个参数的函数，并可以使用这些参数来处理每个节点的值。举例而言，如果你想遍历 network 配置文件中的所有 interface 类型节点，并打印它们的名称和 IP 地址，可以这样调用：
+lua
+local uci = require("luci.model.uci").cursor()
+uci:foreach("network", "interface", function(interface)
+    print("Interface name: " .. interface[".name"])
+    print("IP address: " .. (interface.ipaddr or "unknown"))
+end)
+model/uci.lua get(self, ...)：获取指定 UCI 节点的值。可以使用可变参数指定配置文件、节点类型、节点名称和选项名称。
+model/uci.lua get_state(self, ...)：获取指定 UCI 节点的状态信息。与 get 方法相同，可以使用相同的可变参数。
+model/uci.lua get_all(self, config, section) 是一个获取指定 UCI 配置文件中指定类型节点的所有值的方法。它需要传入两个参数：
+config：需要获取值的 UCI 配置文件的名称。
+section：需要获取值的 UCI 节点的类型。
+model/uci.lua get_bool(self, ...)：获取指定 UCI 节点的布尔值。
+model/uci.lua get_first(self, config, stype, option, default) 是一个获取指定 UCI 配置文件中指定类型节点的第一个值的方法。它需要传入四个参数：
+config：需要获取值的 UCI 配置文件的名称。
+stype：需要获取值的 UCI 节点的类型。
+option：需要获取值的 UCI 节点的选项名称。
+default：如果没有找到对应节点或选项，则返回的默认值。
+该方法会返回指定节点和选项的第一个值。如果节点或选项不存在，则返回传入的默认值。配置文件中指定类型节点的第一个值。需要传入配置文件名称、节点类型、选项名称和默认值。
+model/uci.lua get_list(self, config, section, option)：获取指定 UCI 配置文件中指定类型节点的列表。需要传入配置文件名称、节点名称和选项名称。
+model/uci.lua section(self, config, stype, name, values)：添加指定名称、类型和值的节点到指定 UCI 配置文件中。需要传入配置文件名称、节点类型、节点名称和一个可选的值表。
+model/uci.lua add(self, config, stype)：添加指定类型的节点到指定 UCI 配置文件中，并返回节点名称。需要传入配置文件名称和节点类型。
+model/uci.lua set(self, config, section, option, ...)：设置指定 UCI 节点的值。可以使用可变参数指定配置文件、节点名称、选项名称和一个或多个值。
+model/uci.lua set_list(self, config, section, option, value)：设置指定 UCI 节点的列表值。需要传入配置文件名称、节点名称、选项名称和值。
+model/uci.lua tset(self, config, section, values)：设置指定 UCI 节点的多个值。需要传入配置文件名称、节点名称和一个值表。
+model/uci.lua reorder(self, config, section, index)：重新排序指定 UCI 节点中的值。需要传入配置文件名称、节点名称和一个新的索引数组。
+model/uci.lua delete(self, config, section, option)：删除指定 UCI 节点的值。需要传入配置文件名称、节点名称和选项名称。
+model/uci.lua delete_all(self, config, stype, comparator)：删除指定 UCI 配置文件中指定类型节点的所有值。需要传入配置文件名称、节点类型和一个可选的比较器函数。

@@ -1,0 +1,39 @@
+/usr/share/libubox/jshn.sh
+
+这些函数是 OpenWrt 中用于处理 JSON 数据的工具库。
+
+以下是这些函数的简要介绍：
+
+_json_get_var: 从当前 JSON 对象中获取指定名称的变量。
+_json_set_var: 在当前 JSON 对象中设置指定名称的变量为指定值。
+__jshn_raw_append: 将给定的 JSON 字符串添加到当前 JSON 对象的字符串值中。
+_jshn_append: 将指定值追加到当前 JSON 对象中指定变量的数组值中。
+_get_var: 从当前 JSON 对象中获取指定名称的变量。
+_set_var: 在当前 JSON 对象中设置指定名称的变量为指定值。
+_json_inc: 将当前 JSON 对象中指定变量的值增加给定数量。
+_json_add_generic: 在当前 JSON 对象中添加指定名称的变量，并设置其值为指定类型和值。
+_json_add_table: 在当前 JSON 对象中添加指定名称的子对象（table）。
+_json_close_table: 关闭当前 JSON 对象中最近一次打开的子对象。
+json_set_namespace: 设置当前 JSON 对象的命名空间，以便在调用其他函数时自动添加前缀。
+json_cleanup: 释放由 json_init 函数初始化的资源。
+json_init: 初始化一个新的 JSON 对象。
+json_add_object: 在当前 JSON 对象中添加指定名称的子对象（object）。
+json_close_object: 关闭当前 JSON 对象中最近一次打开的子对象。
+json_add_array: 在当前 JSON 对象中添加指定名称的数组变量。
+json_close_array: 关闭当前 JSON 对象中最近一次打开的数组变量。
+json_add_string: 在当前 JSON 对象中添加指定名称的字符串变量。
+json_add_int: 在当前 JSON 对象中添加指定名称的整数变量。
+json_add_boolean: 在当前 JSON 对象中添加指定名称的布尔值变量。
+json_add_double: 在当前 JSON 对象中添加指定名称的浮点数变量。
+json_add_null: 在当前 JSON 对象中添加指定名称的 null 值变量。
+json_load: 从指定的 JSON 字符串中加载一个 JSON 对象。
+json_load_file: 从指定的 JSON 文件中加载一个 JSON 对象。
+json_dump: 将当前 JSON 对象转换为一个 JSON 字符串。
+json_get_type: 获取当前 JSON 对象中指定名称的变量类型。
+json_get_keys: 获取当前 JSON 对象中的所有变量名称。
+json_get_values: 获取当前 JSON 对象中的所有变量值。
+json_get_var: 从当前 JSON 对象中获取指定名称的变量。
+json_get_vars: 获取当前 JSON 对象中的所有变量。
+json_select: 在当前 JSON 对象中查找一个或多个名称匹配的变量，并将其作为一个子JSON对象返回。
+json_is_a: 判断当前 JSON 对象中指定名称的变量类型是否为指定类型。
+json_for_each_item: 遍历指定 JSON 数组中的所有元素，调用指定的回调函数。

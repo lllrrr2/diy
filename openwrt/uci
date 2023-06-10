@@ -1,0 +1,21 @@
+/lib/config/uci.sh
+
+这些函数是 OpenWrt 中用于使用 UCI 进行配置管理的工具库。
+
+以下是这些函数的简要介绍：
+
+uci_load: 加载一个 UCI 配置文件。
+uci_set_default: 设置 UCI 配置文件中的默认值。
+uci_revert_state: 恢复 UCI 配置文件的状态为默认值。
+uci_set_state: 设置 UCI 配置文件的指定项为指定值。
+uci_toggle_state: 切换 UCI 配置文件的指定项的值。
+uci_set: 设置 UCI 配置文件的指定项为指定值。
+uci_add_list: 向 UCI 配置文件的指定列表中添加一个元素。
+uci_get_state: 获取 UCI 配置文件的指定项的值。
+uci_get: 获取 UCI 配置文件的指定项的值。
+uci_add: 向 UCI 配置文件中添加一个新项。
+uci_rename: 重命名 UCI 配置文件中的指定项。
+uci_remove: 从 UCI 配置文件中删除指定项。
+uci_remove_list: 从 UCI 配置文件的指定列表中删除指定元素。
+uci_commit: 提交对 UCI 配置文件所做的更改。
+这些函数用于在脚本中管理系统配置。UCI 是 OpenWrt 中的通用配置接口，可以通过 UCI 进行配置管理的应用包括网络、无线、系统和安全等方面。通过这些函数，可以在脚本中读取、写入、修改和删除配置文件中的配置项，以达到定制系统功能的目的。

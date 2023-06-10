@@ -1,0 +1,167 @@
+/lib/functions/procd.sh 是 OpenWrt 中用于管理进程和服务的  函数库，以下是它们的详细说明：
+
+procd_lock: 用于锁定指定资源。可以使用该函数防止多个实例同时处理同一资源。例如：
+
+procd_lock /var/lock/myresource.lock
+
+_procd_call: 内部函数，用于将给定参数作为新进程执行。例如：
+
+_procd_call /path/to/my/program arg1 arg2
+
+_procd_wrapper: 内部函数，用于包装给定命令并添加必要的 procd 环境变量。例如：
+
+_procd_wrapper /path/to/my/program arg1 arg2
+
+_procd_ubus_call: 内部函数，用于通过 ubus 调用指定的服务方法。例如：
+
+_procd_ubus_call myservice start
+
+_procd_open_service: 内部函数，用于启动一个新的 procd 服务。例如：
+
+_procd_open_service myservice
+
+_procd_close_service: 内部函数，用于关闭当前 procd 服务。例如：
+
+_procd_close_service
+
+_procd_add_array_data: 内部函数，用于将数据添加到 procd 数组中。例如：
+
+_procd_add_array_data myservice myarray "value1" "value2"
+
+_procd_add_array: 内部函数，用于创建一个新的 procd 数组。例如：
+
+_procd_add_array myservice myarray
+
+_procd_add_table_data: 内部函数，用于将数据添加到 procd 表格中。例如：
+
+_procd_add_table_data myservice mytable "key1" "value1" "key2" "value2"
+
+_procd_add_table: 内部函数，用于创建一个新的 procd 表格。例如：
+
+_procd_add_table myservice mytable
+
+_procd_open_instance: 内部函数，用于启动一个新的 procd 实例。例如：
+
+_procd_open_instance myservice myinstance
+
+_procd_open_trigger: 内部函数，用于启动一个新的 procd 触发器。例如：
+
+_procd_open_trigger myservice mytrigger
+
+_procd_close_trigger: 内部函数，用于关闭当前 procd 触发器。例如：
+
+_procd_close_trigger
+
+_procd_open_data: 内部函数，用于启动一个新的 procd 数据区。例如：
+
+_procd_open_data myservice mydata
+
+_procd_close_data: 内部函数，用于关闭当前 procd 数据区。例如：
+
+_procd_close_data
+
+_procd_open_validate: 内部函数，用于启动一个新的 procd 验证区。例如：
+
+_procd_open_validate myservice myvalidate
+
+_procd_close_validate: 内部函数，用于关闭当前 procd 验证区。例如：
+
+_procd_close_validate
+
+_procd_add_jail: 内部函数，用于添加一个新的 procd 版本控制系统（VCS）容器。例如：
+
+_procd_add_jail myservice /path/to/my/jail
+
+_procd_add_jail_mount: 内部函数，用于将 VCS 容器挂载到主机文件系统中。例如：
+
+_procd_add_jail_mount myservice /path/in/jail /path/on/host
+
+以下是对剩余的函数的解释：
+
+_procd_add_jail_mount_rw: 内部函数，用于将 VCS 容器挂载到主机文件系统中，并指定读写权限。例如：
+
+_procd_add_jail_mount_rw myservice /path/in/jail /path/on/host
+
+_procd_set_param: 内部函数，用于设置 procd 服务或实例的参数。例如：
+
+_procd_set_param myservice option value
+
+_procd_add_timeout: 内部函数，用于添加一个超时时间到 procd 触发器。例如：
+
+_procd_add_timeout 10m
+
+_procd_add_interface_trigger: 内部函数，用于向 procd 服务添加一个触发器，以响应接口状态的变化。例如：
+
+_procd_add_interface_trigger myservice wan ifup
+
+_procd_add_reload_interface_trigger: 内部函数，用于向 procd 服务添加一个触发器，以在接口状态更改时重新加载服务。例如：
+
+_procd_add_reload_interface_trigger myservice lan ifdown
+
+_procd_add_config_trigger: 内部函数，用于向 procd 服务添加一个触发器，在配置文件更改时触发。例如：
+
+_procd_add_config_trigger myservice /etc/config/myservice
+
+_procd_add_raw_trigger: 内部函数，用于向 procd 服务添加一个原始触发器。例如：
+
+_procd_add_raw_trigger myservice start /path/to/my/script
+
+_procd_add_reload_trigger: 内部函数，用于向 procd 服务添加一个重新加载触发器。例如：
+
+_procd_add_reload_trigger myservice /etc/init.d/myservice reload
+
+_procd_add_validation: 内部函数，用于向 procd 服务添加一个验证规则。例如：
+
+_procd_add_validation myservice "option" "not null"
+
+_procd_append_param: 内部函数，用于向 procd 服务或实例追加参数。例如：
+
+_procd_append_param myservice option1 value1
+
+_procd_close_instance: 内部函数，用于关闭当前 procd 实例。例如：
+
+_procd_close_instance
+
+_procd_add_instance: 内部函数，用于启动一个新的 procd 实例。例如：
+
+_procd_add_instance myservice myinstance
+
+procd_running: 检查指定服务是否正在运行，返回 0 或 1。例如：
+
+procd_running myservice
+
+_procd_kill: 内部函数，用于发送指定信号给指定进程。例如：
+
+_procd_kill "SIGTERM" myservice
+
+_procd_send_signal: 内部函数，用于发送指定信号给指定进程，并等待进程退出。例如：
+
+_procd_send_signal 10 myservice
+
+_procd_status: 内部函数，用于获取指定进程的状态。例如：
+
+_procd_status myservice
+
+procd_open_data: 创建一个新的 procd 数据区。例如：
+
+procd_open_data myservice data1
+
+procd_close_data: 关闭当前 procd 数据区。例如：
+
+procd_close_data
+
+_procd_set_config_changed: 内部函数，用于通知系统配置文件已更改。例如：
+
+_procd_set_config_changed myservice
+
+procd_add_mdns_service: 向 mDNS 发布服务。例如：
+
+procd_add_mdns_service "_myservice._tcp" 1234
+
+procd_add_mdns: 启用 mDNS 广播。例如：
+
+procd_add_mdns myservice
+
+uci_load_validate: 从 uci 配置中加载验证规则。例如：
+
+uci_load_validate myservice

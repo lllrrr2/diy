@@ -1,0 +1,48 @@
+/lib/functions/uci-defaults.sh
+json_select_array: 从 JSON 数据中选择一个数组。
+json_select_object: 从 JSON 数据中选择一个对象。
+ucidef_set_interface：设置一个新的网络接口。
+ucidef_set_board_id: 设置当前设备的 ID。
+ucidef_set_model_name: 设置当前设备的型号名称。
+ucidef_set_compat_version: 设置当前设备兼容的固件版本。
+ucidef_set_interface_lan：用于设置 LAN 接口以及相关配置。
+ucidef_set_interface_wan：用于设置 WAN 接口以及相关配置。
+ucidef_set_interfaces_lan_wan：同时设置 LAN 和 WAN 接口信息。
+ucidef_set_bridge_device: 设置桥接设备名。
+ucidef_set_bridge_mac: 设置桥接设备 MAC 地址。
+ucidef_set_network_device_mac: 设置网络接口 MAC 地址。
+_ucidef_add_switch_port: 添加交换机端口。
+_ucidef_finish_switch_roles: 完成交换机角色的定义。
+ucidef_set_ar8xxx_switch_mib: 设置 Atheros AR8xxx 系列交换机的 MIB。
+ucidef_add_switch：添加交换机。
+ucidef_add_switch_attr：添加交换机的属性。
+ucidef_add_switch_port_attr：添加交换机端口的属性。
+ucidef_set_interface_macaddr：设置接口 MAC 地址。
+ucidef_set_label_macaddr：设置标签的 MAC 地址。
+ucidef_add_atm_bridge：添加 ATM 桥接。
+ucidef_add_adsl_modem：添加 ADSL 调制解调器。
+ucidef_add_vdsl_modem：添加 VDSL 调制解调器。
+ucidef_set_led_ataport：设置 ATA 端口指示灯。
+_ucidef_set_led_common：设置 LED 公共参数。
+ucidef_set_led_default：设置默认 LED 状态。
+ucidef_set_led_heartbeat：设置 LED 心跳指示灯。
+ucidef_set_led_gpio：设置 GPIO LED。
+ucidef_set_led_ide：设置 IDE LED。
+ucidef_set_led_netdev：设置网络设备 LED。
+ucidef_set_led_oneshot：设置单次触发 LED。
+ucidef_set_led_portstate：设置端口状态 LED。
+ucidef_set_led_rssi：设置 RSSI 指示灯。
+ucidef_set_led_switch：设置交换机 LED。
+_ucidef_set_led_timer：设置 LED 定时器。
+ucidef_set_led_timer：设置 LED 定时器。
+_ucidef_set_led_trigger：设置 LED 触发器。
+ucidef_set_led_usbdev：设置 USB 设备 LED。
+ucidef_set_led_usbhost：设置 USB 主机 LED。
+ucidef_set_led_usbport：设置 USB 端口 LED。
+ucidef_set_led_wlan：设置 WLAN LED。
+ucidef_set_rssimon：设置 RSSI 监控器。
+ucidef_add_gpio_switch：添加 GPIO 开关。
+ucidef_set_hostname：设置主机名。
+ucidef_set_ntpserver：设置 NTP 服务器。
+board_config_update：更新硬件配置信息。
+board_config_flush：刷新硬件配置信息。

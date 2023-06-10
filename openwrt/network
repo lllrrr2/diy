@@ -1,0 +1,130 @@
+/lib/functions/network.sh
+/lib/functions/network.sh 是 OpenWrt 中用于获取网络配置信息的 Shell 脚本函数库。以下是其中一些常用的函数的详细信息：
+
+- __network_ifstatus(): 用于获取指定网卡的状态和 MAC 地址。例如
+
+bash
+#!/bin/sh
+
+IFSTATUS=$(__network_ifstatus eth0)
+echo "The status of eth0 is: $IFSTATUS"
+
+- network_get_ipaddr(): 用于获取指定网卡的 IPv4 地址。例如
+
+bash
+#!/bin/sh
+
+IPADDR=$(network_get_ipaddr eth0)
+echo "The IP address of eth0 is: $IPADDR"
+
+- network_get_ipaddr6(): 用于获取指定网卡的 IPv6 地址。例如
+
+bash
+#!/bin/sh
+
+IPV6ADDR=$(network_get_ipaddr6 eth0)
+echo "The IPv6 address of eth0 is: $IPV6ADDR"
+
+- network_get_subnet(): 用于获取指定网卡的 IPv4 子网掩码。例如
+
+bash
+#!/bin/sh
+
+SUBNET=$(network_get_subnet eth0)
+echo "The subnet mask of eth0 is: $SUBNET"
+
+- network_get_subnet6(): 用于获取指定网卡的 IPv6 子网掩码。例如
+
+bash
+#!/bin/sh
+
+SUBNET6=$(network_get_subnet6 eth0)
+echo "The IPv6 subnet mask of eth0 is: $SUBNET6"
+
+- network_get_prefix6(): 用于获取指定网卡的 IPv6 前缀长度。例如
+
+bash
+#!/bin/sh
+
+PREFIX6=$(network_get_prefix6 eth0)
+echo "The IPv6 prefix length of eth0 is: $PREFIX6"
+
+- network_get_ipaddrs(): 用于获取指定网卡的所有 IPv4 地址。例如
+
+bash
+#!/bin/sh
+
+IPADDRS=$(network_get_ipaddrs eth0)
+echo "The IP addresses of eth0 are: $IPADDRS"
+
+- network_get_ipaddrs6(): 用于获取指定网卡的所有 IPv6 地址。例如
+
+bash
+#!/bin/sh
+
+IPV6ADDRS=$(network_get_ipaddrs6 eth0)
+echo "The IPv6 addresses of eth0 are: $IPV6ADDRS"
+
+- network_get_ipaddrs_all(): 用于获取系统中所有网卡的 IPv4、IPv6 地址和 MAC 地址。例如
+
+bash
+#!/bin/sh
+
+IPADDRS_ALL=$(network_get_ipaddrs_all)
+echo "The IP addresses of all interfaces are: $IPADDRS_ALL"
+
+- network_get_subnets(): 用于获取系统中所有网卡的 IPv4 子网掩码。例如
+
+bash
+#!/bin/sh
+
+SUBNETS=$(network_get_subnets)
+echo "The subnet masks of all interfaces are: $SUBNETS"
+
+- network_get_subnets6(): 用于获取系统中所有网卡的 IPv6 子网掩码。例如
+
+bash
+#!/bin/sh
+
+SUBNETS6=$(network_get_subnets6)
+echo "The IPv6 subnet masks of all interfaces are: $SUBNETS6"
+
+- network_get_prefixes6(): 用于获取系统中所有网卡的 IPv6 前缀长度。例如
+
+bash
+#!/bin/sh
+
+PREFIXES6=$(network_get_prefixes6)
+echo "The IPv6 prefix lengths of all interfaces are: $PREFIXES6"
+
+- network_get_gateway(): 用于获取默认网关的 IPv4 地址。例如
+
+bash
+#!/bin/sh
+
+GATEWAY=$(network_get_gateway)
+echo "The IPv4 address of the default gateway is: $GATEWAY"
+
+- network_get_gateway6(): 用于获取默认网关的 IPv6 地址。例如
+
+bash
+#!/bin/sh
+
+GATEWAY6=$(network_get_gateway6)
+echo "The IPv6 address of the default gateway is: $GATEWAY6"
+
+- network_get_dnsserver(): 用于获取 DNS 服务器的 IPv4 地址列表。例如
+
+bash
+#!/bin/sh
+
+DNSSERVER=$(network_get_dnsserver)
+echo "The IPv4 addresses of DNS servers are: $DNSSERVER"
+
+- network_get_dnssearch(): 用于获取 DNS 查询域名列表。例如
+
+bash
+#!/bin/sh
+
+DNSSEARCH=$(network_get_dnssearch)
+echo "The DNS search domains are: $DNSSEARCH"

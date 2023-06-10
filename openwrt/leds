@@ -1,0 +1,95 @@
+/lib/functions/leds.sh
+/lib/functions/leds.sh 是 OpenWrt 中用于控制 LED 灯的 Shell 脚本函数库。以下是其中一些常用的函数的详细信息：
+grep '() {$' /lib/functions/procd.sh>/tmp/5
+get_dt_led_path(): 用于获取设备树中 LED 灯节点的路径。例如
+
+bash
+#!/bin/sh
+
+LED_PATH=$(get_dt_led_path my-led)
+echo "The path of the LED node is: $LED_PATH"
+
+get_dt_led(): 用于获取设备树中 LED 灯节点的属性。例如
+
+bash
+#!/bin/sh
+
+LED_COLOR=$(get_dt_led my-led color)
+echo "The color of the LED is: $LED_COLOR"
+
+led_set_attr(): 用于设置 LED 灯的属性。例如
+
+bash
+#!/bin/sh
+
+led_set_attr my-led trigger heartbeat
+
+led_timer(): 用于设置 LED 灯的闪烁定时器。例如
+
+bash
+#!/bin/sh
+
+# 让 LED 灯每隔 0.5 秒闪烁一次
+led_timer my-led 500 500
+
+led_on(): 用于将 LED 灯设置为亮起状态。例如
+
+bash
+#!/bin/sh
+
+led_on my-led
+
+led_off(): 用于将 LED 灯关闭。例如
+
+bash
+#!/bin/sh
+
+led_off my-led
+
+status_led_restore_trigger(): 用于恢复状态 LED 灯的触发器。例如
+
+bash
+#!/bin/sh
+
+status_led_restore_trigger
+
+status_led_set_timer(): 用于设置状态 LED 灯的轮询时间。例如
+
+bash
+#!/bin/sh
+
+# 让状态 LED 灯每隔 2 秒检查一次网络连接
+status_led_set_timer 2
+
+status_led_set_heartbeat(): 用于设置状态 LED 灯的心跳灯效。例如
+
+bash
+#!/bin/sh
+
+# 将状态 LED 灯设置为黄色心跳灯效
+status_led_set_heartbeat "yellow" "none"
+
+status_led_on(): 用于将状态 LED 灯设置为亮起状态。例如
+
+bash
+#!/bin/sh
+
+status_led_on
+
+status_led_off(): 用于将状态 LED 灯关闭。例如
+
+bash
+#!/bin/sh
+
+status_led_off
+
+status_led_blink_slow(), status_led_blink_fast(), status_led_blink_preinit(),status_led_blink_failsafe() 和 status_led_blink_preinit_regular(): 这些函数是用于设置状态 LED 灯不同状态下的闪烁灯效的函数。例如
+
+bash
+#!/bin/sh
+
+status_led_blink_slow()
+status_led_blink_fast()
+status_led_blink_preinit()
+status_led_blink_failsafe()
+status_led_blink_preinit_regular()

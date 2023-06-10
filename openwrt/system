@@ -1,0 +1,170 @@
+这些函数是 OpenWrt 中与 MAC 地址相关的函数，包括获取、设置和转换 MAC 地址等。以下是详细说明：
+
+get_mac_binary(): 用于获取指定接口的 MAC 地址。该函数会将 MAC 地址以二进制形式返回。例如：
+
+bash
+#!/bin/sh
+
+MAC=$(get_mac_binary eth0)
+echo "The binary MAC address of eth0 is: $MAC"
+
+get_mac_label_dt(): 用于从 Device Tree 中获取指定接口的 MAC 地址对应的标签（label）。例如：
+
+bash
+#!/bin/sh
+
+LABEL=$(get_mac_label_dt eth0)
+echo "The label of the MAC address of eth0 in Device Tree is: $LABEL"
+
+get_mac_label_json(): 用于从 JSON 格式的配置文件中获取指定接口的 MAC 地址对应的标签。例如：
+
+bash
+#!/bin/sh
+
+LABEL=$(get_mac_label_json eth0)
+echo "The label of the MAC address of eth0 in the JSON config file is: $LABEL"
+
+get_mac_label(): 用于从配置文件中获取指定接口的 MAC 地址对应的标签。该函数会在多个可能的位置查找标签。例如：
+
+bash
+#!/bin/sh
+
+LABEL=$(get_mac_label eth0)
+echo "The label of the MAC address of eth0 is: $LABEL"
+
+find_mtd_chardev(): 查找名为mtd的字符设备并返回其路径。该函数通常用于读写 Flash 存储器。例如：
+
+bash
+#!/bin/sh
+
+MTD_DEV=$(find_mtd_chardev)
+echo "The path of the mtd character device is: $MTD_DEV"
+
+mtd_get_mac_ascii(): 从 Flash 存储器中获取指定偏移量处的 MAC 地址，并将其以 ASCII 码形式返回。例如：
+
+bash
+#!/bin/sh
+
+OFFSET=0x10000
+MAC=$(mtd_get_mac_ascii $OFFSET)
+echo "The MAC address read from offset $OFFSET in the mtd device is: $MAC"
+
+mtd_get_mac_text(): 从 Flash 存储器中获取指定偏移量处的 MAC 地址，并将其以十六进制文本形式返回。例如：
+
+bash
+#!/bin/sh
+
+OFFSET=0x10000
+MAC=$(mtd_get_mac_text $OFFSET)
+echo "The MAC address read from offset $OFFSET in the mtd device is: $MAC"
+
+mtd_get_mac_binary(): 从 Flash 存储器中获取指定偏移量处的 MAC 地址，并将其以二进制形式返回。例如：
+
+bash
+#!/bin/sh
+
+OFFSET=0x10000
+MAC=$(mtd_get_mac_binary $OFFSET)
+echo "The binary MAC address read from offset $OFFSET in the mtd device is: $MAC"
+
+mtd_get_mac_binary_ubi(): 从 UBI 分区中获取指定偏移量处的 MAC 地址，并将其以二进制形式返回。例如：
+
+bash
+#!/bin/sh
+
+PART=ubi0:rootfs
+OFFSET=0x10000
+MAC=$(mtd_get_mac_binary_ubi $PART $OFFSET)
+echo "The binary MAC address read from offset $OFFSET in the UBI partition $PART is: $MAC"
+
+mtd_get_part_size(): 获取指定 Flash 分区的大小。例如：
+
+bash
+#!/bin/sh
+
+PART=/dev/mtdblock0
+SIZE=$(mtd_get_part_size $PART)
+echo "The size of the partition $PART is: $SIZE bytes"
+
+macaddr_add(): 将两个 MAC 地址相加（按位异或），并将结果写入第一个 MAC 地址。例如：
+
+bash
+#!/bin/sh
+
+MAC1="12:34:56:78:9a:bc"
+MAC2="00:11:22:33:44:55"
+macaddr_add $MAC1 $MAC2
+echo "The result of adding MAC addresses $MAC1 and $MAC2 is: $MAC1"
+
+macaddr_geteui(): 根据给定的 MAC 地址和 OID（对象标识符）生成 EUI-64 格式的扩展标识符。例如：
+
+bash
+#!/bin/sh
+
+MAC="12:34:56:78:9a:bc"
+EUI=$(macaddr_geteui $MAC 0x00112233)
+echo "The EUI-64 identifier for MAC address $MAC and OID 0x00112233 is: $EUI"
+
+macaddr_setbit(): 将指定 MAC 地址的某一位设置为 1。例如：
+
+bash
+#!/bin/sh
+
+MAC="12:34:56:78:9a:bc"
+BIT=12
+macaddr_setbit $MAC $BIT
+echo "The MAC address with bit $BIT set to 1 is: $MAC"
+
+macaddr_unsetbit(): 将指定 MAC 地址的某一位设置为 0。例如：
+
+bash
+#!/bin/sh
+
+MAC="12:34:56:78:9a:bc"
+BIT=12
+macaddr_unsetbit $MAC $BIT
+echo "The MAC address with bit $BIT set to 0 is: $MAC"
+
+macaddr_setbit_la(): 将指定 MAC 地址的最后一位设置为 1。例如：
+
+bash
+#!/bin/sh
+
+MAC="12:34:56:78:9a:bc"
+macaddr_setbit_la $MAC
+echo "The MAC address with the last bit set to 1 is: $MAC"
+
+macaddr_unsetbit_mc(): 将指定 MAC 地址的第一位设置为 0。例如：
+
+bash
+#!/bin/sh
+
+MAC="12:34:56:78:9a:bc"
+macaddr_unsetbit_mc $MAC
+echo "The MAC address with the first bit set to 0 is: $MAC"
+
+macaddr_random(): 生成一个随机的 MAC 地址。例如：
+
+bash
+#!/bin/sh
+
+MAC=$(macaddr_random)
+echo "A random MAC address is: $MAC"
+
+macaddr_2bin(): 将 MAC 地址转换为二进制形式。例如：
+
+bash
+#!/bin/sh
+
+MAC="12:34:56:78:9a:bc"
+BIN=$(macaddr_2bin $MAC)
+echo "The binary form of MAC address $MAC is: $BIN"
+
+macaddr_canonicalize(): 将 MAC 地址转换为规范形式（大写，冒号分隔）。例如：
+
+bash
+#!/bin/sh
+
+MAC="12-34-56-78-9a-bc"
+CANON=$(macaddr_canonicalize $MAC)
+echo "The canonical form of MAC address $MAC is: $CANON"

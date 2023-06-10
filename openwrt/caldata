@@ -1,0 +1,17 @@
+/lib/functions/caldata.sh
+这些函数是 OpenWrt 中用于处理 Wi-Fi 芯片卡的 caldata 数据的工具库。
+
+以下是这些函数的简要介绍：
+caldata_dd: 将 caldata 数据写入到指定的文件中。
+caldata_die: 输出错误信息并结束程序。
+caldata_extract: 从二进制文件中提取 caldata 数据。
+caldata_extract_ubi: 从 UBI 文件系统中提取 caldata 数据。
+caldata_extract_reverse: 从二进制文件中反向提取 caldata 数据。
+caldata_from_file: 从文件中读取 caldata 数据。
+caldata_sysfsload_from_file: 从文件中加载 sysfs 文件系统的 caldata 数据。
+caldata_valid: 检测 caldata 数据是否合法。
+caldata_patch_chksum: 修复 caldata 中的校验和错误。
+caldata_patch_mac: 修复 caldata 中的 MAC 地址错误。
+ath9k_patch_mac: 为 Atheros AR9285 芯片卡修复 MAC 地址错误。
+ath9k_patch_mac_crc: 为 Atheros AR9285 芯片卡修复 CRC 错误。
+ath10k_patch_mac: 为 Atheros AR9888 芯片卡修复 MAC 地址错误。

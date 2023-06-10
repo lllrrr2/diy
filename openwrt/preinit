@@ -1,0 +1,13 @@
+/lib/functions/preinit.sh
+这些函数是 OpenWrt 中用于 boot 阶段的 preinit 脚本中定义的，用于在启动时进行系统初始化。
+
+以下是这些函数的简要介绍：
+
+boot_hook_splice_start: 启动启动钩子的一部分。
+boot_hook_splice_finish: 结束启动钩子的一部分。
+boot_hook_init: 初始化启动钩子。
+boot_hook_add: 向启动钩子添加钩子函数。
+boot_hook_shift: 将启动钩子中的元素向左移动。
+boot_run_hook: 执行启动钩子中的所有函数。
+ramoverlay: 在内存中创建一个覆盖层，用于在运行时修改可写入的文件系统，即只使用内存中的副本并将其写回磁盘的过程称为"overlay"。
+这些函数通常用于系统引导和初始化过程中。启动钩子可以在系统引导和初始化过程中执行自定义函数，并执行某些操作以进行系统初始化。Ramoverlay 函数可以创建一个覆盖层，将文件系统中的内容存储在内存中，并在需要时进行修改和写回，这对于减少 SD 卡的使用寿命和改善系统性能非常有帮助。
