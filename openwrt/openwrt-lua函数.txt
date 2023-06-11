@@ -137,7 +137,7 @@ luci/util.lua trim(str)：去除字符串两边的空白字符。
 luci/util.lua cmatch(str, pat)：在字符串中查找匹配给定正则表达式的子串，并返回第一个捕获分组的值。
 luci/util.lua imatch(v)：判断给定值是否为整型数值。
 luci/util.lua parse_units(ustr)：解析一个带有单位的字符串，并返回其数值和单位。例如，给定字符串 10KB，就会返回 {10, "KB"}。
-luci/util.lua append(src, ...)：将多个 table 合并到给定 table 中，类似于 table.concat。
+luci/util.lua append(src, ...)：是将所有的参数依次追加到目标数组 src 的末尾，并返回更新后的数组 src。
 luci/util.lua combine(...)：将多个 table 合并到一个新的 table 中，按照参数顺序进行合并，后面的 table 会覆盖前面的 table。
 luci/util.lua contains(table, value)：判断给定的 table 是否包含指定的值。
 luci/util.lua update(t, updates)：使用给定的键值对来更新给定 table 中的元素。
@@ -163,6 +163,7 @@ luci/util.lua coxpcall(f, err, ...)：使用 xpcall 和协程来运行指定函�
 luci/util.lua copcall(f, ...)：使用 coroutine.resume 来运行指定函数，可以捕获该函数的异步异常。
 luci/xml.lua pcdata(value)：创建一个包含给定字符串的 Lua table，用于描述 XML 文档中的 PCDATA（纯文本）节点。
 luci/xml.lua striptags(value)：移除给定字符串中的所有 HTML 或 XML 标签，并返回经过处理后的纯文本字符串。
+nixio/fs.lua access(path,[MODE])： 函数用于测试用户是否可以访问某个文件或目录。
 nixio/fs.lua readfile(path, limit)：从文件中读取指定字节数的内容，并返回一个字符串。可选参数 limit 表示要读取的最大字节数。
 nixio/fs.lua writefile(path, data)：将给定的字符串写入到文件中。
 nixio/fs.lua datacopy(src, dest, size)：在两个文件之间直接复制数据，size 参数表示要复制的字节数。
