@@ -445,10 +445,10 @@ clone_url "
 		https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
 		https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 		"
-		[[ "${REPO_BRANCH}" = "openwrt-23.05" ]] && {
-			clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/target/linux/rockchip"
-			echo -e "LINUX_VERSION-5.4 = .244\nLINUX_KERNEL_HASH-5.4.244 = 90f5280e95ed7b374ad6f3979ed08008e29a051e5f372d367c06ed75b002a21b" > include/kernel-5.4
-		}
+		# [[ "${REPO_BRANCH}" = "openwrt-23.05" ]] && {
+			# clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/target/linux/rockchip"
+			# echo -e "LINUX_VERSION-5.4 = .244\nLINUX_KERNEL_HASH-5.4.244 = 90f5280e95ed7b374ad6f3979ed08008e29a051e5f372d367c06ed75b002a21b" > include/kernel-5.4
+		# }
 	} || {
 		_packages "luci-app-argon-config"
 		clone_url "
