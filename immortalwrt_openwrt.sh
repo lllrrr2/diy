@@ -653,18 +653,14 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 	fi
 done
 
-# cat >>.config <<-EOF
-# CONFIG_DEVEL=y
-# CONFIG_CCACHE=y
-# CONFIG_NEED_TOOLCHAIN=y
-# CONFIG_IB=y
-# CONFIG_IB_STANDALONE=y
-# CONFIG_DEVEL=y
-# CONFIG_DROPBEAR_ECC_FULL=y
-# CONFIG_DROPBEAR_ECC=y
-# CONFIG_AUTOREMOVE=y
-# CONFIG_MAKE_TOOLCHAIN=y
-# EOF
+if [ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ] then
+	cat<<-EOF >.config
+	CONFIG_TARGET_rockchip=y
+	CONFIG_TARGET_rockchip_armv8=y
+	CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
+	EOF
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV
+fi
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
@@ -686,6 +682,5 @@ echo "CLEAN=false" >>$GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
-echo "FETCH_CACHE=true" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
