@@ -661,8 +661,8 @@ if [[ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ]]; t
 	# CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
 	# EOF
 	mkdir -p target/linux/rockchip/files/include/linux/
-	wget -O https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/drivers/net/phy/motorcomm.c target/linux/rockchip/files/drivers/phy/rockchip/motorcomm.c
-	wget -O https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/include/linux/motorcomm_phy.h target/linux/rockchip/files/include/linux/motorcomm_phy.h
+	wget -O target/linux/rockchip/files/drivers/phy/rockchip/motorcomm.c https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/drivers/net/phy/motorcomm.c
+	wget -O target/linux/rockchip/files/include/linux/motorcomm_phy.h https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/include/linux/motorcomm_phy.h
 	wget -O target/linux/rockchip/patches-5.15/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch https://raw.githubusercontent.com/hong0980/diy/master/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
 fi
