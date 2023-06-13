@@ -48,8 +48,8 @@ grep -q "$CACHE_NAME-cache" xa || {
 [[ "$TARGET_DEVICE" = "r1-plus-lts" ]] && {
 	cd $REPO_FLODER || cd openwrt
 	# build_dir/target-aarch64_generic_musl/linux-rockchip_armv8/linux-5.15.114/drivers/net/phy/Makefile
-	cp -fv build_dir/*/*/*/drivers/net/phy/Kconfig ../output/"${SOURCE_NAME}_${TARGET_DEVICE}_${REPO_BRANCH}_Kconfig"
-	cp -fv build_dir/*/*/*/drivers/net/phy/Makefile ../output/"${SOURCE_NAME}_${TARGET_DEVICE}_${REPO_BRANCH}_Makefile"
+	mv -fv build_dir/*/*/*/drivers/net/phy/Kconfig ../output/"${SOURCE_NAME}_${TARGET_DEVICE}_${REPO_BRANCH}_Kconfig"
+	mv -fv build_dir/*/*/*/drivers/net/phy/Makefile ../output/"${SOURCE_NAME}_${TARGET_DEVICE}_${REPO_BRANCH}_Makefile"
 	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 }
 # up_github || true
