@@ -686,5 +686,6 @@ echo "CLEAN=false" >>$GITHUB_ENV
 echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
+echo "FETCH_CACHE=true" >>$GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
