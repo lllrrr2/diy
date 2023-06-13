@@ -179,6 +179,7 @@ if (grep -q "$CACHE_NAME-cache.tzst" ../xa || \
 else
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
 	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+	VERSION = ''
 fi
 
 echo -e "$(color cy '更新软件....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
@@ -653,7 +654,7 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 	fi
 done
 
-if [ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ] then
+if [[ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ]]; then
 	cat<<-EOF >.config
 	CONFIG_TARGET_rockchip=y
 	CONFIG_TARGET_rockchip_armv8=y
