@@ -655,11 +655,12 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 done
 
 if [[ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ]]; then
-	cat<<-EOF >.config
-	CONFIG_TARGET_rockchip=y
-	CONFIG_TARGET_rockchip_armv8=y
-	CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
-	EOF
+	# cat<<-EOF >.config
+	# CONFIG_TARGET_rockchip=y
+	# CONFIG_TARGET_rockchip_armv8=y
+	# CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
+	# EOF
+	wget -O target/linux/rockchip/patches-5.15/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch https://raw.githubusercontent.com/hong0980/diy/master/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
 fi
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
