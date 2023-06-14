@@ -45,11 +45,11 @@ grep -q "$CACHE_NAME-cache" xa || {
 	# tar -zcf ../output/rockchip.tar.gz target/linux/rockchip
 	# echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 # }
-[[ "$TARGET_DEVICE" = "r1-plus-lts" ]] && {
+[[ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ]] && {
 	cd $REPO_FLODER || cd openwrt
 	# build_dir/target-aarch64_generic_musl/linux-rockchip_armv8/linux-5.15.114/drivers/net/phy/Makefile
-	cp -fv build_dir/*/*/*/drivers/net/phy/Kconfig ../output
-	cp -fv build_dir/*/*/*/drivers/net/phy/Makefile ../output
+	cp -fv build_dir/*/linux*/linux*/drivers/net/phy/Kconfig ../output
+	cp -fv build_dir/*/linux*/linux*/drivers/net/phy/Makefile ../output
 	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
 }
 # up_github || true

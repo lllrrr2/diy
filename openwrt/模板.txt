@@ -1,0 +1,37 @@
+/usr/lib/lua/luci/view/cbi/模板文件都是 LuCI Web 界面框架中的组件，用于生成不同种类的页面元素和视图。
+
+browser.htm: 一个基本的模板，用于在一个表格中显示其他的 LuCI 页面。
+button.htm: 一个带有按钮的模板，用于创建一个表单。
+cell_valuefooter.htm: 一个用于在单元格底部显示过渡信息的模板。
+cell_valueheader.htm: 一个用于在单元格顶部显示过渡信息的模板。
+compound.htm: 一个复合模板，用于嵌套其他模板。
+delegator.htm: 一个简单的委托模板，用于将请求转发到其他模板中处理。
+dropdown.htm: 一个下拉列表模板，用于创建带有可选项的字段。
+dynlist.htm: 一个动态列表模板，用于创建由导航栏控制的可滚动列表。
+error.htm: 一个错误提示模板，用于显示错误信息。
+footer.htm: 一个页脚模板，用于在每个页面的底部显示版权信息等内容。
+fvalue.htm: 一个表单值模板，用于在表单中显示字段值。
+full_valuefooter.htm: 一个用于在单元格与紧接其后的行之间显示过渡信息的模板。
+full_valueheader.htm: 一个用于在单元格与紧随其前的行之间显示过渡信息的模板。
+header.htm: 一个页头模板，用于在每个页面的顶部显示标题、导航和其他内容。
+ipaddr.htm: 一个 IP 地址输入框模板，用于创建带有 IP 地址验证的字段。
+lvalue.htm: 一个表单标签值模板，用于在表单中显示字段标签和值。
+map.htm: 一个用于生成地图的模板，可以在地图上显示设备位置、路线等信息。
+mvalue.htm: 一个表单多值模板，用于在表单中显示多个可编辑的字段值。
+network_ifacelist.htm: 一个用于显示网络接口列表的模板。
+network_netinfo.htm: 一个用于显示网络连接信息的模板。
+network_netlist.htm: 一个用于显示网络列表的模板。
+nullsection.htm: 一个空白模板，用于创建没有任何内容的节点。
+oaf_dvalue.htm: 一个表单指示器模板，用于在表单中显示禁用字段或只读字段。
+oaf_upload.htm: 一个文件上传模板，用于在表单中添加文件上传字段。
+simpleform.htm: 一个简单的表单模板，用于创建基本的表单。
+tabcontainer.htm: 一个选项卡容器模板，用于将多个模板组合在一起，并用标签页控制它们之间的切换。
+tblsection.htm: 一个表格模板，用于创建带有自定义样式的表格。
+tsection.htm: 一个通用的模板，用于创建带有标题和正文的节点。
+tvalue.htm: 一个表单文本值模板，用于在表单中显示文本字段的值。
+ucisection.htm: 一个 UCI 节点模板，用于创建与 UCI 配置文件节点相关的内容。
+upload.htm: 一个文件上传模板，用于添加文件上传字段。
+value.htm: 一个表单值模板，用于在表单中显示单独的字段值。
+valuefooter.htm: 一个用于在节点底部显示过渡信息的模板。
+valueheader.htm: 一个用于在节点顶部显示过渡信息的模板。
+wireless_modefreq.htm: 一个用于显示无线网络模式和频率的模板。
