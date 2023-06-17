@@ -19,7 +19,7 @@ if [ "$cache_Release" = 'true' ]; then
                 fi
             fi
         fi
-    [ $count -eq 3 ] && break
+        [ $count -eq 3 ] && break
     done < xa
 
     if [ "$(ls -A output)" ]; then
@@ -101,7 +101,7 @@ svn_co() {
 clone_url() {
     # set -x
     for x in $@; do
-        if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|xiaorouji|hong")" ]]; then
+        if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|hong|openwrt-passwall$")" ]]; then
             g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
             if [[ -d $g ]]; then
                 mv -f $g ../ && k="$g"
@@ -336,10 +336,9 @@ color cy "自定义设置.... "
 	fi
 	# git diff ./ >> ../output/t.patch || true
 	clone_url "
-	https://github.com/hong0980/build
-	https://github.com/fw876/helloworld
-	https://github.com/xiaorouji/openwrt-passwall2
-	https://github.com/xiaorouji/openwrt-passwall
+    https://github.com/hong0980/build
+    https://github.com/fw876/helloworld
+    https://github.com/xiaorouji/openwrt-passwall
 	"
 	[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 		clone_url "
@@ -354,11 +353,12 @@ color cy "自定义设置.... "
 			https://github.com/sirpdboy/luci-app-cupsd/trunk/luci-app-cupsd
 			https://github.com/sirpdboy/luci-app-cupsd/trunk/cups
 			https://github.com/immortalwrt/luci/trunk/applications/luci-app-eqos
-			https://github.com/immortalwrt/luci/trunk/applications/luci-app-passwall
 			https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 			https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 			#https://github.com/sirpdboy/luci-app-netdata
 			#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+            https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
+            https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall
 		"
 		[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
         sed -i '/log_check/s/^/#/' package/A/*/*/*/init.d/unblockneteasemusic
@@ -416,8 +416,8 @@ color cy "自定义设置.... "
         sed -i "s|-c pushbot|/usr/bin/pushbot/pushbot|" $xg/luasrc/controller/pushbot.lua
         sed -i '/start()/a[ "$(uci get pushbot.@pushbot[0].pushbot_enable)" -eq "0" ] && return 0' $xg/root/etc/init.d/pushbot
     }
-    xh=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-passwall" 2>/dev/null)
-    [[ -d $xh ]] && sed -i '/+v2ray-geoip/d' $xh/Makefile
+    # xh=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-passwall" 2>/dev/null)
+    # [[ -d $xh ]] && sed -i '/+v2ray-geoip/d' $xh/Makefile
     _packages "
     luci-app-aria2
     luci-app-cifs-mount

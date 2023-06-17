@@ -76,7 +76,7 @@ svn_co() {
 
 clone_url() {
 	for x in $@; do
-		if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|xiaorouji|hong")" ]]; then
+		if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|hong|openwrt-passwall$")" ]]; then
 			g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
 			if [[ -d $g ]]; then
 				mv -f $g ../ && k="$g"
@@ -315,9 +315,8 @@ sed -i "{
 # git diff ./ >> ../output/t.patch || true
 clone_url "
 	https://github.com/hong0980/build
-	#https://github.com/fw876/helloworld
-	https://github.com/xiaorouji/openwrt-passwall2
-	#https://github.com/xiaorouji/openwrt-passwall
+	https://github.com/fw876/helloworld
+	https://github.com/xiaorouji/openwrt-passwall
 "
 [ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 	_packages "
@@ -387,6 +386,8 @@ clone_url "
 		https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent
 		https://github.com/coolsnowwolf/packages/trunk/net/qBittorrent-static
 		https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
+		https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
+		https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall
 		https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
 		https://github.com/kuoruan/luci-app-frpc
 		#https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
