@@ -1,17 +1,24 @@
 #!/usr/bin/env bash
 
 sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-mkdir output1 output2
-curl -sL api.github.com/repos/hong0980/chinternet/releases | awk -F'"' '/browser_download_url/{print $4}' | grep 'cache' >xc
-curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep 'cache' >xx
-p=0
-for i in $(cat xx); do
-  grep -q ${i##*/} xc 2>/dev/null || {
-    p=$[p+1]
-    [[ ${i##*/} =~ immortalwrt ]] && {
-      wget -qO output1/${i##*/} $i && echo "$p ${i##*/} 已经下载完成"
-    } || {
-      wget -qO output2/${i##*/} $i && echo "$p ${i##*/} 已经下载完成"
-    }
-  }
-done
+mkdir output
+curl -sL api.github.com/repos/hong0980/chinternet/releases | awk -F'"' '/browser_download_url/{print $4}' | grep 'cache' > xc
+curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep 'cache' > xx
+
+while read -r line; do
+    if ! grep -q "${line##*/}" xc 2>/dev/null; then
+        if wget -qO "output/${line##*/}" "$line"; then
+            if [[ $(du -m "output/${line##*/}" | cut -f1) -ge 100 ]]; then
+                echo "${line##*/} 已经下载完成"
+            else
+                rm -f "output/${line##*/}"
+            fi
+        fi
+    fi
+done < xx
+
+if [ "$(ls -A output)" ]; then
+    echo "UPLOAD_Release=true" >>$GITHUB_ENV
+else
+    echo "没有新的cache可以下载！"
+fi

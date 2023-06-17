@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
 curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' >xa
-curl -sL api.github.com/repos/hong0980/chinternet/releases | awk -F'"' '/browser_download_url/{print $4}' >xc
+curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | awk -F'"' '/browser_download_url/{print $4}' >xc
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 mkdir firmware output
@@ -147,7 +147,7 @@ case "$TARGET_DEVICE" in
 	"newifi-d2"|"phicomm_k2p") export DEVICE_NAME="ramips_mt7621";;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export DEVICE_NAME="rockchip_armv8";;
 esac
-export CACHE_NAME="$SOURCE_NAME-$DEVICE_NAME-$TOOLS_HASH"
+export CACHE_NAME="$SOURCE_NAME-$TOOLS_HASH-$DEVICE_NAME"
 echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
@@ -654,18 +654,17 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 	fi
 done
 
-if [[ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ]]; then
-	# cat<<-EOF >.config
-	# CONFIG_TARGET_rockchip=y
-	# CONFIG_TARGET_rockchip_armv8=y
-	# CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
-	# EOF
-	mkdir -p target/linux/rockchip/files/include/linux/
-	wget -qO target/linux/rockchip/files/drivers/phy/rockchip/motorcomm.c https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/drivers/net/phy/motorcomm.c
-	wget -qO target/linux/rockchip/files/include/linux/motorcomm_phy.h https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/include/linux/motorcomm_phy.h
-	# wget -O target/linux/rockchip/patches-5.15/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch https://raw.githubusercontent.com/hong0980/diy/master/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch
-	echo "FETCH_CACHE=true" >>$GITHUB_ENV
-fi
+# if [[ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ]]; then
+# 	cat<<-EOF >.config
+# 	CONFIG_TARGET_rockchip=y
+# 	CONFIG_TARGET_rockchip_armv8=y
+# 	CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
+# 	EOF
+# 	mkdir -p target/linux/rockchip/files/include/linux/
+# 	wget -qO target/linux/rockchip/files/drivers/phy/rockchip/motorcomm.c https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/drivers/net/phy/motorcomm.c
+# 	wget -qO target/linux/rockchip/files/include/linux/motorcomm_phy.h https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/include/linux/motorcomm_phy.h
+# 	wget -O target/linux/rockchip/patches-5.15/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch https://raw.githubusercontent.com/hong0980/diy/master/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch
+# fi
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
