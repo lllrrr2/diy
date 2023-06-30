@@ -315,8 +315,8 @@ sed -i "{
 # git diff ./ >> ../output/t.patch || true
 clone_url "
 	https://github.com/hong0980/build
-	https://github.com/fw876/helloworld
 	https://github.com/xiaorouji/openwrt-passwall
+	https://github.com/fw876/helloworld
 "
 [ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 	_packages "
