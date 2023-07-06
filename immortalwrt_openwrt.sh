@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
-curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' >xa
-curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | awk -F'"' '/browser_download_url/{print $4}' >xc
+# curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | awk -F'"' '/browser_download_url/{print $4}' >xa
+# curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | awk -F'"' '/browser_download_url/{print $4}' >xc
+curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xa
+curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
 [[ $VERSION ]] || VERSION=plus
 [[ $PARTSIZE ]] || PARTSIZE=900
 mkdir firmware output
