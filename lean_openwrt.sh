@@ -103,7 +103,7 @@ svn_co() {
 clone_url() {
     # set -x
     for x in $@; do
-        if [[ "$(grep "^https" <<<$x | grep -Ev "fw876|hong|openwrt-passwall$")" ]]; then
+        if [[ "$(grep "^https" <<<$x | grep -Ev "helloworld$|build$|openwrt-passwall$")" ]]; then
             g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
             if [[ -d $g ]]; then
                 mv -f $g ../ && k="$g"
