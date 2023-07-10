@@ -295,7 +295,7 @@ cat >>.config <<-EOF
 	CONFIG_BRCMFMAC_SDIO=y
 	# CONFIG_VMDK_IMAGES is not set
 	## CONFIG_GRUB_EFI_IMAGES is not set
-	CONFIG_LUCI_LANG_zh_Hans=y
+	CONFIG_PACKAGE_default-settings-chn=y
 	CONFIG_DEFAULT_SETTINGS_OPTIMIZE_FOR_CHINESE=y
 EOF
 
@@ -309,16 +309,15 @@ sed -i 's/option enabled.*/option enabled 1/' feeds/packages/*/*/files/upnpd.con
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 sed -i 's/UTC/UTC-8/' Makefile
 sed -i "{
-		/upnp/d;/banner/d
-		s|auto|zh_cn\nuci set luci.main.mediaurlbase=/luci-static/bootstrap|
+		/commit luci/ i\uci -q set luci.main.mediaurlbase=\"/luci-static/bootstrap\"
 		\$i sed -i 's/root::.*:::/root:\$1\$pn1ABFaI\$vt5cmIjlr6M7Z79Eds2lV0:16821:0:99999:7:::/g' /etc/shadow
 		}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 
 # git diff ./ >> ../output/t.patch || true
 clone_url "
 	https://github.com/hong0980/build
-	https://github.com/xiaorouji/openwrt-passwall
 	https://github.com/fw876/helloworld
+	https://github.com/xiaorouji/openwrt-passwall
 "
 [ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 	_packages "
@@ -449,10 +448,6 @@ clone_url "
 		https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
 		https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
 		"
-		# [[ "${REPO_BRANCH}" = "openwrt-23.05" ]] && {
-			# clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/target/linux/rockchip"
-			# echo -e "LINUX_VERSION-5.4 = .244\nLINUX_KERNEL_HASH-5.4.244 = 90f5280e95ed7b374ad6f3979ed08008e29a051e5f372d367c06ed75b002a21b" > include/kernel-5.4
-		# }
 	} || {
 		_packages "luci-app-argon-config"
 		clone_url "
@@ -656,19 +651,6 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 		fi
 	fi
 done
-
-# if [[ "$REPO_BRANCH" = "openwrt-23.05" && "$TARGET_DEVICE" = "r1-plus-lts" ]]; then
-# 	cat<<-EOF >.config
-# 	CONFIG_TARGET_rockchip=y
-# 	CONFIG_TARGET_rockchip_armv8=y
-# 	CONFIG_TARGET_rockchip_armv8_DEVICE_xunlong_orangepi-$TARGET_DEVICE=y
-# 	EOF
-# 	mkdir -p target/linux/rockchip/files/include/linux/
-# 	wget -qO target/linux/rockchip/files/drivers/phy/rockchip/motorcomm.c https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/drivers/net/phy/motorcomm.c
-# 	wget -qO target/linux/rockchip/files/include/linux/motorcomm_phy.h https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/include/linux/motorcomm_phy.h
-# 	wget -O target/linux/rockchip/patches-5.15/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch https://raw.githubusercontent.com/hong0980/diy/master/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch
-# fi
-# [[ "${REPO_BRANCH#*-}" =~ ^2 ]] && echo "# CONFIG_LUCI_JSMIN is not set" >>  .config && clone_url "https://github.com/hong0980/diy/trunk/luci-app-qbittorrent"
 
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
