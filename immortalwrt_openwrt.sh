@@ -668,13 +668,12 @@ done
 # 	wget -qO target/linux/rockchip/files/include/linux/motorcomm_phy.h https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-21.02/target/linux/rockchip/files/include/linux/motorcomm_phy.h
 # 	wget -O target/linux/rockchip/patches-5.15/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch https://raw.githubusercontent.com/hong0980/diy/master/999-net-phy-Add-driver-for-Motorcomm-YT85xx-PHYs.patch
 # fi
-[[ "${REPO_BRANCH#*-}" =~ ^2 ]] && echo "# CONFIG_LUCI_JSMIN is not set" >>  .config && clone_url "https://github.com/hong0980/diy/trunk/luci-app-qbittorrent"
+# [[ "${REPO_BRANCH#*-}" =~ ^2 ]] && echo "# CONFIG_LUCI_JSMIN is not set" >>  .config && clone_url "https://github.com/hong0980/diy/trunk/luci-app-qbittorrent"
 
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
-# cp -v .config ../firmware/config.xt && cat ../firmware/config.xt
 LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
 DEVICE_NAME=`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*T_(.*)_DEVI.*/\1/'`-`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/'`
 echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
