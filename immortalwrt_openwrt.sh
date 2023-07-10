@@ -344,7 +344,7 @@ clone_url "
 	luci-app-openclash
 	luci-app-pushbot
 	luci-app-softwarecenter
-	luci-app-syncdial
+	#luci-app-syncdial
 	luci-app-transmission
 	luci-app-usb-printer
 	luci-app-vssr
