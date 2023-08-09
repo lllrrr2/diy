@@ -357,6 +357,7 @@ color cy "自定义设置.... "
 			https://github.com/immortalwrt/luci/trunk/applications/luci-app-eqos
 			https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
 			https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
+			https://github.com/immortalwrt/packages/trunk/utils/cpulimit
 			#https://github.com/sirpdboy/luci-app-netdata
 			#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
             https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
