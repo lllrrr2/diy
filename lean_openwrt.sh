@@ -25,7 +25,7 @@ if [ "$cache_Release" = 'true' ]; then
     done < xa
 
     if [ "$(ls -A output)" ]; then
-        echo "UPLOAD_Release=true" >>$GITHUB_ENV
+        echo "UPLOAD_Release=true" >> $GITHUB_ENV
     else
         echo "没有新的cache可以下载！"
     fi
@@ -67,10 +67,10 @@ _packages() {
     done
 }
 
-_delpackages() {
-    for z in $@; do
-        [[ $z =~ ^# ]] || sed -i "/^CONFIG.*$z=y$/ s/=y/ is not set/; s/^/# /" .config
-    done
+_delpackage() {
+	for z in $@; do
+		[[ $z =~ ^# ]] || sed -i -E "s/(CONFIG_PACKAGE_.*$z)=y/# \1 is not set/" .config
+	done
 }
 
 _printf() {
@@ -102,58 +102,59 @@ svn_co() {
 
 clone_url() {
     # set -x
-    for x in $@; do
-        if [[ "$(grep "^https" <<<$x | grep -Ev "helloworld$|build$|openwrt-passwall$")" ]]; then
-            g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name ${x##*/} 2>/dev/null)
-            if [[ -d $g ]]; then
-                mv -f $g ../ && k="$g"
-            else
-                k="package/A/${x##*/}"
-            fi
+	for x in $@; do
+		name="${x##*/}"
+		if [[ "$(grep "^https" <<<$x | egrep -v "helloworld$|build$|openwrt-passwall-packages$")" ]]; then
+			g=$(find package/ target/ feeds/ -maxdepth 5 -type d -name "$name" 2>/dev/null | grep "/${name}$" | head -n 1)
+			if [[ -d $g ]]; then
+				mv -f $g ../ && k="$g"
+			else
+				k="package/A/$name"
+			fi
 
-            if [[ "$(egrep "trunk|branches" <<<$x)" ]]; then
-                svn export $x $k 1>/dev/null 2>&1 && f="1"
-            else
-                git clone -q $x $k && f="1"
-            fi
+			if [[ "$(egrep "trunk|branches" <<<$x)" ]]; then
+				svn export $x $k 1>/dev/null 2>&1 && f="1"
+			else
+				git clone -q $x $k && f="1"
+			fi
 
-            if [[ x$f = x1 ]]; then
-                if [[ $k = $g ]]; then
-                    echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf
-                else
-                    echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
-                fi
-            else
-                echo -e "$(color cr 拉取) ${x##*/} [ $(color cr ✕) ]" | _printf
-                if [[ $k = $g ]]; then
-                    mv -f ../${g##*/} ${g%/*}/ && \
-                    echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
-                fi
-            fi
-            unset -v f k g
-        else
-            for w in $(grep "^https" <<<$x); do
-                git clone -q $w ../${w##*/} && {
-                    for x in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev '*dump|*dtest'`; do
-                        g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name $x 2>/dev/null)
-                        if [[ -d $g ]]; then
-                            rm -rf $g && k="$g"
-                        else
-                            k="package/A"
-                        fi
-                        if mv -f ../${w##*/}/$x $k; then
-                            if [[ $k = $g ]]; then
-                                echo -e "$(color cg 替换) ${x##*/} [ $(color cg ✔) ]" | _printf
-                            else
-                                echo -e "$(color cb 添加) ${x##*/} [ $(color cb ✔) ]" | _printf
-                            fi
-                        fi
-                        unset -v k g
-                    done
-                } && rm -rf ../${w##*/}
-            done
-        fi
-    done
+			if [[ -n $f ]]; then
+				if [[ $k = $g ]]; then
+					echo -e "$(color cg 替换) $name [ $(color cg ✔) ]" | _printf
+				else
+					echo -e "$(color cb 添加) $name [ $(color cb ✔) ]" | _printf
+				fi
+			else
+				echo -e "$(color cr 拉取) $name [ $(color cr ✕) ]" | _printf
+				if [[ $k = $g ]]; then
+					mv -f ../${g##*/} ${g%/*}/ && \
+					echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+				fi
+			fi
+			unset -v f k g
+		else
+			for w in $(grep "^https" <<<$x); do
+				git clone -q $w ../${w##*/} && {
+					for z in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev 'dump$|dtest$'`; do
+						g=$(find package/ feeds/ target/ -maxdepth 5 -type d -name $z 2>/dev/null | head -n 1)
+						if [[ -d $g ]]; then
+							rm -rf $g && k="$g"
+						else
+							k="package/A"
+						fi
+						if mv -f ../${w##*/}/$z $k; then
+							if [[ $k = $g ]]; then
+								echo -e "$(color cg 替换) $z [ $(color cg ✔) ]" | _printf
+							else
+								echo -e "$(color cb 添加) $z [ $(color cb ✔) ]" | _printf
+							fi
+						fi
+						unset -v k g
+					done
+				} && rm -rf ../${w##*/}
+			done
+		fi
+	done
     # set +x
 }
 
@@ -168,44 +169,38 @@ export SOURCE_NAME=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
 export IMG_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TARGET_DEVICE"
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 case "$TARGET_DEVICE" in
-    "x86_64") export DEVICE_NAME="x86_64";;
-    "asus_rt-n16") export DEVICE_NAME="bcm47xx_mips74k";;
-    "armvirt_64_Default") export DEVICE_NAME="armvirt_64";;
-    "newifi-d2"|"phicomm_k2p") export DEVICE_NAME="ramips_mt7621";;
-    "r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export DEVICE_NAME="rockchip_armv8";;
+	"x86_64") export DEVICE_NAME="x86_64";;
+	"asus_rt-n16") export DEVICE_NAME="bcm47xx_mips74k";;
+	"armvirt_64_Default") export DEVICE_NAME="armvirt_64";;
+	"newifi-d2"|"phicomm_k2p") export DEVICE_NAME="ramips_mt7621";;
+	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export DEVICE_NAME="rockchip_armv8";;
 esac
 export CACHE_NAME="$SOURCE_NAME-$TOOLS_HASH-$DEVICE_NAME"
 echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
+echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 
-if (grep -q "$CACHE_NAME-cache.tzst" ../xa || \
-    grep -q "$CACHE_NAME-cache.tzst" ../xc); then
-    echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
-    grep -q "$CACHE_NAME-cache.tzst" ../xa && {
-        wget -qc -t=3 $(grep "$CACHE_NAME" ../xa) && xv=0
-    } || {
-        wget -qc -t=3 $(grep "$CACHE_NAME" ../xc) && xv=1
-    }
-    [ -e *.tzst ]; status
-    [ -e *.tzst ] && {
-        echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
-        (tar -I unzstd -xf *.tzst || tar -I -xf *.tzst) && {
-            [ "$xv" = 1 ] && {
-                cp *.tzst ../output || true && \
-                echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
-                echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
-            } || {
-                echo "CACHE_ACTIONS=" >>$GITHUB_ENV
-                rm *.tzst
-            }
-            sed -i 's/ $(tool.*stamp-compile)//g' Makefile
-        }
-        [ -d staging_dir ]; status
-    }
+if (grep -q "$CACHE_NAME-cache.tzst" ../xa || grep -q "$CACHE_NAME-cache.tzst" ../xc); then
+	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+	grep -q "$CACHE_NAME-cache.tzst" ../xa && \
+	wget -qc -t=3 $(grep "$CACHE_NAME" ../xa) || \
+	wget -qc -t=3 $(grep "$CACHE_NAME" ../xc)
+	[ -e *.tzst ]; status
+	[ -e *.tzst ] && {
+		echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
+		(tar -I unzstd -xf *.tzst || tar -xf *.tzst) && {
+		    if ! grep -q "$CACHE_NAME-cache.tzst" ../xa; then
+		        cp *.tzst ../output
+		        echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
+		    fi
+		    sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+		}
+		[ -d staging_dir ]; status
+	}
 else
-    echo "FETCH_CACHE=true" >>$GITHUB_ENV
-    echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV
+	VERSION=''
 fi
 
 echo -e "$(color cy '更新软件....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
@@ -297,7 +292,7 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-app-ttyd=y
 	CONFIG_PACKAGE_luci-app-upnp=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
-	#CONFIG_PACKAGE_luci-app-wizard=y
+	CONFIG_PACKAGE_luci-app-wizard=y
 	CONFIG_PACKAGE_luci-app-simplenetwork=y
 	CONFIG_PACKAGE_luci-app-opkg=y
 	CONFIG_PACKAGE_automount=y
@@ -337,11 +332,11 @@ color cy "自定义设置.... "
 				}" $(find package/ -type f -name "*default-settings" 2>/dev/null)
 	fi
 	# git diff ./ >> ../output/t.patch || true
-	clone_url "
-    https://github.com/hong0980/build
-    https://github.com/fw876/helloworld
-    https://github.com/xiaorouji/openwrt-passwall
-	"
+clone_url "
+	https://github.com/hong0980/build
+	https://github.com/fw876/helloworld
+	https://github.com/xiaorouji/openwrt-passwall-packages
+"
 	[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 		clone_url "
 			https://github.com/destan19/OpenAppFilter
@@ -355,13 +350,13 @@ color cy "自定义设置.... "
 			https://github.com/sirpdboy/luci-app-cupsd/trunk/luci-app-cupsd
 			https://github.com/sirpdboy/luci-app-cupsd/trunk/cups
 			https://github.com/immortalwrt/luci/trunk/applications/luci-app-eqos
-			https://github.com/kiddin9/openwrt-packages/trunk/adguardhome
+			https://github.com/immortalwrt/packages/trunk/net/adguardhome
 			https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 			https://github.com/immortalwrt/packages/trunk/utils/cpulimit
 			#https://github.com/sirpdboy/luci-app-netdata
 			#https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
             https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
-            https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall
+            https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
 		"
 		[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
         sed -i '/log_check/s/^/#/' package/A/*/*/*/init.d/unblockneteasemusic
@@ -407,7 +402,7 @@ color cy "自定义设置.... "
     [[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
     # https://github.com/userdocs/qbittorrent-nox-static/releases
     xc=$(find package/A/ feeds/ -type d -name "qBittorrent-static" 2>/dev/null)
-    [[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.5.4_v2.0.9/;s/userdocs/hong0980/;s/ARCH)-qbittorrent/ARCH)-qt6-qbittorrent/' $xc/Makefile
+    [[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.5.5_v2.0.9/;s/userdocs/hong0980/;s/ARCH)-qbittorrent/ARCH)-qt6-qbittorrent/' $xc/Makefile
     xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc" 2>/dev/null)
     [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
     xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy" 2>/dev/null)
@@ -445,7 +440,7 @@ color cy "自定义设置.... "
 
     trv=`awk -F= '/PKG_VERSION:/{print $2}' feeds/packages/net/transmission/Makefile`
     [[ $trv ]] && wget -qO feeds/packages/net/transmission/patches/tr$trv.patch \
-    raw.githubusercontent.com/hong0980/diy/master/files/transmission/tr$trv.patch
+    raw.githubusercontent.com/hong0980/diy/master/files/transmission/tr$trv.patch 1>/dev/null 2>&1
 
 	cat <<-\EOF >feeds/packages/lang/python/python3/files/python3-package-uuid.mk
 	define Package/python3-uuid
@@ -510,7 +505,11 @@ case $TARGET_DEVICE in
         # sed -i '/ luci/s/$/.git^0cb5c5c/; / packages/s/$/.git^44a85da/' feeds.conf.defaultq
     # fi
     # sed -i '/KERNEL_PATCHVER/s/=.*/=5.4/' target/linux/rockchip/Makefile
-    # clone_url "https://github.com/immortalwrt/immortalwrt/branches/openwrt-21.02/package/boot/uboot-rockchip"
+    clone_url "
+	https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/target/linux/rockchip
+	https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/boot/uboot-rockchip
+	https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/boot/arm-trusted-firmware-rockchip-vendor
+	"
     sed -i "/interfaces_lan_wan/s/'eth1' 'eth0'/'eth0' 'eth1'/" target/linux/rockchip/*/*/*/*/02_network
     # git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
     ;;
@@ -539,9 +538,9 @@ case $TARGET_DEVICE in
 	luci-app-smartdns
 	#luci-app-unblockmusic
 	#luci-app-aliyundrive-fuse
-	luci-app-aliyundrive-webdav
+	#luci-app-aliyundrive-webdav
 	#AmuleWebUI-Reloaded ariang bash htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
-	subversion-client unixodbc git-http
+	subversion-client #unixodbc git-http
 
 	#USB3.0支持
 	kmod-usb-audio kmod-usb-printer
@@ -632,29 +631,18 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 	fi
 done
 
-[[ $VERSION = "mini" ]] && {
+[[ -z $VERSION ]] && {
 	# sed -i '/DEVICE_TYPE/d' include/target.mk
 	# sed -i '/kmod/d;/luci-app/d' target/linux/x86/Makefile
 	sed -i 's/luci-app-[^ ]* //g' include/target.mk $(find target/ -name Makefile)
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
-	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 	echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
 }
 
-# cat >>.config <<-EOF
-# CONFIG_DEVEL=y
-# CONFIG_CCACHE=y
-# CONFIG_NEED_TOOLCHAIN=y
-# CONFIG_IB=y
-# CONFIG_IB_STANDALONE=y
-# CONFIG_DEVEL=y
-# CONFIG_DROPBEAR_ECC_FULL=y
-# CONFIG_DROPBEAR_ECC=y
-# CONFIG_AUTOREMOVE=y
-# CONFIG_MAKE_TOOLCHAIN=y
-# EOF
-# rm -rf package/kernel/rt*
-
+clone_url "https://github.com/immortalwrt/packages/branches/openwrt-23.05/lang/rust"
+sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 2>/dev/null
+sed -i 's|\.\./\.\./lang/golang|$(TOPDIR)/feeds/packages/lang/golang|' package/A/*/Makefile 2>/dev/null
+sed -i '/bridge/d' .config
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
