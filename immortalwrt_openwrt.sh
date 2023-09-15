@@ -143,13 +143,13 @@ export SOURCE_NAME=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
 export IMG_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TARGET_DEVICE"
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 case "$TARGET_DEVICE" in
-	"x86_64") export DEVICE_NAME="x86_64";;
-	"asus_rt-n16") export DEVICE_NAME="bcm47xx_mips74k";;
-	"armvirt_64_Default") export DEVICE_NAME="armvirt_64";;
-	"newifi-d2"|"phicomm_k2p") export DEVICE_NAME="ramips_mt7621";;
-	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export DEVICE_NAME="rockchip_armv8";;
+	"x86_64") export NAME="x86_64";;
+	"asus_rt-n16") export NAME="bcm47xx_mips74k";;
+	"armvirt_64_Default") export NAME="armvirt_64";;
+	"newifi-d2"|"phicomm_k2p") export NAME="ramips_mt7621";;
+	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export NAME="rockchip_armv8";;
 esac
-export CACHE_NAME="$SOURCE_NAME-$TOOLS_HASH-$DEVICE_NAME"
+export CACHE_NAME="$SOURCE_NAME-$TOOLS_HASH-$NAME"
 echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
@@ -164,16 +164,15 @@ if (grep -q "$CACHE_NAME-cache.tzst" ../xa || grep -q "$CACHE_NAME-cache.tzst" .
 	[ -e *.tzst ] && {
 		echo -e "$(color cy '部署tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 		(tar -I unzstd -xf *.tzst || tar -xf *.tzst) && {
-		    if ! grep -q "$CACHE_NAME-cache.tzst" ../xa; then
-		        cp *.tzst ../output
-		        echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
-		    fi
-		    sed -i 's/ $(tool.*stamp-compile)//g' Makefile
+			if ! grep -q "$CACHE_NAME-cache.tzst" ../xa; then
+				cp *.tzst ../output
+				echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
+			fi
+			sed -i 's/ $(tool.*stamp-compile)//g' Makefile
 		}
 		[ -d staging_dir ]; status
 	}
 else
-	echo "FETCH_CACHE=true" >>$GITHUB_ENV
 	VERSION=''
 fi
 
@@ -393,8 +392,6 @@ clone_url "
 		https://github.com/coolsnowwolf/packages/trunk/lang/golang
 	"
 	rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
-	# [[ -e package/A/luci-app-ddnsto/root/etc/init.d/ddnsto ]] || \
-	# svn export --force https://github.com/linkease/nas-packages/trunk/network/services/ddnsto package/A/ddnsto
 	[[ -e feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
 	sed -i '/log_check/s/^/#/' feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
 	# https://github.com/immortalwrt/luci/branches/openwrt-21.02/applications/luci-app-ttyd ## 分支
@@ -429,7 +426,7 @@ clone_url "
 		# }
 	# fi
 
-	[[ "${REPO_BRANCH#*-}" =~ ^2 ]] && {
+	[[ "$REPO_BRANCH" =~ 2.*0 ]] && {
 		sed -i 's/^ping/-- ping/g' package/*/*/*/*/*/bridge.lua
 		# sed -i 's/services/nas/' feeds/luci/*/*/*/*/*/*/menu.d/*transmission.json
 		clone_url "
@@ -490,7 +487,7 @@ case "$TARGET_DEVICE" in
 "r4s"|"r2c"|"r2s"|"r1-plus-lts"|"r1-plus")
 	DEVICE_NAME="$TARGET_DEVICE"
 	FIRMWARE_TYPE="sysupgrade"
-	[[ $IP ]] && \
+	[[ -n $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	[[ $VERSION = plus ]] && {
@@ -524,7 +521,7 @@ case "$TARGET_DEVICE" in
 "newifi-d2")
 	DEVICE_NAME="Newifi-D2"
 	FIRMWARE_TYPE="sysupgrade"
-	[[ $IP ]] && \
+	[[ -n $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
 	;;
@@ -533,21 +530,21 @@ case "$TARGET_DEVICE" in
 	_packages "luci-app-wifischedule"
 	FIRMWARE_TYPE="sysupgrade"
 	sed -i '/diskman/d;/autom/d;/ikoolproxy/d;/autos/d' .config
-	[[ $IP ]] && \
+	[[ -n $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.1.1"/' $config_generate
 	;;
 "asus_rt-n16")
 	DEVICE_NAME="Asus-RT-N16"
 	FIRMWARE_TYPE="n16"
-	[[ $IP ]] && \
+	[[ -n $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.130"/' $config_generate
 	;;
 "x86_64")
 	DEVICE_NAME="x86_64"
 	FIRMWARE_TYPE="squashfs-combined"
-	[[ $IP ]] && \
+	[[ -n $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.150"/' $config_generate
 	[[ $VERSION = plus ]] && {
@@ -600,7 +597,7 @@ case "$TARGET_DEVICE" in
 "armvirt_64_Default")
 	DEVICE_NAME="armvirt-64-default"
 	FIRMWARE_TYPE="armvirt-64-default-rootfs"
-	[[ $IP ]] && \
+	[[ -n $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.110"/' $config_generate
 	clone_url "https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic"
@@ -642,12 +639,16 @@ for p in $(find package/A/ feeds/luci/applications/ -type d -name "po" 2>/dev/nu
 done
 
 sed -i '/bridge/d' .config
+[[ -z "$VERSION" ]] && {
+	echo "FETCH_CACHE=true" >>$GITHUB_ENV
+	echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
+	sed -i 's/luci-app-[^ ]*//g' .config include/target.mk $(find target/ -name Makefile)
+}
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
 
 LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
-DEVICE_NAME=`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*T_(.*)_DEVI.*/\1/'`-`grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/'`
 echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
 sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
