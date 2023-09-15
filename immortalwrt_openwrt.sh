@@ -642,7 +642,8 @@ sed -i '/bridge/d' .config
 [[ -z "$VERSION" ]] && {
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
 	echo "UPLOAD_RELEASE=true" >>$GITHUB_ENV
-	sed -i 's/luci-app-[^ ]*//g' .config include/target.mk $(find target/ -name Makefile)
+	sed -i 's/luci-app-*//g' .config
+	sed -i 's/luci-app-[^ ]* //g' {include/target.mk,$(find target/ -name Makefile)}
 }
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1

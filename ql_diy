@@ -26,10 +26,9 @@ up_github() {
 
 grep -q "$CACHE_NAME-cache" xa || {
 	echo "打包cache"
-	echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
-	[[ $hx ]] && cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true
-	[[ $xx ]] && cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true
-	[[ $REPO_FLODER ]] && pushd $REPO_FLODER || pushd openwrt
+	[[ -n $hx ]] && (cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true)
+	[[ -n $xx ]] && (cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true)
+	pushd $REPO_FLODER || pushd openwrt
 	[[ -d ".ccache" ]] && (ccache=".ccache"; ls -alh .ccache)
 	tar -I zstdmt -cf ../output/$CACHE_NAME-cache.tzst staging_dir/host* staging_dir/tool* $ccache || \
 	tar --zstd -cf ../output/$CACHE_NAME-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache
@@ -37,6 +36,9 @@ grep -q "$CACHE_NAME-cache" xa || {
 	du -h --max-depth=1 ./staging_dir
 	popd
 	ls -lh output
+	if [[ $(du -m "output/${CACHE_NAME}*" | cut -f1) -ge 300 ]]; then
+		echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+	fi
 }
 # [[ "$TARGET_DEVICE" =~ r[1-9] && "$SOURCE_NAME" =~ coolsnowwolf ]] && {
 	# [[ $REPO_FLODER ]] && cd $REPO_FLODER || cd openwrt

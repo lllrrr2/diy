@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# git.io/J6IXO git.io/ql_diy git.io/lean_openwrt is.gd/lean_openwrt is.gd/build_environment is.gd/immortalwrt_openwrt
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
 # curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | jq -r '.[0].assets[].browser_download_url' | grep 'cache' >xc
 # curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep 'cache' >xa
@@ -10,7 +11,7 @@ if [[ -n $cache_Release ]]; then
 	while read -r line; do
 		if ! grep -q "${line##*/}" xc 2>/dev/null; then
 			if wget -qO "output/${line##*/}" "$line"; then
-				if [[ $(du -m "output/${line##*/}" | cut -f1) -ge 100 ]]; then
+				if [[ $(du -m "output/${line##*/}" | cut -f1) -ge 300 ]]; then
 					echo "${line##*/} 已经下载完成"
 					count=$[count+1]
 				else
@@ -44,7 +45,9 @@ if [[ -n $FETCH_CACHE ]]; then
 		du -h --max-depth=1 ./staging_dir
 		popd
 		ls -lh output
-		echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+		if [[ $(du -m "output/${CACHE_NAME}*" | cut -f1) -ge 300 ]]; then
+			echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+		fi
 	}
 	echo "SAVE_CACHE=" >>$GITHUB_ENV
 	exit 0
@@ -647,7 +650,8 @@ done
 
 [[ -z "$VERSION" ]] && {
 	echo "FETCH_CACHE=true" >>$GITHUB_ENV
-	sed -i 's/luci-app-[^ ]*//g' .config include/target.mk $(find target/ -name Makefile)
+	sed -i 's/luci-app-*//g' .config
+	sed -i 's/luci-app-[^ ]* //g' {include/target.mk,$(find target/ -name Makefile)}
 }
 
 clone_url "https://github.com/immortalwrt/packages/branches/openwrt-23.05/lang/rust"
