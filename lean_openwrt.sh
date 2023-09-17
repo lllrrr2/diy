@@ -5,24 +5,20 @@ curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zs
 # curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep 'cache' >xa
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
 curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xa
+curl -sL api.github.com/repos/hong0980/openwrt-au/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >>xa
+[ -d output ] || mkdir firmware output
 
-if [[ -n $cache_Release ]]; then
+if [[ $cache_Release = 'true' ]]; then
 	count=0
-	while read -r line; do
-		if ! grep -q "${line##*/}" xc 2>/dev/null; then
-			if wget -qO "output/${line##*/}" "$line"; then
-				if [[ $(du -m "output/${line##*/}" | cut -f1) -ge 300 ]]; then
-					echo "${line##*/} 已经下载完成"
-					count=$[count+1]
-				else
-					rm -f "output/${line##*/}"
-				fi
-			fi
+	while read -r line && [ $count -lt 3 ]; do
+		filename="${line##*/}"
+		if ! grep -q "$filename" xc 2>/dev/null && wget -qO "output/$filename" "$line"; then
+		    echo "$filename 已经下载完成"
+		    count=$((count + 1))
 		fi
-		[ $count -eq 3 ] && break
 	done < xa
 
-	if [ "$(ls -A output)" ]; then
+	if [ "$(ls -A output 2>/dev/null)" ]; then
 		echo "UPLOAD_Release=true" >> $GITHUB_ENV
 	else
 		echo "没有新的cache可以下载！"
@@ -30,31 +26,30 @@ if [[ -n $cache_Release ]]; then
 	exit 0
 fi
 
-if [[ -n $FETCH_CACHE ]]; then
-	hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* 2>/dev/null | sed "s/openwrt/$IMG_NAME/g" 2>/dev/null`
-	xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* 2>/dev/null | sed "s/openwrt/$IMG_NAME/g" 2>/dev/null`
-	grep -q "$CACHE_NAME" xa || {
-		echo "打包cache"
-		[[ -n $hx ]] && (cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true)
-		[[ -n $xx ]] && (cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true)
-		pushd $REPO_FLODER || pushd openwrt
-		[[ -d ".ccache" ]] && (ccache=".ccache"; ls -alh .ccache)
-		tar -I zstdmt -cf ../output/$CACHE_NAME-cache.tzst staging_dir/host* staging_dir/tool* $ccache || \
-		tar --zstd -cf ../output/$CACHE_NAME-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache
-		du -h --max-depth=1 ./ --exclude=staging_dir
-		du -h --max-depth=1 ./staging_dir
-		popd
-		ls -lh output
-		if [[ $(du -m "output/${CACHE_NAME}*" | cut -f1) -ge 300 ]]; then
-			echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
-		fi
-	}
+if [[ $FETCH_CACHE = 'true' ]]; then
+	echo "打包cache"
+	REPO_FLODER=${REPO_FLODER:-openwrt}
+	hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* 2>/dev/null | sed "s/openwrt/$CACHE_NAME/g" 2>/dev/null`
+	xx=`ls $REPO_FLODER/bin/targets/*/*/*imagebuil* 2>/dev/null | sed "s/openwrt/$CACHE_NAME/g" 2>/dev/null`
+	[[ $hx ]] && (cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*toolchain*"` output/${hx##*/} || true)
+	[[ $xx ]] && (cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true)
+	cd "$REPO_FLODER"
+	[[ -d ".ccache" ]] && (ccache=".ccache"; ls -alh .ccache)
+	rm -rf dl build_dir tmp
+	du -h --max-depth=1 ./ --exclude=staging_dir
+	du -h --max-depth=1 ./staging_dir
+	tar -I zstdmt -cf ../output/$CACHE_NAME-cache.tzst staging_dir/host* staging_dir/tool* $ccache || \
+	tar --zstd -cf ../output/$CACHE_NAME-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache
+	if [[ $(du -sm "../output" | cut -f1) -ge 150 ]]; then
+		ls -lh ../output
+		echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+	fi
 	echo "SAVE_CACHE=" >>$GITHUB_ENV
 	exit 0
 fi
+
 [[ -n $VERSION ]] || VERSION=plus
 [[ -n $PARTSIZE ]] || PARTSIZE=900
-mkdir firmware output
 
 color() {
 	case $1 in
@@ -189,8 +184,7 @@ git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 
-export SOURCE_NAME=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
-export IMG_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TARGET_DEVICE"
+export SOURCE_NAME=$(basename $(dirname $REPO_URL))
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 case "$TARGET_DEVICE" in
 	"x86_64") export DEVICE_NAME="x86_64";;
@@ -199,11 +193,8 @@ case "$TARGET_DEVICE" in
 	"newifi-d2"|"phicomm_k2p") export DEVICE_NAME="ramips_mt7621";;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export DEVICE_NAME="rockchip_armv8";;
 esac
-export CACHE_NAME="$SOURCE_NAME-$TOOLS_HASH-$DEVICE_NAME"
-echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
+export CACHE_NAME="$SOURCE_NAME-$REPO_BRANCH-$TOOLS_HASH-$DEVICE_NAME"
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
-echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
-echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 
 if (grep -q "$CACHE_NAME-cache.tzst" ../xa || grep -q "$CACHE_NAME-cache.tzst" ../xc); then
 	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
@@ -224,6 +215,7 @@ if (grep -q "$CACHE_NAME-cache.tzst" ../xa || grep -q "$CACHE_NAME-cache.tzst" .
 	}
 else
 	VERSION=''
+	echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 fi
 
 echo -e "$(color cy '更新软件....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
@@ -341,7 +333,7 @@ cat >>.config <<-EOF
 config_generate="package/base-files/files/bin/config_generate"
 color cy "自定义设置.... "
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
-	if [[ $IMG_NAME =~ "coolsnowwolf" ]]; then
+	if [[ $REPO_URL =~ "coolsnowwolf" ]]; then
 		REPO_BRANCH="18.06"
 		sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_NAME-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release
 		sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk

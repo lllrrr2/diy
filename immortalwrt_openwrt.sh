@@ -139,8 +139,7 @@ status
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 
 # [ "$TARGET_DEVICE" = r1-plus-lts -a "$REPO_BRANCH" = master ] && git reset --hard b5193291bdde00e91c58e59029d5c68b0bc605db
-export SOURCE_NAME=$(awk -F'/' '{print $(NF-1)}' <<<$REPO_URL)
-export IMG_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TARGET_DEVICE"
+SOURCE_NAME=$(basename $(dirname $REPO_URL))
 export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 case "$TARGET_DEVICE" in
 	"x86_64") export NAME="x86_64";;
@@ -149,11 +148,8 @@ case "$TARGET_DEVICE" in
 	"newifi-d2"|"phicomm_k2p") export NAME="ramips_mt7621";;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export NAME="rockchip_armv8";;
 esac
-export CACHE_NAME="$SOURCE_NAME-$TOOLS_HASH-$NAME"
-echo "IMG_NAME=$IMG_NAME" >>$GITHUB_ENV
+export CACHE_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TOOLS_HASH-$NAME"
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
-echo "SOURCE_NAME=$SOURCE_NAME" >>$GITHUB_ENV
-echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 
 if (grep -q "$CACHE_NAME-cache.tzst" ../xa || grep -q "$CACHE_NAME-cache.tzst" ../xc); then
 	echo -e "$(color cy '下载tz-cache')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
@@ -174,6 +170,7 @@ if (grep -q "$CACHE_NAME-cache.tzst" ../xa || grep -q "$CACHE_NAME-cache.tzst" .
 	}
 else
 	VERSION=''
+	echo "CACHE_ACTIONS=" >>$GITHUB_ENV
 fi
 
 echo -e "$(color cy '更新软件....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
@@ -662,7 +659,6 @@ echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
 echo "UPLOAD_WETRANSFER=false" >>$GITHUB_ENV
 echo "CLEAN=false" >>$GITHUB_ENV
-echo "DEVICE_NAME=$DEVICE_NAME" >>$GITHUB_ENV
 echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
 echo "VERSION=$VERSION" >>$GITHUB_ENV
 

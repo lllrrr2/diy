@@ -25,8 +25,22 @@ function __warning_msg() {
 	echo -e "${YELLOW_COLOR}[WARNING]${DEFAULT_COLOR} $*"
 }
 
+function _pushd() {
+	if ! pushd "$@" &> /dev/null; then
+		__error_msg "$1该目录不存在。"
+		exit 1
+	fi
+}
+
+function _popd() {
+	if ! popd &> /dev/null; then
+		__error_msg "该目录不存在。"
+		exit 1
+	fi
+}
+
 function check_system(){
-	__info_msg "Checking system info..."
+	__info_msg "正在检查系统信息..."
 
 	VERSION_CODENAME="$(source /etc/os-release; echo "$VERSION_CODENAME")"
 	VERSION_PACKAGE="lib32gcc-s1"
@@ -48,30 +62,28 @@ function check_system(){
 		UBUNTU_CODENAME="jammy"
 		;;
 	*)
-		__error_msg "Unsupported OS, use Ubuntu 20.04 instead."
+		__error_msg "操作系统不受支持，请改用 Ubuntu 20.04。"
 		exit 1
 		;;
 	esac
 
-	[ "$(uname -m)" == "x86_64" ] || { __error_msg "Unsupported architecture, use AMD64 instead." && exit 1; }
+	[ "$(uname -m)" == "x86_64" ] || { __error_msg "不支持的架构，请改用 AMD64。" && exit 1; }
 
-	[ "$(whoami)" == "root" ] || { __error_msg "You must run this script as root." && exit 1; }
+	[ "$(whoami)" == "root" ] || { __error_msg "您必须以 root 身份运行此脚本。" && exit 1; }
 }
 
 function check_network(){
-	__info_msg "Checking network..."
-
+	__info_msg "正在检查网络..."
 	curl -s "myip.ipip.net" | grep -qo "中国" && CHN_NET=1
-	curl --connect-timeout 10 "baidu.com" > "/dev/null" 2>&1 || { __warning_msg "Your network is not suitable for compiling OpenWrt!"; }
-	curl --connect-timeout 10 "google.com" > "/dev/null" 2>&1 || { __warning_msg "Your network is not suitable for compiling OpenWrt!"; }
+	curl --connect-timeout 10 "baidu.com" > "/dev/null" 2>&1 || { __warning_msg "您的网络不适合编译OpenWrt！"; }
+	curl --connect-timeout 10 "google.com" > "/dev/null" 2>&1 || { __warning_msg "您的网络不适合编译OpenWrt！"; }
 }
 
 function update_apt_source(){
-	__info_msg "Updating apt source lists..."
-	set -x
-
-	apt update -y
-	apt install -y apt-transport-https gnupg2
+	__info_msg "正在更新 apt 源列表..."
+	# set -x
+	apt-get -qq update
+	apt-get -qq install apt-transport-https gnupg2 > /dev/null
 	if [ -n "$CHN_NET" ]; then
 		mv "/etc/apt/sources.list" "/etc/apt/sources.list.bak"
 		if [ "$VERSION_CODENAME" == "$UBUNTU_CODENAME" ]; then
@@ -153,16 +165,15 @@ function update_apt_source(){
 	fi
 
 	! grep -q "$VERSION_CODENAME-backports" "/etc/apt/sources.list" || BPO_FLAG="-t $VERSION_CODENAME-backports"
-	apt update -y $BPO_FLAG
-
-	set +x
+	apt-get -qq update -y $BPO_FLAG
+	# set +x
 }
-function install_dependencies(){
-	__info_msg "Installing dependencies..."
-	set -x
 
-	apt full-upgrade -y $BPO_FLAG
-	apt install -y $BPO_FLAG ack antlr3 asciidoc autoconf automake autopoint \
+function install_dependencies(){
+	__info_msg "正在安装依赖项..."
+	# set -x
+	apt-get -qq full-upgrade $BPO_FLAG > /dev/null
+	apt-get -qq install $BPO_FLAG ack antlr3 asciidoc autoconf automake autopoint \
 		binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler ecj \
 		fakeroot fastjar flex gawk gettext genisoimage git gnutls-dev gperf haveged help2man \
 		intltool jq libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev \
@@ -170,52 +181,52 @@ function install_dependencies(){
 		libtool libyaml-dev libz-dev lrzsz msmtp nano ninja-build p7zip p7zip-full patch pkgconf \
 		python2 libpython3-dev python3 python3-pip python3-ply python3-docutils python3-pyelftools \
 		qemu-utils quilt re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs unzip \
-		vim wget xmlto xxd zlib1g-dev $VERSION_PACKAGE
+		vim wget xmlto xxd zlib1g-dev $VERSION_PACKAGE > /dev/null
 
 	if [ -n "$CHN_NET" ]; then
 		pip3 config set global.index-url "https://mirrors.aliyun.com/pypi/simple/"
 		pip3 config set install.trusted-host "https://mirrors.aliyun.com"
 	fi
 
-	apt install -y $BPO_FLAG gcc-9 g++-9 gcc-9-multilib g++-9-multilib
-	ln -svf "/usr/bin/gcc-9" "/usr/bin/gcc"
-	ln -svf "/usr/bin/g++-9" "/usr/bin/g++"
-	ln -svf "/usr/bin/gcc-ar-9" "/usr/bin/gcc-ar"
-	ln -svf "/usr/bin/gcc-nm-9" "/usr/bin/gcc-nm"
-	ln -svf "/usr/bin/gcc-ranlib-9" "/usr/bin/gcc-ranlib"
-	ln -svf "/usr/bin/g++" "/usr/bin/c++"
-	[ -e "/usr/include/asm" ] || ln -svf "/usr/include/$(gcc -dumpmachine)/asm" "/usr/include/asm"
+	apt-get -qq install $BPO_FLAG gcc-9 g++-9 gcc-9-multilib g++-9-multilib > /dev/null
+	ln -sf "/usr/bin/gcc-9" "/usr/bin/gcc"
+	ln -sf "/usr/bin/g++-9" "/usr/bin/g++"
+	ln -sf "/usr/bin/gcc-ar-9" "/usr/bin/gcc-ar"
+	ln -sf "/usr/bin/gcc-nm-9" "/usr/bin/gcc-nm"
+	ln -sf "/usr/bin/gcc-ranlib-9" "/usr/bin/gcc-ranlib"
+	ln -sf "/usr/bin/g++" "/usr/bin/c++"
+	[ -e "/usr/include/asm" ] || ln -sf "/usr/include/$(gcc -dumpmachine)/asm" "/usr/include/asm"
 
-	apt install -y $BPO_FLAG clang-15 lld-15 libclang-15-dev
-	ln -svf "/usr/bin/clang-15" "/usr/bin/clang"
-	ln -svf "/usr/bin/clang++-15" "/usr/bin/clang++"
-	ln -svf "/usr/bin/clang-cpp-15" "/usr/bin/clang-cpp"
+	apt-get -qq install $BPO_FLAG clang-15 lld-15 libclang-15-dev > /dev/null
+	ln -sf "/usr/bin/clang-15" "/usr/bin/clang"
+	ln -sf "/usr/bin/clang++-15" "/usr/bin/clang++"
+	ln -sf "/usr/bin/clang-cpp-15" "/usr/bin/clang-cpp"
 
-	apt install -y $BPO_FLAG llvm-15
+	apt-get -qq install $BPO_FLAG llvm-15 > /dev/null
 	for i in "/usr/bin"/llvm-*-15; do
-		ln -svf "$i" "${i%-15}"
+		ln -sf "$i" "${i%-15}"
 	done
 
-	apt install -y $BPO_FLAG nodejs yarn
+	apt-get -qq install $BPO_FLAG nodejs yarn > /dev/null
 	if [ -n "$CHN_NET" ]; then
 		npm config set registry "https://registry.npmmirror.com" --global
 		yarn config set registry "https://registry.npmmirror.com" --global
 	fi
 
-	apt install -y $BPO_FLAG golang-1.20-go
+	apt-get -qq install $BPO_FLAG golang-1.20-go > /dev/null
 	rm -rf "/usr/bin/go" "/usr/bin/gofmt"
-	ln -svf "/usr/lib/go-1.20/bin/go" "/usr/bin/go"
-	ln -svf "/usr/lib/go-1.20/bin/gofmt" "/usr/bin/gofmt"
+	ln -sf "/usr/lib/go-1.20/bin/go" "/usr/bin/go"
+	ln -sf "/usr/lib/go-1.20/bin/gofmt" "/usr/bin/gofmt"
 	if [ -n "$CHN_NET" ]; then
 		go env -w GOPROXY=https://goproxy.cn,direct
 	fi
 
-	apt clean -y
+	apt-get clean -qq -y
 
 	if TMP_DIR="$(mktemp -d)"; then
-		pushd "$TMP_DIR"
+		_pushd "$TMP_DIR"
 	else
-		__error_msg "Failed to create a tmp directory."
+		__error_msg "无法创建 tmp 目录。"
 		exit 1
 	fi
 
@@ -225,31 +236,32 @@ function install_dependencies(){
 	rm -rf "/usr/bin/upx" "/usr/bin/upx-ucl"
 	cp -fp "upx-$UPX_REV-amd64_linux/upx" "/usr/bin/upx-ucl"
 	chmod 0755 "/usr/bin/upx-ucl"
-	ln -svf "/usr/bin/upx-ucl" "/usr/bin/upx"
+	ln -sf "/usr/bin/upx-ucl" "/usr/bin/upx"
 
-	svn co -r161078 "https://github.com/openwrt/openwrt/trunk/tools/padjffs2/src" "padjffs2"
-	pushd "padjffs2"
+	svn co -r161078 "https://github.com/openwrt/openwrt/trunk/tools/padjffs2/src" "padjffs2" --quiet
+	_pushd "padjffs2"
 	make
 	rm -rf "/usr/bin/padjffs2"
 	cp -fp "padjffs2" "/usr/bin/padjffs2"
-	popd
+	_popd
 
-	svn co -r19250 "https://github.com/openwrt/luci/trunk/modules/luci-base/src" "po2lmo"
-	pushd "po2lmo"
+	svn co -r19250 "https://github.com/openwrt/luci/trunk/modules/luci-base/src" "po2lmo" --quiet
+	_pushd "po2lmo"
 	make po2lmo
 	rm -rf "/usr/bin/po2lmo"
 	cp -fp "po2lmo" "/usr/bin/po2lmo"
-	popd
+	_popd
 
 	curl -fL "https://build-scripts.immortalwrt.eu.org/modify-firmware.sh" -o "/usr/bin/modify-firmware"
 	chmod 0755 "/usr/bin/modify-firmware"
 
-	popd
+	_popd
 	rm -rf "$TMP_DIR"
-
-	set +x
-	__success_msg "All dependencies have been installed."
+	apt-get -qq autoremove --purge
+	# set +x
+	__success_msg "所有依赖项均已安装。"
 }
+
 function main(){
 	check_system
 	check_network
