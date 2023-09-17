@@ -139,8 +139,6 @@ status
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 
 # [ "$TARGET_DEVICE" = r1-plus-lts -a "$REPO_BRANCH" = master ] && git reset --hard b5193291bdde00e91c58e59029d5c68b0bc605db
-SOURCE_NAME=$(basename $(dirname $REPO_URL))
-export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 case "$TARGET_DEVICE" in
 	"x86_64") export NAME="x86_64";;
 	"asus_rt-n16") export NAME="bcm47xx_mips74k";;
@@ -148,6 +146,9 @@ case "$TARGET_DEVICE" in
 	"newifi-d2"|"phicomm_k2p") export NAME="ramips_mt7621";;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export NAME="rockchip_armv8";;
 esac
+
+SOURCE_NAME=$(basename $(dirname $REPO_URL))
+export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 export CACHE_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TOOLS_HASH-$NAME"
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 
@@ -647,7 +648,7 @@ make defconfig 1>/dev/null 2>&1
 status
 
 LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
-echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
+echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME}${VERSION:+-$VERSION})"
 sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 

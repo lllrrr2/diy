@@ -5,7 +5,6 @@ curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zs
 # curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | awk -F'"' '/browser_download_url/{print $4}' | grep 'cache' >xa
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
 curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xa
-curl -sL api.github.com/repos/hong0980/openwrt-au/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >>xa
 [ -d output ] || mkdir firmware output
 
 if [[ $cache_Release = 'true' ]]; then
@@ -184,8 +183,6 @@ git clone -q $cmd $REPO_URL $REPO_FLODER --single-branch
 status
 [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 
-export SOURCE_NAME=$(basename $(dirname $REPO_URL))
-export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 case "$TARGET_DEVICE" in
 	"x86_64") export DEVICE_NAME="x86_64";;
 	"asus_rt-n16") export DEVICE_NAME="bcm47xx_mips74k";;
@@ -193,6 +190,9 @@ case "$TARGET_DEVICE" in
 	"newifi-d2"|"phicomm_k2p") export DEVICE_NAME="ramips_mt7621";;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export DEVICE_NAME="rockchip_armv8";;
 esac
+
+SOURCE_NAME=$(basename $(dirname $REPO_URL))
+export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
 export CACHE_NAME="$SOURCE_NAME-$REPO_BRANCH-$TOOLS_HASH-$DEVICE_NAME"
 echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
 
@@ -655,7 +655,7 @@ make defconfig 1>/dev/null 2>&1
 status
 
 LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
-echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-$DEVICE_NAME-$VERSION)"
+echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME}${VERSION:+-$VERSION})"
 sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 echo "CLEAN=false" >>$GITHUB_ENV
