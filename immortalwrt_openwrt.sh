@@ -309,7 +309,7 @@ clone_url "
 	https://github.com/fw876/helloworld
 	https://github.com/xiaorouji/openwrt-passwall-packages
 "
-[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
+[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 -a "$TARGET_DEVICE" != asus_rt-n16 ] && {
 	_packages "
 	attr axel bash blkid bsdtar btrfs-progs cfdisk chattr collectd-mod-ping
 	collectd-mod-thermal curl diffutils dosfstools e2fsprogs f2fs-tools f2fsck
@@ -612,7 +612,7 @@ case "$TARGET_DEVICE" in
 		pigz pv python3 resize2fs tune2fs unzip uuidgen wpa-cli wpad wpad-basic xfs-fsck
 		xfs-mkfs"
 		echo "CONFIG_PERL_NOCOMMENT=y" >>.config
-		sed -i '/easymesh/d' .config
+		sed -i -E '/easymesh/d' .config
 		sed -i "s/default 160/default $PARTSIZE/" config/Config-images.in
 		sed -i 's/@arm/@TARGET_armvirt_64/g' $(find package/A/ feeds/ -type d -name "luci-app-cpufreq" 2>/dev/null)/Makefile
 	}
