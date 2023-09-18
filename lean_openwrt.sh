@@ -215,7 +215,7 @@ if (grep -q "$CACHE_NAME-cache.tzst" ../xa || grep -q "$CACHE_NAME-cache.tzst" .
 	}
 else
 	VERSION=''
-	echo "CACHE_ACTIONS=" >>$GITHUB_ENV
+	echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
 fi
 
 echo -e "$(color cy '更新软件....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')

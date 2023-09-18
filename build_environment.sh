@@ -231,7 +231,7 @@ function install_dependencies(){
 	fi
 
 	UPX_REV="4.0.1"
-	curl -fLO "https://github.com/upx/upx/releases/download/v${UPX_REV}/upx-$UPX_REV-amd64_linux.tar.xz"
+	curl -sfLO "https://github.com/upx/upx/releases/download/v${UPX_REV}/upx-$UPX_REV-amd64_linux.tar.xz"
 	tar -Jxf "upx-$UPX_REV-amd64_linux.tar.xz"
 	rm -rf "/usr/bin/upx" "/usr/bin/upx-ucl"
 	cp -fp "upx-$UPX_REV-amd64_linux/upx" "/usr/bin/upx-ucl"
@@ -252,7 +252,7 @@ function install_dependencies(){
 	cp -fp "po2lmo" "/usr/bin/po2lmo"
 	_popd
 
-	curl -fL "https://build-scripts.immortalwrt.eu.org/modify-firmware.sh" -o "/usr/bin/modify-firmware"
+	curl -sfL "https://build-scripts.immortalwrt.eu.org/modify-firmware.sh" -o "/usr/bin/modify-firmware"
 	chmod 0755 "/usr/bin/modify-firmware"
 
 	_popd
