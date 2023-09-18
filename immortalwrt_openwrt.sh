@@ -142,7 +142,7 @@ status
 case "$TARGET_DEVICE" in
 	"x86_64") export NAME="x86_64";;
 	"asus_rt-n16") export NAME="bcm47xx_mips74k";;
-	"armvirt_64_Default") export NAME="armvirt_64";;
+	"armvirt-64-default") export NAME="armvirt_64";;
 	"newifi-d2"|"phicomm_k2p") export NAME="ramips_mt7621";;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export NAME="rockchip_armv8";;
 esac
@@ -242,7 +242,7 @@ case "$TARGET_DEVICE" in
 			EOF
 		fi
 		;;
-	"armvirt_64_Default")
+	"armvirt-64-default")
 		cat >.config<<-EOF
 		CONFIG_TARGET_armvirt=y
 		CONFIG_TARGET_armvirt_64=y
@@ -592,9 +592,9 @@ case "$TARGET_DEVICE" in
 		[[ $REPO_BRANCH == master ]] && rm -rf package/kernel/rt*
 	}
 	;;
-"armvirt_64_Default")
-	DEVICE_NAME="armvirt-64-default"
-	FIRMWARE_TYPE="armvirt-64-default-rootfs"
+"armvirt-64-default")
+	DEVICE_NAME="$TARGET_DEVICE"
+	FIRMWARE_TYPE="$TARGET_DEVICE"
 	[[ -n $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
 	sed -i '/n) ipad/s/".*"/"192.168.2.110"/' $config_generate

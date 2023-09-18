@@ -34,9 +34,9 @@ if [[ $FETCH_CACHE = 'true' ]]; then
 	[[ $xx ]] && (cp -v `find $REPO_FLODER/bin/targets/ -type f -name "*imagebuil*"` output/${xx##*/} || true)
 	cd "$REPO_FLODER"
 	[[ -d ".ccache" ]] && (ccache=".ccache"; ls -alh .ccache)
-	rm -rf dl build_dir tmp
-	du -h --max-depth=1 ./ --exclude=staging_dir
+	rm -rf dl build_dir tmp .git
 	du -h --max-depth=1 ./staging_dir
+	du -h --max-depth=1 ./ --exclude=staging_dir
 	tar -I zstdmt -cf ../output/$CACHE_NAME-cache.tzst staging_dir/host* staging_dir/tool* $ccache || \
 	tar --zstd -cf ../output/$CACHE_NAME-cache.tar.zst staging_dir/host* staging_dir/tool* $ccache
 	if [[ $(du -sm "../output" | cut -f1) -ge 150 ]]; then
@@ -186,7 +186,7 @@ status
 case "$TARGET_DEVICE" in
 	"x86_64") export DEVICE_NAME="x86_64";;
 	"asus_rt-n16") export DEVICE_NAME="bcm47xx_mips74k";;
-	"armvirt_64_Default") export DEVICE_NAME="armvirt_64";;
+	"armvirt-64-default") export DEVICE_NAME="armvirt_64";;
 	"newifi-d2"|"phicomm_k2p") export DEVICE_NAME="ramips_mt7621";;
 	"r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s") export DEVICE_NAME="rockchip_armv8";;
 esac
@@ -278,7 +278,7 @@ case "$TARGET_DEVICE" in
 		CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
 		EOF
 		;;
-	"armvirt_64_Default")
+	"armvirt-64-default")
 		cat >.config<<-EOF
 		CONFIG_TARGET_armvirt=y
 		CONFIG_TARGET_armvirt_64=y
@@ -594,8 +594,8 @@ case $TARGET_DEVICE in
 	wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
 	wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
 	;;
-"armvirt_64_Default")
-	FIRMWARE_TYPE="armvirt-64-default"
+"armvirt-64-default")
+	FIRMWARE_TYPE="$TARGET_DEVICE"
 	sed -i '/easymesh/d' .config
 	[[ -n $IP ]] && \
 	sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
