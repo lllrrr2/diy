@@ -388,6 +388,7 @@ clone_url "
 		#https://github.com/sirpdboy/luci-app-netdata
 		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
 		https://github.com/coolsnowwolf/packages/trunk/lang/golang
+		https://github.com/immortalwrt/packages/branches/openwrt-18.06/net/wget
 	"
 	rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
 	[[ -e feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
