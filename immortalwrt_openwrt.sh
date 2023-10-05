@@ -381,15 +381,14 @@ clone_url "
 		https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
 		https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
 		https://github.com/kuoruan/luci-app-frpc
-		https://github.com/immortalwrt/packages/trunk/net/adguardhome
+		#https://github.com/immortalwrt/packages/trunk/net/adguardhome
 		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-bypass
 		https://github.com/coolsnowwolf/packages/trunk/admin/netdata
 		#https://github.com/sirpdboy/luci-app-netdata
 		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
-		https://github.com/coolsnowwolf/packages/trunk/lang/golang
-		https://github.com/immortalwrt/packages/branches/openwrt-18.06/net/wget
 	"
+	([[ "$REPO_BRANCH" =~ 21.02 ]] || [[ "$REPO_BRANCH" =~ 18.06 ]]) && clone_url "https://github.com/coolsnowwolf/packages/trunk/lang/golang"
 	rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
 	[[ -e feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
 	sed -i '/log_check/s/^/#/' feeds/luci/applications/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
