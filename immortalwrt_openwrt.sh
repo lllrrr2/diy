@@ -381,7 +381,7 @@ clone_url "
 		https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
 		https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
 		https://github.com/kuoruan/luci-app-frpc
-		#https://github.com/immortalwrt/packages/trunk/net/adguardhome
+		https://github.com/immortalwrt/packages/trunk/net/adguardhome
 		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-bypass
 		https://github.com/coolsnowwolf/packages/trunk/admin/netdata
