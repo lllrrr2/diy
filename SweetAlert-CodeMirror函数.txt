@@ -1,0 +1,134 @@
+CodeMirror函数的用途和使用方法
+1. "defaults": 这可能是一个对象，包含CodeMirror的默认设置选项。
+2. "optionHandlers": 可能是一个对象，包含处理选项的函数。
+3. "defineInitHook": 定义一个初始化钩子函数，当编辑器初始化时会调用该函数。
+4. "defineOption": 定义一个新的选项，可以配置编辑器的行为。
+5. "Init": 初始化一个CodeMirror实例。
+6. "helpers": 包含一些辅助函数，用于处理文本、光标等操作。
+7. "registerHelper": 注册一个辅助函数，可以在编辑器中使用。
+8. "registerGlobalHelper": 注册一个全局辅助函数，可以在所有编辑器实例中使用。
+9. "inputStyles": 定义输入样式，指定如何处理键盘输入。
+10. "defineMode": 定义一个新的模式，用于语法高亮和代码折叠等功能。
+11. "defineMIME": 定义一个MIME类型对应的模式。
+12. "defineExtension": 定义一个文件扩展名对应的模式。
+13. "defineDocExtension": 定义一个文件扩展名对应的文档模式。
+14. "fromTextArea": 根据一个textarea元素创建一个CodeMirror实例。
+15. "off": 移除事件监听器。
+16. "on": 添加事件监听器。
+17. "wheelEventPixels": 指定滚轮事件的滚动距离单位。
+18. "Doc": 表示一个文档对象，包含文本内容和编辑状态等信息。
+19. "splitLines": 将文本分割成行数组。
+20. "countColumn": 计算指定位置的列数。
+21. "findColumn": 查找指定列数对应的字符位置。
+22. "isWordChar": 判断字符是否是单词字符。
+23. "Pass": 一个空函数，可以用作占位符。
+24. "signal": 触发一个事件。
+25. "Line": 表示一个行对象，包含行号和文本等信息。
+26. "changeEnd": 返回最新一次文本修改的位置。
+27. "scrollbarModel": 定义滚动条的显示方式。
+28. "Pos": 表示一个光标位置。
+29. "cmpPos": 比较两个光标位置的大小。
+30. "modes": 包含CodeMirror支持的各种语言模式。
+31. "mimeModes": 存储MIME类型和对应的语言模式。
+32. "resolveMode": 解析给定值的模式。
+33. "getMode": 获取指定名称或配置的模式。
+34. "modeExtensions": 定义模式的扩展。
+35. "extendMode": 扩展现有模式的行为或选项。
+36. "copyState": 复制当前模式的状态。
+37. "startState": 获取指定模式的初始状态。
+38. "innerMode": 获取指定位置的内部模式。
+39. "commands": 包含可用的命令列表。
+40. "keyMap": 定义键盘映射，将按键与命令关联起来。
+41. "keyName": 获取按键的名称。
+42. "isModifierKey": 检查按键是否为修饰键。
+43. "lookupKey": 查找键盘映射中与按键对应的命令。
+44. "normalizeKeyMap": 标准化键盘映射。
+45. "StringStream": 用于处理字符串的流对象。
+46. "SharedTextMarker": 表示一个共享的文本标记。
+47. "TextMarker": 表示一个文本标记。
+48. "LineWidget": 表示一个行小部件。
+49. "e_preventDefault": 阻止默认事件行为。
+50. "e_stopPropagation": 停止事件传播。
+51. "e_stop": 停止事件传播并阻止默认事件行为。
+52. "addClass": 添加类名到元素。
+53. "contains": 检查元素是否包含指定类名。
+54. "rmClass": 移除元素的类名。
+55. "keyNames": 包含按键名称的映射。
+56. "version": CodeMirror的版本号。
+57. "emacs": 包含一些与Emacs键绑定相关的函数。
+58. "fold": 包含折叠相关的函数。
+59. "findMatchingTag": 查找匹配的HTML标签。
+60. "findEnclosingTag": 查找包含当前光标位置的HTML标签。
+61. "scanForClosingTag": 在HTML中扫描寻找关闭的标签。
+
+SweetAlert函数和属性以及它们的用法注释：
+1. argsToParams(params)`: 这个函数用于将传入的参数转换为一个包含所有可用选项的对象。参数 `params` 是一个对象，包含以下属性：
+   - `title` (string)：弹窗的标题。
+   - `text` (string)：弹窗的文本内容。
+   - `icon` (string)：弹窗的图标类型，默认为 `info`。可选值为 `success`, `error`, `warning`, `info`, `question` 或自定义图标的 URL。
+   - `buttons` (object or boolean)：自定义按钮的配置对象或布尔值，默认为 `false`。如果为 `false`，则只显示默认的确认按钮。如果为对象，则可以自定义确认、取消和拒绝按钮的文本和样式。
+   - `closeOnClickOutside` (boolean)：是否允许在单击弹窗外部时关闭弹窗，默认为 `false`。
+   - `closeOnEsc` (boolean)：是否允许按下 ESC 键关闭弹窗，默认为 `true`。
+   - `timer` (number)：定时器的倒计时时间（毫秒），达到设定时间后自动关闭弹窗。
+   - `showLoaderOnConfirm` (boolean)：是否在点击确认按钮后显示加载状态，默认为 `false`。
+   - `preConfirm` (function or Promise)：确认按钮点击后触发的回调函数或返回 Promise 对象，如果返回一个 resolved Promise，则弹窗会关闭。
+   - `allowOutsideClick` (boolean)：是否允许在弹窗外部点击触发按钮的点击事件，默认为 `true`。
+   - `allowEscapeKey` (boolean)：是否允许按下 ESC 键触发按钮的点击事件，默认为 `true`。
+2. bindClickHandler(button, handler)`: 这个函数用于绑定点击事件处理程序。参数 `button` 是一个 HTML 元素，表示按钮，`handler` 是一个回调函数，用于处理按钮的点击事件。
+3. clickCancel()`: 这个函数用于触发取消按钮的点击事件。
+4. clickConfirm()`: 这个函数用于触发确认按钮的点击事件。
+5. clickDeny()`: 这个函数用于触发拒绝按钮的点击事件。
+6. enableLoading()`: 这个函数用于启用加载状态。
+7. fire(params)`: 这个函数用于触发 SweetAlert 弹窗。参数 `params` 是一个包含选项的对象，可以使用 `argsToParams` 函数将参数转换为对象。
+8. getActions()`: 这个函数用于获取所有操作按钮的数组。
+9. getCancelButton(): HTMLButtonElement`: 这个函数用于获取取消按钮的元素。
+10. getCloseButton(): HTMLButtonElement`: 这个函数用于获取关闭按钮的元素。
+11. getConfirmButton(): HTMLButtonElement`: 这个函数用于获取确认按钮的元素。
+12. getContainer(): HTMLElement`: 这个函数用于获取弹窗容器的元素。
+13. getDenyButton(): HTMLButtonElement`: 这个函数用于获取拒绝按钮的元素。
+14. getFocusableElements(): HTMLCollection`: 这个函数用于获取所有可聚焦的元素。
+15. getFooter(): HTMLElement`: 这个函数用于获取弹窗底部的元素。
+16. getHtmlContainer(): HTMLElement`: 这个函数用于获取 HTML 容器的元素。
+17. getIcon(): HTMLElement`: 这个函数用于获取图标的元素。
+18. getIconContent(): string`: 这个函数用于获取图标的内容。
+19. getImage(): HTMLImageElement`: 这个函数用于获取图片的元素。
+20. getInputLabel(): HTMLElement`: 这个函数用于获取输入标签的元素。
+21. getLoader(): HTMLElement`: 这个函数用于获取加载器的元素。
+22. getPopup(): HTMLElement`: 这个函数用于获取弹窗的元素。
+23. getProgressSteps(): Array<string>`: 这个函数用于获取进度步骤的数组。
+24. getTimerLeft(): number`: 这个函数用于获取定时器剩余时间的值。
+25. getTimerProgressBar(): HTMLElement`: 这个函数用于获取定时器进度条的元素。
+26. getTitle(): HTMLElement`: 这个函数用于获取标题的元素。
+27. getValidationMessage(): HTMLElement`: 这个函数用于获取验证消息的元素。
+28. increaseTimer(n: number)`: 这个函数用于增加定时器的时间。参数 `n` 是一个正整数，表示要增加的时间（毫秒）。
+29. isDeprecatedParameter(paramName: string): boolean`: 这个函数用于判断一个参数是否已被废弃。参数 `paramName` 是一个字符串，表示参数的名称。
+30. isLoading(): boolean`: 这个函数用于检查弹窗是否处于加载状态。
+31. isTimerRunning(): boolean`: 这个函数用于检查定时器是否正在运行。
+32. isUpdatableParameter(paramName: string): boolean`: 这个函数用于判断一个参数是否可以更新。参数 `paramName` 是一个字符串，表示参数的名称。
+33. isValidParameter(paramName: string): boolean`: 这个函数用于判断一个参数是否有效。参数 `paramName` 是一个字符串，表示参数的名称。
+34. isVisible(): boolean`: 这个函数用于检查弹窗是否可见。
+35. mixin(target: object, source: object, overwrite: boolean = false)`: 这个函数用于混合指定的选项和方法。参数 `target` 和 `source` 都是对象，`overwrite` 是一个布尔值，表示是否覆盖目标对象中的同名属性和方法。
+36. resumeTimer()`: 这个函数用于恢复定时器。
+37. showLoading(): HTMLElement`: 这个函数用于显示加载状态。
+38. stopTimer()`: 这个函数用于停止定时器。
+39. toggleTimer(): boolean`: 这个函数用于切换定时器的状态。如果定时器正在运行，则停止定时器并返回 `false`；如果定时器已停止，则启动定时器并返回 `true`。
+40. _destroy()`: 这个函数用于销毁弹窗。
+41. close(result?: any)`: 这个函数用于关闭弹窗。参数 `result` 是一个可选的值，表示关闭弹窗时返回的结果。
+42. closeModal(): Promise<void>`: 这个函数用于关闭模态框，并返回一个 resolved Promise。
+43. closePopup(): Promise<void>`: 这个函数用于关闭弹出窗口，并返回一个 resolved Promise。
+44. closeToast(): Promise<void>`: 这个函数用于关闭提示框，并返回一个 resolved Promise。
+45. disableButtons(disabled: boolean = true)`: 这个函数用于禁用或启用所有按钮。参数 `disabled` 是一个布尔值，默认为 `true`，表示禁用按钮。
+46. disableInput(disabled: boolean = true)`: 这个函数用于禁用或启用输入。参数 `disabled` 是一个布尔值，默认为 `true`，表示禁用输入。
+47. disableLoading()`: 这个函数用于禁止加载状态。
+48. enableButtons(enabled: boolean = true)`: 这个函数用于启用或禁用所有按钮。参数 `enabled` 是一个布尔值，默认为 `true`，表示启用按钮。
+49. enableInput(enabled: boolean = true)`: 这个函数用于启用或禁用输入。参数 `enabled` 是一个布尔值，默认为 `true`，表示启用输入。
+50. getInput(): HTMLInputElement`: 这个函数用于获取输入框的元素。
+51. handleAwaitingPromise()`: 这个函数用于处理等待中的 Promise。
+52. hideLoading()`: 这个函数用于隐藏加载状态。
+53. rejectPromise(reason?: any)`: 这个函数用于拒绝 Promise。参数 `reason` 是一个可选的值，表示拒绝 Promise 的原因。
+54. resetValidationMessage()`: 这个函数用于重置验证消息。
+55. showValidationMessage(error: string)`: 这个函数用于显示验证消息。参数 `error` 是一个字符串，表示验证错误的信息。
+56. update(params: object)`: 这个函数用于更新弹窗的选项。参数 `params` 是一个包含选项的对象，可以使用 `argsToParams` 函数将参数转换为对象。
+57. DismissReason: Enum`: 这个枚举包含了所有可能的关闭原因。它的值有 `cancel`, `backdrop`, `close`, `esc`, `timer` 和 `overlay`。
+58. version: string`: 这个属性包含了当前 SweetAlert 版本号。
+59. default: object`: 这个对象包含了默认的 SweetAlert 设置。
