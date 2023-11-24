@@ -355,7 +355,7 @@ clone_url "
 	[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 ] && {
 		clone_url "
 			https://github.com/destan19/OpenAppFilter
-			https://github.com/jerrykuku/luci-app-vssr
+			#https://github.com/jerrykuku/luci-app-vssr
 			https://github.com/jerrykuku/lua-maxminddb
 			https://github.com/zzsj0928/luci-app-pushbot
 			https://github.com/yaof2/luci-app-ikoolproxy
@@ -375,10 +375,10 @@ clone_url "
 		"
 		[[ -e package/A/luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic ]] && \
 		sed -i '/log_check/s/^/#/' package/A/*/*/*/init.d/unblockneteasemusic
-		packages_url="luci-app-bypass luci-app-filetransfer"
-		for k in $packages_url; do
-			clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
-		done
+		# packages_url="luci-app-bypass luci-app-filetransfer"
+		# for k in $packages_url; do
+			# clone_url "https://github.com/kiddin9/openwrt-packages/trunk/$k"
+		# done
 
 		[[ $REPO_BRANCH =~ "18.06" ]] && {
 			for d in $(find feeds/ package/ -type f -name "index.htm" 2>/dev/null); do
@@ -417,7 +417,7 @@ clone_url "
 	[[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
 	# https://github.com/userdocs/qbittorrent-nox-static/releases
 	xc=$(find package/A/ feeds/ -type d -name "qBittorrent-static" 2>/dev/null)
-	[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.5.5_v2.0.9/;s/userdocs/hong0980/;s/ARCH)-qbittorrent/ARCH)-qt6-qbittorrent/' $xc/Makefile
+	[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.6.1_v2.0.9/;s/userdocs/hong0980/;s/ARCH)-qbittorrent/ARCH)-qt6-qbittorrent/' $xc/Makefile
 	xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc" 2>/dev/null)
 	[[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 	xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy" 2>/dev/null)

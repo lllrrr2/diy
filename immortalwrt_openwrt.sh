@@ -325,7 +325,7 @@ clone_url "
 	kmod-usb-net-rtl8152 kmod-usb-ohci kmod-usb-serial-option kmod-usb-storage kmod-usb-uhci
 	kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb-wdm kmod-usb2 kmod-usb3
 	luci-app-aria2
-	luci-app-bypass
+	#luci-app-bypass
 	luci-app-cifs-mount
 	luci-app-commands
 	luci-app-hd-idle
@@ -366,7 +366,7 @@ clone_url "
 	clone_url "
 		https://github.com/destan19/OpenAppFilter
 		https://github.com/messense/aliyundrive-webdav
-		https://github.com/jerrykuku/luci-app-vssr
+		#https://github.com/jerrykuku/luci-app-vssr
 		https://github.com/jerrykuku/lua-maxminddb
 		https://github.com/sirpdboy/luci-app-cupsd
 		#https://github.com/ntlf9t/luci-app-easymesh
@@ -383,7 +383,7 @@ clone_url "
 		https://github.com/kuoruan/luci-app-frpc
 		https://github.com/immortalwrt/packages/trunk/net/adguardhome
 		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
-		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-bypass
+		#https://github.com/kiddin9/openwrt-packages/trunk/luci-app-bypass
 		https://github.com/coolsnowwolf/packages/trunk/admin/netdata
 		#https://github.com/sirpdboy/luci-app-netdata
 		#https://github.com/linkease/nas-packages-luci/trunk/luci/luci-app-ddnsto
@@ -457,7 +457,7 @@ clone_url "
 	[[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
 	#https://github.com/userdocs/qbittorrent-nox-static/releases
 	xc=$(find package/A/ feeds/ -type d -name "qBittorrent-static" 2>/dev/null)
-	[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.5.5_v2.0.9/;s/userdocs/hong0980/;s/ARCH)-qbittorrent/ARCH)-qt6-qbittorrent/' $xc/Makefile
+	[[ -d $xc ]] && sed -i 's/PKG_VERSION:=.*/PKG_VERSION:=4.6.1_v2.0.9/;s/userdocs/hong0980/;s/ARCH)-qbittorrent/ARCH)-qt6-qbittorrent/' $xc/Makefile
 	xd=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-turboacc" 2>/dev/null)
 	[[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 	xe=$(find package/A/ feeds/luci/applications/ -type d -name "luci-app-ikoolproxy" 2>/dev/null)
