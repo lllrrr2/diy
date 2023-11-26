@@ -381,8 +381,8 @@ clone_url "
 		https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
 		https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-adbyby-plus
 		https://github.com/kuoruan/luci-app-frpc
-		https://github.com/immortalwrt/packages/trunk/net/adguardhome
-		https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
+		#https://github.com/immortalwrt/packages/trunk/net/adguardhome
+		#https://github.com/kiddin9/openwrt-packages/trunk/luci-app-adguardhome
 		#https://github.com/kiddin9/openwrt-packages/trunk/luci-app-bypass
 		https://github.com/coolsnowwolf/packages/trunk/admin/netdata
 		#https://github.com/sirpdboy/luci-app-netdata
@@ -496,7 +496,7 @@ case "$TARGET_DEVICE" in
 		luci-app-qbittorrent
 		luci-app-passwall2
 		luci-app-cpufreq
-		luci-app-adguardhome
+		#luci-app-adguardhome
 		#luci-app-amule
 		luci-app-deluge
 		#luci-app-smartdns
@@ -548,7 +548,7 @@ case "$TARGET_DEVICE" in
 	[[ $VERSION = plus ]] && {
 		_packages "
 		luci-app-adbyby-plus
-		luci-app-adguardhome
+		#luci-app-adguardhome
 		luci-app-passwall2
 		#luci-app-amule
 		luci-app-dockerman
@@ -606,7 +606,7 @@ case "$TARGET_DEVICE" in
 		kmod-cfg80211 kmod-fs-ext4 kmod-fs-vfat kmod-mac80211 kmod-rt2800-usb kmod-usb-net
 		kmod-usb-net-asix-ax88179 kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 kmod-usb-storage
 		kmod-usb-storage-extras kmod-usb-storage-uas kmod-usb2 kmod-usb3 lm-sensors losetup
-		lsattr lsblk lscpu lsscsi luci-app-adguardhome luci-app-amlogic luci-app-cpufreq
+		lsattr lsblk lscpu lsscsi #luci-app-adguardhome luci-app-amlogic luci-app-cpufreq
 		luci-app-dockerman luci-app-ikoolproxy luci-app-qbittorrent mkf2fs ntfs-3g parted
 		perl perl-http-date perlbase-getopt perlbase-time perlbase-unicode perlbase-utf8
 		pigz pv python3 resize2fs tune2fs unzip uuidgen wpa-cli wpad wpad-basic xfs-fsck
