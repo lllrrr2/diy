@@ -348,7 +348,7 @@ clone_url "
 clone_dir vernesong/OpenClash luci-app-openclash
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
+clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static bandwidthd
 clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     luci-app-bypass luci-app-store luci-app-pushbot taskd
 

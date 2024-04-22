@@ -25,14 +25,14 @@ function __warning_msg() {
 	echo -e "${YELLOW_COLOR}[WARNING]${DEFAULT_COLOR} $*"
 }
 
-function _pushd() {
+function pushd() {
 	if ! pushd "$@" &> /dev/null; then
 		__error_msg "$1该目录不存在。"
 		exit 1
 	fi
 }
 
-function _popd() {
+function popd() {
 	if ! popd &> /dev/null; then
 		__error_msg "该目录不存在。"
 		exit 1
@@ -82,8 +82,8 @@ function check_network(){
 function update_apt_source(){
 	__info_msg "正在更新 apt 源列表..."
 	# set -x
-	apt-get -qq update
-	apt-get -qq install apt-transport-https gnupg2 > /dev/null
+	apt update -y >/dev/null
+	apt install -y apt-transport-https gnupg2 >/dev/null
 	if [ -n "$CHN_NET" ]; then
 		mv "/etc/apt/sources.list" "/etc/apt/sources.list.bak"
 		if [ "$VERSION_CODENAME" == "$UBUNTU_CODENAME" ]; then
@@ -148,8 +148,8 @@ function update_apt_source(){
 	curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xe1dd270288b4e6030699e45fa1715d88e1df1f24" -o "/etc/apt/trusted.gpg.d/git-core-ubuntu-ppa.asc"
 
 	cat <<-EOF >"/etc/apt/sources.list.d/llvm-toolchain.list"
-		deb https://apt.llvm.org/$VERSION_CODENAME/ llvm-toolchain-$VERSION_CODENAME-15 main
-		deb-src https://apt.llvm.org/$VERSION_CODENAME/ llvm-toolchain-$VERSION_CODENAME-15 main
+		deb https://apt.llvm.org/$VERSION_CODENAME/ llvm-toolchain-$VERSION_CODENAME-16 main
+		deb-src https://apt.llvm.org/$VERSION_CODENAME/ llvm-toolchain-$VERSION_CODENAME-16 main
 	EOF
 	curl -sL "https://apt.llvm.org/llvm-snapshot.gpg.key" -o "/etc/apt/trusted.gpg.d/llvm-toolchain.asc"
 
@@ -165,15 +165,15 @@ function update_apt_source(){
 	fi
 
 	! grep -q "$VERSION_CODENAME-backports" "/etc/apt/sources.list" || BPO_FLAG="-t $VERSION_CODENAME-backports"
-	apt-get -qq update -y $BPO_FLAG
+	apt update -y $BPO_FLAG
 	# set +x
 }
 
 function install_dependencies(){
 	__info_msg "正在安装依赖项..."
 	# set -x
-	apt-get -qq full-upgrade $BPO_FLAG > /dev/null
-	apt-get -qq install $BPO_FLAG ack antlr3 asciidoc autoconf automake autopoint \
+	apt full-upgrade -y $BPO_FLAG >/dev/null
+	apt install -y $BPO_FLAG ack antlr3 asciidoc autoconf automake autopoint \
 		binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler ecj \
 		fakeroot fastjar flex gawk gettext genisoimage git gnutls-dev gperf haveged help2man \
 		intltool jq libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev \
@@ -181,83 +181,91 @@ function install_dependencies(){
 		libtool libyaml-dev libz-dev lrzsz msmtp nano ninja-build p7zip p7zip-full patch pkgconf \
 		python2 libpython3-dev python3 python3-pip python3-ply python3-docutils python3-pyelftools \
 		qemu-utils quilt re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs unzip \
-		vim wget xmlto xxd zlib1g-dev $VERSION_PACKAGE > /dev/null
+		vim wget xmlto zlib1g-dev zstd xxd $VERSION_PACKAGE >/dev/null
 
 	if [ -n "$CHN_NET" ]; then
 		pip3 config set global.index-url "https://mirrors.aliyun.com/pypi/simple/"
 		pip3 config set install.trusted-host "https://mirrors.aliyun.com"
 	fi
 
-	apt-get -qq install $BPO_FLAG gcc-9 g++-9 gcc-9-multilib g++-9-multilib > /dev/null
-	ln -sf "/usr/bin/gcc-9" "/usr/bin/gcc"
-	ln -sf "/usr/bin/g++-9" "/usr/bin/g++"
-	ln -sf "/usr/bin/gcc-ar-9" "/usr/bin/gcc-ar"
-	ln -sf "/usr/bin/gcc-nm-9" "/usr/bin/gcc-nm"
-	ln -sf "/usr/bin/gcc-ranlib-9" "/usr/bin/gcc-ranlib"
-	ln -sf "/usr/bin/g++" "/usr/bin/c++"
-	[ -e "/usr/include/asm" ] || ln -sf "/usr/include/$(gcc -dumpmachine)/asm" "/usr/include/asm"
+	apt install -y $BPO_FLAG gcc-9 g++-9 gcc-9-multilib g++-9-multilib >/dev/null
+	for i in "gcc-9" "g++-9" "gcc-ar-9" "gcc-nm-9" "gcc-ranlib-9"; do
+		ln -svf "$i" "/usr/bin/${i%-9}"
+	done
+	ln -svf "/usr/bin/g++" "/usr/bin/c++"
+	[ -e "/usr/include/asm" ] || ln -svf "/usr/include/$(gcc -dumpmachine)/asm" "/usr/include/asm"
 
-	apt-get -qq install $BPO_FLAG clang-15 lld-15 libclang-15-dev > /dev/null
-	ln -sf "/usr/bin/clang-15" "/usr/bin/clang"
-	ln -sf "/usr/bin/clang++-15" "/usr/bin/clang++"
-	ln -sf "/usr/bin/clang-cpp-15" "/usr/bin/clang-cpp"
-
-	apt-get -qq install $BPO_FLAG llvm-15 > /dev/null
-	for i in "/usr/bin"/llvm-*-15; do
-		ln -sf "$i" "${i%-15}"
+	apt install -y $BPO_FLAG clang-16 libclang-16-dev lld-16 liblld-16-dev >/dev/null
+	for i in "clang-16" "clang++-16" "clang-cpp-16" "ld.lld-16" "ld64.lld-16" "wasm-ld-16" "lld-16" "lld-link-16"; do
+		ln -svf "$i" "/usr/bin/${i%-16}"
 	done
 
-	apt-get -qq install $BPO_FLAG nodejs yarn > /dev/null
+	apt install -y $BPO_FLAG llvm-16 >/dev/null
+	for i in "/usr/bin"/llvm-*-16; do
+		ln -svf "$i" "${i%-16}"
+	done
+
+	apt install -y $BPO_FLAG nodejs yarn >/dev/null
 	if [ -n "$CHN_NET" ]; then
 		npm config set registry "https://registry.npmmirror.com" --global
 		yarn config set registry "https://registry.npmmirror.com" --global
 	fi
 
-	apt-get -qq install $BPO_FLAG golang-1.20-go > /dev/null
+	apt install -y $BPO_FLAG golang-1.21-go >/dev/null
 	rm -rf "/usr/bin/go" "/usr/bin/gofmt"
-	ln -sf "/usr/lib/go-1.20/bin/go" "/usr/bin/go"
-	ln -sf "/usr/lib/go-1.20/bin/gofmt" "/usr/bin/gofmt"
+	ln -svf "/usr/lib/go-1.21/bin/go" "/usr/bin/go"
+	ln -svf "/usr/lib/go-1.21/bin/gofmt" "/usr/bin/gofmt"
 	if [ -n "$CHN_NET" ]; then
 		go env -w GOPROXY=https://goproxy.cn,direct
 	fi
 
-	apt-get clean -qq -y
+	apt clean -y >/dev/null
 
 	if TMP_DIR="$(mktemp -d)"; then
-		_pushd "$TMP_DIR"
+		pushd "$TMP_DIR"
 	else
 		__error_msg "无法创建 tmp 目录。"
 		exit 1
 	fi
 
-	UPX_REV="4.0.1"
-	curl -sfLO "https://github.com/upx/upx/releases/download/v${UPX_REV}/upx-$UPX_REV-amd64_linux.tar.xz"
+	UPX_REV="4.1.0"
+	curl -fLO "https://github.com/upx/upx/releases/download/v${UPX_REV}/upx-$UPX_REV-amd64_linux.tar.xz"
 	tar -Jxf "upx-$UPX_REV-amd64_linux.tar.xz"
 	rm -rf "/usr/bin/upx" "/usr/bin/upx-ucl"
 	cp -fp "upx-$UPX_REV-amd64_linux/upx" "/usr/bin/upx-ucl"
 	chmod 0755 "/usr/bin/upx-ucl"
-	ln -sf "/usr/bin/upx-ucl" "/usr/bin/upx"
+	ln -svf "/usr/bin/upx-ucl" "/usr/bin/upx"
 
-	svn co -r161078 "https://github.com/openwrt/openwrt/trunk/tools/padjffs2/src" "padjffs2" --quiet
-	_pushd "padjffs2"
+	git clone --filter=blob:none --no-checkout "https://github.com/openwrt/openwrt.git" "padjffs2"
+	pushd "padjffs2"
+	git config core.sparseCheckout true
+	echo "tools/padjffs2/src" >> ".git/info/sparse-checkout"
+	git checkout
+	cd "tools/padjffs2/src"
 	make
+	strip "padjffs2"
 	rm -rf "/usr/bin/padjffs2"
 	cp -fp "padjffs2" "/usr/bin/padjffs2"
-	_popd
+	popd
 
-	svn co -r19250 "https://github.com/openwrt/luci/trunk/modules/luci-base/src" "po2lmo" --quiet
-	_pushd "po2lmo"
+	git clone --filter=blob:none --no-checkout "https://github.com/openwrt/luci.git" "po2lmo"
+	pushd "po2lmo"
+	git config core.sparseCheckout true
+	echo "modules/luci-base/src" >> ".git/info/sparse-checkout"
+	git checkout
+	cd "modules/luci-base/src"
 	make po2lmo
+	strip "po2lmo"
 	rm -rf "/usr/bin/po2lmo"
 	cp -fp "po2lmo" "/usr/bin/po2lmo"
-	_popd
+	popd
 
 	curl -sfL "https://build-scripts.immortalwrt.eu.org/modify-firmware.sh" -o "/usr/bin/modify-firmware"
 	chmod 0755 "/usr/bin/modify-firmware"
 
-	_popd
+	popd
 	rm -rf "$TMP_DIR"
-	apt-get -qq autoremove --purge
+
 	# set +x
 	__success_msg "所有依赖项均已安装。"
 }
