@@ -87,9 +87,9 @@ clone_dir() {
         return 0
     }
 
-    ([[ $repo_url == coolsnowwolf/packages ]] && [[ $REPO_BRANCH =~ 21.02 ]]) && {
-        set -- "$@" "docker" "dockerd" "containerd" "runc" "btrfs-progs" #"python"
-        # rm -rf package/*/*/{asu,numpy,openvswitch,ovn,seafile-seahub,seafile-server}
+    [[ $repo_url == coolsnowwolf ]] &&  {
+        [[ $REPO_BRANCH =~ 23.05 ]] && set -- "$@" "golang"
+        [[ $REPO_BRANCH =~ 21.02 ]] && set -- "$@" "docker" "dockerd" "containerd" "runc" "btrfs-progs" "bandwidthd" "golang"
     }
 
     for target_dir in "$@"; do
@@ -348,9 +348,9 @@ clone_url "
 clone_dir vernesong/OpenClash luci-app-openclash
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static bandwidthd
+clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
 clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
-    luci-app-bypass luci-app-store luci-app-pushbot golang taskd
+    luci-app-bypass luci-app-store luci-app-pushbot taskd
 
 [ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 -a "$TARGET_DEVICE" != asus_rt-n16 ] && {
     _packages "
@@ -559,13 +559,13 @@ esac
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
     clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
-    # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
+    clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode uhttpd #dnsmasq iwinfo
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ethtool openssl ppp automount \
         # jsonfilter fullconenat fstools dropbear usbmode iptables ipset odhcp6c \
     # clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk \
         # curl bluez lua-openssl smartdns miniupnpc miniupnpd
-    clone_dir openwrt-23.05 immortalwrt/packages nginx-util
+    clone_dir openwrt-23.05 immortalwrt/packages nginx-util curl
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
