@@ -6,7 +6,6 @@ curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | grep -oP '"browser_
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
 
 mkdir firmware output 2>/dev/null
-sudo date -d "+8 hours"
 
 color() {
     case $1 in
@@ -113,52 +112,50 @@ clone_dir() {
 }
 
 clone_url() {
-    for x in $@; do
-        name="${x##*/}"
-        if [[ "$(grep "^https" <<<$x | egrep -v "helloworld$|build$|openwrt-passwall-packages$")" ]]; then
-            g=$(_find "package/ target/ feeds/" "$name" | grep "/${name}$")
-            if [[ -d $g ]]; then
-                mv -f $g ../ && k="$g"
+    for url in $@; do
+        name="${url##*/}"
+        if grep "^https" <<<"$url" | egrep -v "helloworld$|build$|openwrt-passwall-packages$"; then
+            existing_path=$(_find "package/ target/ feeds/" "$name" | grep "/${name}$")
+            if [[ -d $existing_path ]]; then
+                mv -f $existing_path ../ && destination="$existing_path"
             else
-                k="package/A/$name"
+                destination="package/A/$name"
             fi
 
-            git clone -q $x $k && f="1"
-
-            if [[ -n $f ]]; then
-                if [[ $k = $g ]]; then
+            if git clone -q "$url" "$destination"; then
+                if [[ $destination = $existing_path ]]; then
                     echo -e "$(color cg 替换) $name [ $(color cg ✔) ]" | _printf
                 else
                     echo -e "$(color cb 添加) $name [ $(color cb ✔) ]" | _printf
                 fi
             else
                 echo -e "$(color cr 拉取) $name [ $(color cr ✕) ]" | _printf
-                if [[ $k = $g ]]; then
-                    mv -f ../${g##*/} ${g%/*}/ && \
-                    echo -e "$(color cy 回退) ${g##*/} [ $(color cy ✔) ]" | _printf
+                if [[ $destination = $existing_path ]]; then
+                    mv -f ../${existing_path##*/} ${existing_path%/*}/ && \
+                    echo -e "$(color cy 回退) ${existing_path##*/} [ $(color cy ✔) ]" | _printf
                 fi
             fi
-            unset -v f k g
+            unset -v destination existing_path
         else
-            for w in $(grep "^https" <<<$x); do
-                git clone -q $w ../${w##*/} && {
-                    for z in `ls -l ../${w##*/} | awk '/^d/{print $NF}' | grep -Ev 'dump$|dtest$'`; do
-                        g=$(_find "package/ feeds/ target/" "$z")
-                        if [[ -d $g ]]; then
-                            rm -rf $g && k="$g"
+            grep "^https" <<< "$url" | while IFS= read -r single_url; do
+                git clone -q "$single_url" ../${single_url##*/} && {
+                    for sub_dir in $(ls -l ../${single_url##*/} | awk '/^d/{print $NF}' | grep -Ev 'dump$|dtest$'); do
+                        existing_sub_path=$(_find "package/ feeds/ target/" "$sub_dir")
+                        if [[ -d $existing_sub_path ]]; then
+                            rm -rf $existing_sub_path && destination="$existing_sub_path"
                         else
-                            k="package/A"
+                            destination="package/A"
                         fi
-                        if mv -f ../${w##*/}/$z $k; then
-                            if [[ $k = $g ]]; then
-                                echo -e "$(color cg 替换) $z [ $(color cg ✔) ]" | _printf
+                        if mv -f ../${single_url##*/}/$sub_dir $destination; then
+                            if [[ $destination = $existing_sub_path ]]; then
+                                echo -e "$(color cg 替换) $sub_dir [ $(color cg ✔) ]" | _printf
                             else
-                                echo -e "$(color cb 添加) $z [ $(color cb ✔) ]" | _printf
+                                echo -e "$(color cb 添加) $sub_dir [ $(color cb ✔) ]" | _printf
                             fi
                         fi
-                        unset -v k g
+                        unset -v destination existing_sub_path
                     done
-                } && rm -rf ../${w##*/}
+                } && rm -rf ../${single_url##*/}
             done
         fi
     done
