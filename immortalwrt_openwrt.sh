@@ -457,7 +457,6 @@ case "$TARGET_DEVICE" in
     [[ -n $IP ]] && \
     sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
     sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
-    [[ $VERSION = plus ]] && {
         _packages "
         luci-app-dockerman
         luci-app-turboacc
@@ -476,12 +475,10 @@ case "$TARGET_DEVICE" in
         [[ "${REPO_BRANCH#*-}" =~ ^2 ]] && sed -i '/bridge/d' .config
         wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
         wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
-    } || {
         _packages "kmod-rt2800-usb kmod-rtl8187 kmod-rtl8812au-ac kmod-rtl8812au-ct kmod-rtl8821ae
         kmod-rtl8821cu ethtool kmod-usb-wdm kmod-usb2 kmod-usb-ohci kmod-usb-uhci kmod-mt76x2u kmod-mt76x0u
         kmod-gpu-lima luci-app-cpufreq luci-app-pushbot luci-app-wrtbwmon luci-app-vssr"
         echo -e "CONFIG_DRIVER_11AC_SUPPORT=y\nCONFIG_DRIVER_11N_SUPPORT=y\nCONFIG_DRIVER_11W_SUPPORT=y" >>.config
-    }
     [[ $TARGET_DEVICE =~ r1-plus-lts ]] && sed -i "/lan_wan/s/'.*' '.*'/'eth0' 'eth1'/" target/*/rockchip/*/*/*/*/02_network
     ;;
 "newifi-d2")
@@ -513,7 +510,6 @@ case "$TARGET_DEVICE" in
     [[ -n $IP ]] && \
     sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
     sed -i '/n) ipad/s/".*"/"192.168.2.150"/' $config_generate
-    [[ $VERSION = plus ]] && {
         _packages "
         luci-app-adbyby-plus
         #luci-app-adguardhome
@@ -538,7 +534,6 @@ case "$TARGET_DEVICE" in
         wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
         wget -qO package/base-files/files/bin/ansi git.io/ansi && chmod +x package/base-files/files/bin/ansi
         [[ $REPO_BRANCH == master ]] && rm -rf package/kernel/rt*
-    }
     ;;
 "armvirt-64-default")
     DEVICE_NAME="$TARGET_DEVICE"
@@ -557,13 +552,12 @@ esac
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
     clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
-    # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
-    # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode uhttpd #dnsmasq iwinfo
-    # clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
+    clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
+    # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
+    clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
         # jsonfilter fullconenat fstools dropbear usbmode iptables ipset odhcp6c \
-    # clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk \
-        # curl bluez lua-openssl smartdns miniupnpc miniupnpd
-    # clone_dir openwrt-23.05 immortalwrt/packages nginx-util #curl
+    clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk curl \
+        # bluez lua-openssl smartdns miniupnpc miniupnpd
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
