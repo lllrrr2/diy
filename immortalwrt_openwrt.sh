@@ -114,7 +114,7 @@ clone_dir() {
 clone_url() {
     for url in $@; do
         name="${url##*/}"
-        if grep "^https" <<<"$url" | egrep -v "helloworld$|build$|openwrt-passwall-packages$"; then
+        if grep "^https" <<<"$url" | egrep -qv "helloworld$|build$|openwrt-passwall-packages$"; then
             existing_path=$(_find "package/ target/ feeds/" "$name" | grep "/${name}$")
             if [[ -d $existing_path ]]; then
                 mv -f $existing_path ../ && destination="$existing_path"
@@ -553,7 +553,7 @@ case "$TARGET_DEVICE" in
     ;;
 esac
 
-[[ "$REPO_BRANCH" =~ 21.02 ]] && {
+[[ "$REPO_BRANCH" =~ 21.02|18.06 ]] && {
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
     clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
