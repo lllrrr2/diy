@@ -369,7 +369,7 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     luci-app-openclash
     luci-app-pushbot
     luci-app-softwarecenter
-    #luci-app-syncdial
+    luci-app-syncdial
     luci-app-transmission
     luci-app-usb-printer
     luci-app-vssr
@@ -383,7 +383,7 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     luci-theme-material
     luci-theme-opentomato
     luci-app-pwdHackDeny
-    luci-app-uhttpd 
+    luci-app-uhttpd
     luci-app-control-webrestriction
     luci-app-cowbbonding
     "
@@ -556,8 +556,9 @@ esac
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
         # jsonfilter fullconenat fstools dropbear usbmode iptables ipset odhcp6c \
-    clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk curl \
-        # bluez lua-openssl smartdns miniupnpc miniupnpd
+    # clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk curl mwan3 \
+        # openssl lua-openssl smartdns miniupnpc miniupnpd bluez
+    clone_dir immortalwrt/luci luci-app-syncdial luci-app-mwan3
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
