@@ -81,8 +81,9 @@ clone_dir() {
         repo_url="$2"
         shift 2
     fi
+    local temp_dir=$(mktemp -d)
 
-    ! git clone -q $branch --depth 1 "https://github.com/$repo_url" ../gitemp && {
+    ! git clone -q $branch --depth 1 "https://github.com/$repo_url" $temp_dir && {
         echo -e "$(color cr 拉取) https://github.com/$repo_url [ $(color cr ✕) ]" | _printf
         return 0
     }
@@ -94,7 +95,7 @@ clone_dir() {
 
     for target_dir in "$@"; do
         local source_dir current_dir destination_dir
-        source_dir=$(_find "../gitemp" "$target_dir")
+        source_dir=$(_find "$temp_dir" "$target_dir")
         current_dir=$(_find "package/ feeds/ target/" "$target_dir")
         destination_dir="${current_dir:-package/A/$target_dir}"
 
@@ -108,7 +109,7 @@ clone_dir() {
         fi
     done
 
-    [ -d ../gitemp ] && rm -rf ../gitemp
+     rm -rf "$temp_dir"
 }
 
 clone_url() {
@@ -552,12 +553,12 @@ esac
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
     clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
-    clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
+    # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
         # jsonfilter fullconenat fstools dropbear usbmode iptables ipset odhcp6c \
-    # clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk curl mwan3 \
-        # openssl lua-openssl smartdns miniupnpc miniupnpd bluez
+    clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk mwan3 \
+        # openssl lua-openssl smartdns miniupnpc miniupnpd bluez curl
     clone_dir immortalwrt/luci luci-app-syncdial luci-app-mwan3
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
