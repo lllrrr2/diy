@@ -6,8 +6,7 @@ curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | grep -oP '"browser_
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
 
 mkdir firmware output 2>/dev/null
-sudo timedatectl set-timezone Asia/Shanghai
-sudo systemctl restart systemd-timedated
+sudo date -d "+8 hours"
 
 color() {
     case $1 in
@@ -354,7 +353,7 @@ clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
 clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     luci-app-bypass luci-app-store luci-app-pushbot taskd
 
-[[ ! "$TARGET_DEVICE" =~ ^(phicomm_k2p|newifi-d2|asus_rt-n16)$ ]] && {
+[[ "$TARGET_DEVICE" =~ phicomm|newifi|asus ]] || {
     _packages "
     axel lscpu lsscsi patch diffutils htop lscpu
     brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio kmod-brcmfmac
