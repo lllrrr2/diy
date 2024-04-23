@@ -6,6 +6,8 @@ curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | grep -oP '"browser_
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
 
 mkdir firmware output 2>/dev/null
+sudo timedatectl set-timezone Asia/Shanghai
+sudo systemctl restart systemd-timedated
 
 color() {
     case $1 in
@@ -352,7 +354,7 @@ clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
 clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     luci-app-bypass luci-app-store luci-app-pushbot taskd
 
-[ "$VERSION" = plus -a "$TARGET_DEVICE" != phicomm_k2p -a "$TARGET_DEVICE" != newifi-d2 -a "$TARGET_DEVICE" != asus_rt-n16 ] && {
+[[ ! "$TARGET_DEVICE" =~ ^(phicomm_k2p|newifi-d2|asus_rt-n16)$ ]] && {
     _packages "
     axel lscpu lsscsi patch diffutils htop lscpu
     brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio kmod-brcmfmac
@@ -561,11 +563,11 @@ esac
     clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
     # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode uhttpd #dnsmasq iwinfo
-    clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
+    # clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
         # jsonfilter fullconenat fstools dropbear usbmode iptables ipset odhcp6c \
     # clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk \
         # curl bluez lua-openssl smartdns miniupnpc miniupnpd
-    clone_dir openwrt-23.05 immortalwrt/packages nginx-util #curl
+    # clone_dir openwrt-23.05 immortalwrt/packages nginx-util #curl
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
