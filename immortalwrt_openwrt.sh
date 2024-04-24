@@ -139,15 +139,16 @@ clone_url() {
             unset -v destination existing_path
         else
             grep "^https" <<< "$url" | while IFS= read -r single_url; do
-                git clone -q "$single_url" ../${single_url##*/} && {
-                    for sub_dir in $(ls -l ../${single_url##*/} | awk '/^d/{print $NF}' | grep -Ev 'dump$|dtest$'); do
+                local temp_dir=$(mktemp -d)
+                git clone -q "$single_url" $temp_dir && {
+                    for sub_dir in $(ls -l $temp_dir | awk '/^d/{print $NF}' | grep -Ev 'dump$|dtest$'); do
                         existing_sub_path=$(_find "package/ feeds/ target/" "$sub_dir")
                         if [[ -d $existing_sub_path ]]; then
                             rm -rf $existing_sub_path && destination="$existing_sub_path"
                         else
                             destination="package/A"
                         fi
-                        if mv -f ../${single_url##*/}/$sub_dir $destination; then
+                        if mv -f $temp_dir/$sub_dir $destination; then
                             if [[ $destination = $existing_sub_path ]]; then
                                 echo -e "$(color cg 替换) $sub_dir [ $(color cg ✔) ]" | _printf
                             else
@@ -156,7 +157,7 @@ clone_url() {
                         fi
                         unset -v destination existing_sub_path
                     done
-                } && rm -rf ../${single_url##*/}
+                } && rm -rf $temp_dir
             done
         fi
     done
@@ -363,22 +364,22 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     rtl8723au-firmware rtl8723bu-firmware rtl8821ae-firmware
     luci-app-aria2
     luci-app-bypass
-    luci-app-cifs-mount
+    #luci-app-cifs-mount
     luci-app-commands
     luci-app-hd-idle
     luci-app-cupsd
     luci-app-openclash
     luci-app-pushbot
     luci-app-softwarecenter
-    luci-app-syncdial
+    #luci-app-syncdial
     luci-app-transmission
     luci-app-usb-printer
     luci-app-vssr
     luci-app-wol
-    luci-app-bandwidthd
+    #luci-app-bandwidthd
     luci-app-store
     luci-app-log
-    luci-app-alist
+    #luci-app-alist
     luci-app-weburl
     luci-app-wrtbwmon
     luci-theme-material
@@ -518,18 +519,15 @@ case "$TARGET_DEVICE" in
         #luci-app-amule
         luci-app-dockerman
         luci-app-netdata
-        #luci-app-kodexplorer
         luci-app-poweroff
         luci-app-qbittorrent
         #luci-app-smartdns
-        #luci-app-unblockneteasemusic
         luci-app-ikoolproxy
         luci-app-deluge
         #luci-app-godproxy
         #luci-app-frpc
-        #luci-app-aliyundrive-webdav
-        #AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd tar pv
-        subversion-client #unixodbc #git-http
+        #AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd pv
+        #subversion-client #unixodbc #git-http
         "
         # [[ $REPO_BRANCH = "openwrt-18.06-k5.4" ]] && sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/x86/Makefile
         wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
@@ -555,11 +553,12 @@ esac
     clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
     # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
-    clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
+    # clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
         # jsonfilter fullconenat fstools dropbear usbmode iptables ipset odhcp6c \
-    clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk mwan3 \
+    # clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk mwan3 \
         # openssl lua-openssl smartdns miniupnpc miniupnpd bluez curl
-    clone_dir immortalwrt/luci luci-app-syncdial luci-app-mwan3
+    # clone_dir immortalwrt/luci luci-app-syncdial luci-app-mwan3
+    clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox opkg
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
