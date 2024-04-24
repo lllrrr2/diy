@@ -99,6 +99,12 @@ clone_dir() {
         [[ -d "$source_dir" ]] || continue
         current_dir=$(_find "package/ feeds/ target/" "$target_dir")
         destination_dir="${current_dir:-package/A/$target_dir}"
+        # [[ $target_dir =~ luci ]] && destination_dir="feeds/luci/applications/luci-app"
+        local printed_current_dir
+        if [[ "$target_dir" =~ luci && ! "$printed_current_dir" ]]; then
+            echo $current_dir
+            printed_current_dir=true
+        fi
 
         [[ -d "$current_dir" ]] && mv -f "$current_dir" ../
         if mv -f "$source_dir" "${destination_dir%/*}"; then
