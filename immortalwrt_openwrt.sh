@@ -100,13 +100,7 @@ clone_dir() {
         current_dir=$(_find "package/ feeds/ target/" "$target_dir")
         destination_dir="${current_dir:-package/A/$target_dir}"
 
-
-        if [[ -d "$current_dir" ]]; then
-            mv -f "$current_dir" ../
-        else
-            [[ "$target_dir" =~ luci ]] && destination_dir="feeds/luci/applications/luci-app"
-        fi
-
+        [[ -d "$current_dir" ]] && mv -f "$current_dir" ../
         if mv -f "$source_dir" "${destination_dir%/*}"; then
             if [[ -d "$current_dir" ]]; then
                 echo -e "$(color cg 替换) $target_dir [ $(color cg ✔) ]" | _printf
@@ -629,6 +623,7 @@ for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
     [[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
 done
 
+mv -rf package/A/luci-app* feeds/luci/applications/
 [[ "$REPO_BRANCH" =~ master ]] && sed -i '/deluge/d' .config
 sed -i '/bridge/d' .config
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
