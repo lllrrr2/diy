@@ -623,7 +623,7 @@ for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
     [[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
 done
 
-mv -f package/A/luci-app* feeds/luci/applications/
+# mv -f package/A/luci-app* feeds/luci/applications/
 [[ "$REPO_BRANCH" =~ master ]] && sed -i '/deluge/d' .config
 sed -i '/bridge/d' .config
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
