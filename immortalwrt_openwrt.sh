@@ -108,22 +108,22 @@ clone_dir() {
             fi
         fi
     done
-
-     rm -rf "$temp_dir"
+    rm -rf "$temp_dir"
 }
 
 clone_url() {
     for url in $@; do
         name="${url##*/}"
         if grep "^https" <<<"$url" | egrep -qv "helloworld$|build$|openwrt-passwall-packages$"; then
-            existing_path=$(_find "package/ target/ feeds/" "$name" | grep "/${name}$")
+            local destination
+            local existing_path=$(_find "package/ target/ feeds/" "$name" | grep "/${name}$")
             if [[ -d $existing_path ]]; then
                 mv -f $existing_path ../ && destination="$existing_path"
             else
                 destination="package/A/$name"
             fi
 
-            if git clone -q "$url" "$destination"; then
+            if git clone -q --depth 1 "$url" "$destination"; then
                 if [[ $destination = $existing_path ]]; then
                     echo -e "$(color cg 替换) $name [ $(color cg ✔) ]" | _printf
                 else
@@ -136,11 +136,10 @@ clone_url() {
                     echo -e "$(color cy 回退) ${existing_path##*/} [ $(color cy ✔) ]" | _printf
                 fi
             fi
-            unset -v destination existing_path
         else
             grep "^https" <<< "$url" | while IFS= read -r single_url; do
-                local temp_dir=$(mktemp -d)
-                git clone -q "$single_url" $temp_dir && {
+                local temp_dir=$(mktemp -d) destination existing_sub_path
+                git clone -q --depth 1 "$single_url" $temp_dir && {
                     for sub_dir in $(ls -l $temp_dir | awk '/^d/{print $NF}' | grep -Ev 'dump$|dtest$'); do
                         existing_sub_path=$(_find "package/ feeds/ target/" "$sub_dir")
                         if [[ -d $existing_sub_path ]]; then
@@ -155,9 +154,9 @@ clone_url() {
                                 echo -e "$(color cb 添加) $sub_dir [ $(color cb ✔) ]" | _printf
                             fi
                         fi
-                        unset -v destination existing_sub_path
                     done
-                } && rm -rf $temp_dir
+                }
+                rm -rf $temp_dir
             done
         fi
     done
@@ -558,7 +557,7 @@ esac
     # clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk mwan3 \
         # openssl lua-openssl smartdns miniupnpc miniupnpd bluez curl
     # clone_dir immortalwrt/luci luci-app-syncdial luci-app-mwan3
-    clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox opkg
+    # clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox opkg
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
