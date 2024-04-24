@@ -96,12 +96,13 @@ clone_dir() {
     for target_dir in "$@"; do
         local source_dir current_dir destination_dir
         source_dir=$(_find "$temp_dir" "$target_dir")
+        [[ -d "$source_dir" ]] || continue
         current_dir=$(_find "package/ feeds/ target/" "$target_dir")
         destination_dir="${current_dir:-package/A/$target_dir}"
 
-        [[ -d "$current_dir" && -d "$source_dir" ]] && mv -f "$current_dir" ../
+        [[ -d "$current_dir" ]] && mv -f "$current_dir" ../
         if mv -f "$source_dir" "${destination_dir%/*}"; then
-            if [[ $destination_dir = $current_dir ]]; then
+            if [[ -d "$current_dir" ]]; then
                 echo -e "$(color cg 替换) $target_dir [ $(color cg ✔) ]" | _printf
             else
                 echo -e "$(color cb 添加) $target_dir [ $(color cb ✔) ]" | _printf
@@ -551,6 +552,7 @@ esac
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
     clone_dir openwrt-23.05 immortalwrt/immortalwrt openssl
+    clone_dir openwrt-23.05 immortalwrt/packages nginx-util samba4 ttyd
     # clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
     # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
