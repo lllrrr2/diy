@@ -114,7 +114,7 @@ clone_dir() {
 clone_url() {
     for url in $@; do
         name="${url##*/}"
-        if grep "^https" <<<"$url" | egrep -qv "helloworld$|build$|openwrt-passwall-packages$"; then
+        if grep "^https" <<<"$url" | egrep -qv "openwrt_helloworld$|helloworld$|build$|openwrt-passwall-packages$"; then
             local destination
             local existing_path=$(_find "package/ target/ feeds/" "$name" | grep "/${name}$")
             if [[ -d $existing_path ]]; then
@@ -340,8 +340,9 @@ sed -i "\$i uci -q set luci.main.mediaurlbase=\"/luci-static/bootstrap\" && uci 
 # git diff ./ >> ../output/t.patch || true
 clone_url "
     https://github.com/hong0980/build
-    https://github.com/fw876/helloworld
-    https://github.com/xiaorouji/openwrt-passwall-packages
+    https://github.com/sbwml/openwrt_helloworld
+    #https://github.com/fw876/helloworld
+    #https://github.com/xiaorouji/openwrt-passwall-packages
 "
 
 clone_dir vernesong/OpenClash luci-app-openclash
@@ -549,7 +550,7 @@ esac
 [[ "$REPO_BRANCH" =~ 21.02|18.06 ]] && {
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
-    clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
+    # clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
     # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
     # clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
