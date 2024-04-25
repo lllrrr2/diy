@@ -624,8 +624,11 @@ for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
 done
 
 # mv -f package/A/luci-app* feeds/luci/applications/
+ls -Ah --full-time --group-directories-first package/A/luci-app*
+ls -Ah --full-time --group-directories-first feeds/luci/applications/luci-app*
+
 [[ "$REPO_BRANCH" =~ master ]] && sed -i '/deluge/d' .config
-sed -i '/bridge/d' .config
+sed -i '/bridge/d; /vssr/d' .config
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
