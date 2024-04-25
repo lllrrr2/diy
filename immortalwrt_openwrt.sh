@@ -350,8 +350,8 @@ clone_dir vernesong/OpenClash luci-app-openclash
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
 clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
-# clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
-#     luci-app-bypass luci-app-store luci-app-pushbot taskd
+clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
+    luci-app-bypass luci-app-store luci-app-pushbot taskd
 
 [[ "$TARGET_DEVICE" =~ phicomm|newifi|asus ]] || {
     _packages "
@@ -551,17 +551,13 @@ esac
 [[ "$REPO_BRANCH" =~ 21.02|18.06 ]] && {
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
-    clone_dir openwrt-23.05 immortalwrt/immortalwrt openssl
-    clone_dir openwrt-23.05 immortalwrt/packages nginx-util samba4
-    # clone_dir sbwml/openwrt_helloworld shadowsocks-rust chinadns-ng
     # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
-    # clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount \
-        # jsonfilter fullconenat fstools dropbear usbmode iptables ipset odhcp6c \
-    # clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils ttyd libwebsockets gawk mwan3 \
-        # openssl lua-openssl smartdns miniupnpc miniupnpd bluez curl
-    # clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
-    # clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox opkg
+    clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
+        # jsonfilter opkg fullconenat fstools dropbear usbmode iptables ipset odhcp6c
+    clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
+        lua-openssl smartdns bluez #miniupnpc miniupnpd curl ttyd
+    clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
 	# cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	# define KernelPackage/nft-tproxy
 	#   SUBMENU:=$(NF_MENU)
@@ -624,8 +620,6 @@ for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
 done
 
 # mv -f package/A/luci-app* feeds/luci/applications/
-ls -Ah --full-time --group-directories-first package/A/luci-app*
-ls -Ah --full-time --group-directories-first feeds/luci/applications/luci-app*
 
 [[ "$REPO_BRANCH" =~ master ]] && sed -i '/deluge/d' .config
 sed -i '/bridge/d; /vssr/d' .config
