@@ -445,7 +445,7 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     xd=$(_find "package/A/ feeds/luci/applications/" "luci-app-turboacc")
     [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
     xe=$(_find "package/A/ feeds/luci/applications/" "luci-app-ikoolproxy")
-    [[ -d $xe ]] && sed -i '/echo.*root/ s/^/[[ $time =~ [0-9]+ ]] \&\&/' $xe/root/etc/init.d/koolproxy
+    [[ -f $xe/luasrc/model/cbi/koolproxy/basic.lua ]] && sed -i '/^local/ s/.txt/.txt \&>\/dev\/null/g' $xe/luasrc/model/cbi/koolproxy/basic.lua
     xg=$(_find "package/A/ feeds/luci/applications/" "luci-app-pushbot")
     [[ -d $xg ]] && {
         sed -i "s|-c pushbot|/usr/bin/pushbot/pushbot|" $xg/luasrc/controller/pushbot.lua
@@ -555,12 +555,12 @@ esac
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
         dnsmasq nftables libnftnl \
-        sonfilter opkg fullconenat #iptables ipset fstools dropbear usbmode odhcp6c
+        sonfilter opkg fullconenat iptables ipset #fstools dropbear usbmode odhcp6c
     clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
         lua-openssl smartdns bluez curl #miniupnpc miniupnpd ttyd
     clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
-    # curl -sSo package/kernel/linux/modules/netfilter.mk \
-    #     https://raw.githubusercontent.com/coolsnowwolf/lede/master/package/kernel/linux/modules/netfilter.mk
+    curl -sSo package/kernel/linux/modules/netfilter.mk \
+        https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-23.05/package/kernel/linux/modules/netfilter.mk
     curl -sSo include/openssl-module.mk https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
 }
 
