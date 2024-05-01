@@ -445,7 +445,8 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     xd=$(_find "package/A/ feeds/luci/applications/" "luci-app-turboacc")
     [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
     xe=$(_find "package/A/ feeds/luci/applications/" "luci-app-ikoolproxy")
-    [[ -f $xe/luasrc/model/cbi/koolproxy/basic.lua ]] && sed -i '/^local/ s/.txt/.txt \&>\/dev\/null/g' $xe/luasrc/model/cbi/koolproxy/basic.lua
+    [[ -f $xe/luasrc/model/cbi/koolproxy/basic.lua ]] && sed -i \
+        '/^local.*sys.exec/ s/$/ or 0/g; /^local.*sys.exec/ s/.txt/.txt 2>\/dev\/null/g' $xe/luasrc/model/cbi/koolproxy/basic.lua
     xg=$(_find "package/A/ feeds/luci/applications/" "luci-app-pushbot")
     [[ -d $xg ]] && {
         sed -i "s|-c pushbot|/usr/bin/pushbot/pushbot|" $xg/luasrc/controller/pushbot.lua
@@ -551,16 +552,64 @@ esac
 [[ "$REPO_BRANCH" =~ 21.02|18.06 ]] && {
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
-    clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
+    # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
         dnsmasq nftables libnftnl \
-        sonfilter opkg fullconenat iptables ipset #fstools dropbear usbmode odhcp6c
+        sonfilter opkg fullconenat #iptables ipset fstools dropbear usbmode odhcp6c
     clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
-        lua-openssl smartdns bluez curl #miniupnpc miniupnpd ttyd
+        lua-openssl smartdns bluez #curl miniupnpc miniupnpd ttyd
     clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
-    curl -sSo package/kernel/linux/modules/netfilter.mk \
-        https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-23.05/package/kernel/linux/modules/netfilter.mk
+	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
+	define KernelPackage/nft-tproxy
+	  SUBMENU:=$(NF_MENU)
+	  TITLE:=Netfilter nf_tables tproxy support
+	  DEPENDS:=+kmod-nft-core +kmod-nf-tproxy +kmod-nf-conntrack
+	  FILES:=$(foreach mod,$(NFT_TPROXY-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NFT_TPROXY-m)))
+	  KCONFIG:=$(KCONFIG_NFT_TPROXY)
+	endef
+	$(eval $(call KernelPackage,nft-tproxy))
+	define KernelPackage/nf-tproxy
+	  SUBMENU:=$(NF_MENU)
+	  TITLE:=Netfilter tproxy support
+	  KCONFIG:= $(KCONFIG_NF_TPROXY)
+	  FILES:=$(foreach mod,$(NF_TPROXY-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NF_TPROXY-m)))
+	endef
+	$(eval $(call KernelPackage,nf-tproxy))
+	define KernelPackage/nft-compat
+	  SUBMENU:=$(NF_MENU)
+	  TITLE:=Netfilter nf_tables compat support
+	  DEPENDS:=+kmod-nft-core +kmod-nf-ipt
+	  FILES:=$(foreach mod,$(NFT_COMPAT-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NFT_COMPAT-m)))
+	  KCONFIG:=$(KCONFIG_NFT_COMPAT)
+	endef
+	$(eval $(call KernelPackage,nft-compat))
+	define KernelPackage/ipt-socket
+	  TITLE:=Iptables socket matching support
+	  DEPENDS+=+kmod-nf-socket +kmod-nf-conntrack
+	  KCONFIG:=$(KCONFIG_IPT_SOCKET)
+	  FILES:=$(foreach mod,$(IPT_SOCKET-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(IPT_SOCKET-m)))
+	  $(call AddDepends/ipt)
+	endef
+	define KernelPackage/ipt-socket/description
+	  Kernel modules for socket matching
+	endef
+	$(eval $(call KernelPackage,ipt-socket))
+	define KernelPackage/nf-socket
+	  SUBMENU:=$(NF_MENU)
+	  TITLE:=Netfilter socket lookup support
+	  KCONFIG:= $(KCONFIG_NF_SOCKET)
+	  FILES:=$(foreach mod,$(NF_SOCKET-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NF_SOCKET-m)))
+	endef
+	$(eval $(call KernelPackage,nf-socket))
+	EOF
+    # curl -sSo package/kernel/linux/modules/netfilter.mk \
+    #     https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-23.05/package/kernel/linux/modules/netfilter.mk
     curl -sSo include/openssl-module.mk https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
 }
 
