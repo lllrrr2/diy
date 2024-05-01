@@ -37,7 +37,7 @@ git_apply() {
 }
 
 _find() {
-    find $1 -maxdepth 5 -type d -name "$2" -print -quit
+    find $1 -maxdepth 5 -type d -name "$2" -print -quit 2>/dev/null
 }
 
 move_directory() {
@@ -310,7 +310,6 @@ cat >>.config <<-EOF
 	CONFIG_PACKAGE_luci-app-filetransfer=y
 	CONFIG_PACKAGE_luci-app-ikoolproxy=y
 	CONFIG_PACKAGE_luci-app-luci-app-commands=y
-	CONFIG_PACKAGE_luci-app-network-settings=y
 	CONFIG_PACKAGE_luci-app-oaf=y
 	CONFIG_PACKAGE_luci-app-opkg=y
 	CONFIG_PACKAGE_luci-app-passwall=y
@@ -372,7 +371,7 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     luci-app-openclash
     luci-app-pushbot
     luci-app-softwarecenter
-    #luci-app-syncdial
+    luci-app-syncdial
     luci-app-transmission
     luci-app-usb-printer
     luci-app-vssr
@@ -552,13 +551,13 @@ esac
 [[ "$REPO_BRANCH" =~ 21.02|18.06 ]] && {
     [[ $TARGET_DEVICE =~ ^r ]] && \
     sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
-    # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
+    clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     # clone_dir coolsnowwolf/lede opkg iproute2 hostapd ucode #uhttpd dnsmasq iwinfo
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
         dnsmasq nftables libnftnl \
         sonfilter opkg fullconenat #iptables ipset fstools dropbear usbmode odhcp6c
     clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
-        lua-openssl smartdns bluez #curl miniupnpc miniupnpd ttyd
+        lua-openssl smartdns bluez curl miniupnpc miniupnpd #ttyd
     clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
