@@ -706,15 +706,26 @@ main() {
 }
 
 install_snapraid() {
-  apk add --no-cache btrfs-progs build-base && \
+  apk add --no-cache btrfs-progs build-base grep && \
   wget -O snapraid.tar.gz https://github.com/amadvance/snapraid/releases/download/v12.3/snapraid-12.3.tar.gz && \
   tar -xzvf snapraid.tar.gz && \
-  cd snapraid-12.3 && \
+  cd snapraid-*/ && \
   ./configure --prefix=/usr && \
-  make && \
-  make install && \
+  make && make install && \
   cd .. && \
-  rm -rf snapraid-12.3 snapraid.tar.gz
+  rm -rf snapraid*
+}
+
+install_coreutils() {
+  # apk del coreutils && \
+  apk add --no-cache libacl libattr skalibs s6-ipcserver utmps build-base && \
+  wget -O coreutils-9.5.tar.xz https://ftp.gnu.org/gnu/coreutils/coreutils-9.5.tar.xz && \
+  tar -xf coreutils-*.tar.xz && \
+  cd coreutils-*/ && \
+  ./configure --prefix=/usr FORCE_UNSAFE_CONFIGURE=1 && \
+  make && make install && \
+  cd .. && \
+  rm -rf coreutils*
 }
 
 check_env() {
