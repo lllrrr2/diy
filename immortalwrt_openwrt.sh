@@ -554,7 +554,7 @@ esac
     clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
         dnsmasq nftables libnftnl \
-        sonfilter opkg fullconenat fstools #iptables ipset dropbear usbmode odhcp6c
+        sonfilter opkg fullconenat fstools odhcp6c #iptables ipset dropbear usbmode
     clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
         lua-openssl smartdns bluez curl miniupnpc miniupnpd
     clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
@@ -606,8 +606,6 @@ esac
 	endef
 	$(eval $(call KernelPackage,nf-socket))
 	EOF
-    # curl -sSo package/kernel/linux/modules/netfilter.mk \
-    #     https://raw.githubusercontent.com/immortalwrt/immortalwrt/openwrt-23.05/package/kernel/linux/modules/netfilter.mk
     curl -sSo include/openssl-module.mk https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
 }
 
