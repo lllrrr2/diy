@@ -716,6 +716,15 @@ install_snapraid() {
   rm -rf snapraid*
 }
 
+install_lua() {
+	apk add --no-cache btrfs-progs build-base grep readline-dev && \
+	wget -O lua-5.3.0.tar.gz  http://www.lua.org/ftp/lua-5.3.0.tar.gz && \
+	tar -xzf lua-5.3.0.tar.gz && \
+	cd lua-5.3.0 && \
+	make linux test && \
+	make INSTALL_TOP=/usr install
+}
+
 install_coreutils() {
   # apk del coreutils && \
   apk add --no-cache libacl libattr skalibs s6-ipcserver utmps build-base && \
