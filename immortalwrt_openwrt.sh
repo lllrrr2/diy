@@ -410,6 +410,7 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
         https://github.com/destan19/OpenAppFilter
         https://github.com/yaof2/luci-app-ikoolproxy
         https://github.com/AlexZhuo/luci-app-bandwidthd
+        https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
     "
 
     rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
@@ -472,7 +473,7 @@ case "$TARGET_DEVICE" in
         luci-app-deluge
         #luci-app-smartdns
         #luci-app-adbyby-plus
-        #luci-app-unblockneteasemusic
+        luci-app-unblockneteasemusic
         #htop lscpu lsscsi #nano screen #zstd pv ethtool
         "
         [[ "${REPO_BRANCH#*-}" =~ ^2 ]] && sed -i '/bridge/d' .config
@@ -527,6 +528,7 @@ case "$TARGET_DEVICE" in
         luci-app-deluge
         #luci-app-godproxy
         #luci-app-frpc
+        luci-app-unblockneteasemusic
         #AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd pv
         #subversion-client #unixodbc #git-http
         "
@@ -551,12 +553,12 @@ esac
 [[ "$REPO_BRANCH" =~ 21.02|18.06 ]] && {
     # [[ $TARGET_DEVICE =~ ^r ]] && \
     # sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
-    # clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
+    clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
         dnsmasq nftables libnftnl \
         sonfilter opkg fullconenat #fstools odhcp6c iptables ipset dropbear usbmode
     clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
-        lua-openssl smartdns bluez #miniupnpc miniupnpd curl
+        lua-openssl smartdns bluez curl #miniupnpc miniupnpd
     clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
