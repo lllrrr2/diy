@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # sudo bash -c 'bash <(curl -s https://build-scripts.immortalwrt.eu.org/init_build_environment.sh)'
-qBittorrent_version=$(curl -sL api.github.com/repos/hong0980/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\K\d+\.\d+\.\d+' | sort -Vr | head -n 1)
+qBittorrent_version=$(curl -sL https://api.github.com/repos/hong0980/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\K\d+\.\d+\.\d+' | sort -Vr | head -n 1 || "")
+libtorrent_version=$(curl -sL https://api.github.com/repos/hong0980/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\d+\.\d+\.\d+_v\K\d+\.\d+\.\d+' | sort -Vr | head -n 1)
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
 curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xa
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
@@ -441,7 +442,10 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     [[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
     #https://github.com/userdocs/qbittorrent-nox-static/releases
     xc=$(_find "package/A/ feeds/" "qBittorrent-static")
-    [[ -d $xc ]] && sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${qBittorrent_version}_v2.0.10/;s/userdocs/hong0980/;s/ARCH)-qbittorrent/ARCH)-qt6-qbittorrent/" $xc/Makefile
+    [[ -d $xc ]] && {
+        [[ $qBittorrent_version ]] && sed -i "s/userdocs/hong0980/" $xc/Makefile
+        sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${qBittorrent_version:-4.6.5}_v${libtorrent_version:-2.0.10}/" $xc/Makefile
+    }
     xd=$(_find "package/A/ feeds/luci/applications/" "luci-app-turboacc")
     [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
     xe=$(_find "package/A/ feeds/luci/applications/" "luci-app-ikoolproxy")
