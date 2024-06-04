@@ -96,7 +96,12 @@ clone_dir() {
 
     for target_dir in "$@"; do
         local source_dir current_dir destination_dir
-        source_dir=$(_find "$temp_dir" "$target_dir")
+        if [[ ${repo_url##*/} == ${target_dir} ]]; then
+            mv ${temp_dir} ${target_dir}
+            source_dir=${target_dir}
+        else
+            source_dir=$(_find "$temp_dir" "$target_dir")
+        fi
         [[ -d "$source_dir" ]] || continue
         current_dir=$(_find "package/ feeds/ target/" "$target_dir")
         destination_dir="${current_dir:-package/A/$target_dir}"
@@ -350,6 +355,7 @@ clone_dir vernesong/OpenClash luci-app-openclash
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
 clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
+clone_dir master UnblockNeteaseMusic/luci-app-unblockneteasemusic luci-app-unblockneteasemusic
 clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     luci-app-bypass luci-app-store luci-app-pushbot taskd shadowsocksr-libev
 
@@ -411,7 +417,6 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
         https://github.com/destan19/OpenAppFilter
         https://github.com/yaof2/luci-app-ikoolproxy
         https://github.com/AlexZhuo/luci-app-bandwidthd
-        https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
     "
 
     rm -rf feeds/*/*/{luci-app-appfilter,open-app-filter}
