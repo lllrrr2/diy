@@ -539,7 +539,7 @@ case "$TARGET_DEVICE" in
         #luci-app-frpc
         luci-app-unblockneteasemusic
         #AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd pv
-        #subversion-client #unixodbc #git-http
+        #subversion-client #unixodbc git-http
         "
         # [[ $REPO_BRANCH = "openwrt-18.06-k5.4" ]] && sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/x86/Makefile
         wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
