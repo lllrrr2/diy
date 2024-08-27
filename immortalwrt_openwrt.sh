@@ -633,7 +633,7 @@ done
 # mv -f package/A/luci-app* feeds/luci/applications/
 
 [[ "$REPO_BRANCH" =~ master ]] && sed -i '/deluge/d' .config
-sed -i '/bridge\|vssrd\|deluge/d' .config
+sed -i '/bridge\|vssr\|deluge/d' .config
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
