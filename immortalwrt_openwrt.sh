@@ -539,7 +539,7 @@ case "$TARGET_DEVICE" in
         #luci-app-frpc
         luci-app-unblockneteasemusic
         #AmuleWebUI-Reloaded htop lscpu lsscsi lsusb nano pciutils screen webui-aria2 zstd pv
-        #subversion-client #unixodbc git-http
+        #subversion-client #unixodbc #git-http
         "
         # [[ $REPO_BRANCH = "openwrt-18.06-k5.4" ]] && sed -i '/KERNEL_PATCHVER/s/=.*/=5.10/' target/linux/x86/Makefile
         wget -qO package/base-files/files/bin/bpm git.io/bpm && chmod +x package/base-files/files/bin/bpm
@@ -633,7 +633,7 @@ done
 # mv -f package/A/luci-app* feeds/luci/applications/
 
 [[ "$REPO_BRANCH" =~ master ]] && sed -i '/deluge/d' .config
-sed -i '/bridge/d; /vssr/d' .config
+sed -i '/bridge\|vssrd\|deluge/d' .config
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
