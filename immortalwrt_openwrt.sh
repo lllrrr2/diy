@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # sudo bash -c 'bash <(curl -s https://build-scripts.immortalwrt.eu.org/init_build_environment.sh)'
-qBittorrent_version=$(curl -sL https://api.github.com/repos/hong0980/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\K\d+\.\d+\.\d+' | sort -Vr | head -n 1 || "")
-libtorrent_version=$(curl -sL https://api.github.com/repos/hong0980/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\d+\.\d+\.\d+_v\K\d+\.\d+\.\d+' | sort -Vr | head -n 1)
+qBittorrent_version=$(curl -sL https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\K\d+\.\d+\.\d+' | sort -Vr | head -n 1 || "")
+libtorrent_version=$(curl -sL https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\d+\.\d+\.\d+_v\K\d+\.\d+\.\d+' | sort -Vr | head -n 1 || "")
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
 curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xa
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
@@ -84,7 +84,7 @@ clone_dir() {
     fi
     local temp_dir=$(mktemp -d)
 
-    ! git clone -q $branch --depth 1 "https://github.com/$repo_url" $temp_dir && {
+    git clone -q $branch --depth 1 "https://github.com/$repo_url" $temp_dir 2>/dev/null || {
         echo -e "$(color cr 拉取) https://github.com/$repo_url [ $(color cr ✕) ]" | _printf
         return 0
     }
@@ -346,28 +346,29 @@ sed -i "\$i uci -q set luci.main.mediaurlbase=\"/luci-static/bootstrap\" && uci 
 # git diff ./ >> ../output/t.patch || true
 clone_url "
     https://github.com/hong0980/build
-    https://github.com/sbwml/openwrt_helloworld
-    #https://github.com/fw876/helloworld
-    #https://github.com/xiaorouji/openwrt-passwall-packages
+    #https://github.com/sbwml/openwrt_helloworld
+    https://github.com/xiaorouji/openwrt-passwall-packages
+    https://github.com/fw876/helloworld
 "
 
 clone_dir vernesong/OpenClash luci-app-openclash
+clone_dir sbwml/openwrt_helloworld shadowsocks-rust
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
 clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
 clone_dir master UnblockNeteaseMusic/luci-app-unblockneteasemusic luci-app-unblockneteasemusic
-clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
-    luci-app-bypass luci-app-store luci-app-pushbot taskd shadowsocksr-libev
+clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
+    luci-app-bypass luci-app-store luci-app-pushbot taskd
 
 [[ "$TARGET_DEVICE" =~ phicomm|newifi|asus ]] || {
     _packages "
     axel lscpu lsscsi patch diffutils htop lscpu
     brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio kmod-brcmfmac
     kmod-brcmutil kmod-mt7601u kmod-mt76x0u kmod-mt76x2u kmod-r8125
-    kmod-rt2500-usb kmod-rt2800-usb kmod-rtl8187 kmod-rtl8188eu kmod-rtl8723bs
+    kmod-rt2500-usb kmod-rt2800-usb kmod-rtl8187 kmod-rtl8723bs
     kmod-rtl8723au kmod-rtl8723bu kmod-rtl8812au-ac kmod-rtl8812au-ct
     kmod-rtl8821ae kmod-rtl8821cu kmod-rtl8xxxu kmod-usb-net-asix-ax88179
-    kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 mt7601u-firmware rtl8188eu-firmware
+    kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 mt7601u-firmware #rtl8188eu-firmware #kmod-rtl8188eu
     rtl8723au-firmware rtl8723bu-firmware rtl8821ae-firmware
     luci-app-aria2
     luci-app-bypass
@@ -379,7 +380,7 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     luci-app-pushbot
     luci-app-softwarecenter
     #luci-app-syncdial
-    luci-app-transmission
+    #luci-app-transmission
     luci-app-usb-printer
     luci-app-vssr
     luci-app-wol
@@ -448,7 +449,7 @@ clone_dir kiddin9/openwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
     #https://github.com/userdocs/qbittorrent-nox-static/releases
     xc=$(_find "package/A/ feeds/" "qBittorrent-static")
     [[ -d $xc ]] && {
-        [[ $qBittorrent_version ]] && sed -i "s/userdocs/hong0980/" $xc/Makefile
+        # [[ $qBittorrent_version ]] && sed -i "s/userdocs/hong0980/" $xc/Makefile
         sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${qBittorrent_version:-4.6.5}_v${libtorrent_version:-2.0.10}/" $xc/Makefile
     }
     xd=$(_find "package/A/ feeds/luci/applications/" "luci-app-turboacc")
@@ -564,8 +565,8 @@ esac
     # sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
     clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
     clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
-        dnsmasq nftables libnftnl \
-        sonfilter opkg fullconenat #fstools odhcp6c iptables ipset dropbear usbmode
+        dnsmasq nftables libnftnl sonfilter opkg fullconenat \
+        #fstools odhcp6c iptables ipset dropbear usbmode
     clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
         lua-openssl smartdns bluez curl #miniupnpc miniupnpd
     clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
