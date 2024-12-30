@@ -357,7 +357,6 @@ REPO=${REPO:-immortalwrt}
 REPO_URL="https://github.com/$REPO/$REPO"
 config_generate="package/base-files/files/bin/config_generate"
 download_and_deploy_cache
-settings=$(find package/ -type f -regex '.*default-settings$')
 
 if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23.05|24.10 ]]; then
     color cy "自定义设置.... "
@@ -419,6 +418,7 @@ if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23.05|2
     
     sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk} || true
     sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${REPO_URL##*/}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release || true
+    settings=$(find package/ -type f -regex '.*default-settings$')
     [[ -f $settings ]] && \
     sed -i "/exit 0/i uci -q set upnpd.config.enabled=\"1\" && uci -q commit upnpd\nsed -i 's/root::.*:::/root:\$1\$pn1ABFaI\$vt5cmIjlr6M7Z79Eds2lV0:16821:0:99999:7:::/g' /etc/shadow" $settings
     [[ $REPO_BRANCH =~ master|24.10 ]] && sed -i '/store\|deluge/d' .config
@@ -463,6 +463,7 @@ else
     sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
     sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk} || true
     sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config || true
+    settings=$(find package/ -type f -regex '.*default-settings$')
     [[ -f $settings ]] && \
     sed -i "\$i uci -q set luci.main.mediaurlbase=\"/luci-static/bootstrap\" && uci -q commit luci\nuci -q set upnpd.config.enabled=\"1\" && uci -q commit upnpd\nsed -i 's/root::.*:::/root:\$1\$pn1ABFaI\$vt5cmIjlr6M7Z79Eds2lV0:16821:0:99999:7:::/g' /etc/shadow" $settings
 
