@@ -348,7 +348,7 @@ REPO_URL="https://github.com/$REPO/$REPO"
 config_generate="package/base-files/files/bin/config_generate"
 settings="package/emortal/default-settings/files/99-default-settings"
 download_and_deploy_cache
-
+# 095cfc1
 if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23.05|24.10 ]]; then
     color cy "自定义设置.... "
 	cat >>.config<<-EOF
@@ -705,9 +705,7 @@ sed -i \
     -e "s/\(\(^\| \|    \)\(PKG_HASH\|PKG_MD5SUM\|PKG_MIRROR_HASH\|HASH\):=\).*/\1skip/" \
 package/A/*/Makefile 2>/dev/null
 for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
-    [[ $REPO_BRANCH =~ 18 ]] \
-    && [[ -d $p/zh_Hans && ! -e $p/zh-cn ]] && ln -s $p/zh_Hans $p/zh-cn 2>/dev/null \
-    || [[ -d $p/zh-cn && ! -e $p/zh_Hans ]] && ln -s $p/zh-cn $p/zh_Hans 2>/dev/null
+    [[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
 done
 
 echo -e "$(color cy '更新配置....')\c"; begin_time=$(date '+%H:%M:%S')

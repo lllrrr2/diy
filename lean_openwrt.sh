@@ -108,7 +108,7 @@ _printf() {
 }
 
 lan_ip() {
-    sed -i "s/192.168.1.1/${IP:-$1}/" package/base-files/*/bin/config_generate
+    # sed -i "s/192.168.1.1/${IP:-$1}/" package/base-files/*/bin/config_generate
     sed -i "\$i uci set network.lan.ipaddr='"${IP:-$1}"'\nuci commit network\n/etc/init.d/network restart" \
     package/lean/*/*/*default-settings
 }
@@ -450,9 +450,7 @@ esac
 sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 2>/dev/null
 
 for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
-    [[ $REPO_BRANCH =~ 18 ]] \
-    && [[ -d $p/zh_Hans && ! -e $p/zh-cn ]] && ln -s $p/zh_Hans $p/zh-cn 2>/dev/null \
-    || [[ -d $p/zh-cn && ! -e $p/zh_Hans ]] && ln -s $p/zh-cn $p/zh_Hans 2>/dev/null
+    [[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
 done
 
 echo -e "$(color cy '更新配置....')\c"; BEGIN_TIME=$(date '+%H:%M:%S')
