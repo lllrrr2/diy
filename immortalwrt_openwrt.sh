@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # sudo bash -c 'bash <(curl -s https://build-scripts.immortalwrt.eu.org/init_build_environment.sh)'
-qBittorrent_version=$(curl -sL https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\K\d+\.\d+\.\d+' | sort -Vr | head -n 1 || "")
-libtorrent_version=$(curl -sL https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\d+\.\d+\.\d+_v\K\d+\.\d+\.\d+' | sort -Vr | head -n 1 || "")
+qb_version=$(curl -sL https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\K(.*?)(?=/)' | sort -Vr | uniq | awk 'NR==1')
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
 curl -sL $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xa
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
@@ -46,7 +45,8 @@ _packages() {
 
 _delpackage() {
     for z in $@; do
-        [[ $z =~ ^# ]] || sed -i -E "s/(CONFIG_PACKAGE_.*$z)=y/# \1 is not set/" .config
+        [[ $z =~ ^# ]] || echo "# CONFIG_PACKAGE_$z is not set" >> .config
+        # [[ $z =~ ^# ]] || sed -iE "s/(CONFIG_PACKAGE_.*$z)=y/# \1 is not set/" .config
     done
 }
 
@@ -63,20 +63,20 @@ _printf() {
     printf "%s %-40s %s %s %s\n" "$param1" "$param2" "$param3" "$param4" "$param5"
 }
 
+lan_ip() {
+    sed -i '/n) ipad/s/".*"/"'"${IP:-$1}"'"/' $config_generate
+}
+
 git_diff() {
-    local path
-    if [[ $1 =~ feeds && -d $1 ]]; then
-        path="$1"
-        shift
-        safe_pushd "$path"
-    fi
+    path="$1"
+    [[ -d $path ]] && safe_pushd "$path" || return 1
+    shift
 
-    for i in "$@"; do
-        git diff -- "$i" > $GITHUB_WORKSPACE/firmware/${REPO_BRANCH}-${i##*/}.patch
+    for i in $@; do
+        [[ -d $i || -f $i ]] && \
+            git diff -- "$i" > $GITHUB_WORKSPACE/firmware/${REPO_BRANCH}-${i##*/}.patch
     done
-
-    [[ -n $path ]] && safe_popd
-    find ../firmware -type f -empty -delete
+    safe_popd
 }
 
 git_apply() {
@@ -104,7 +104,7 @@ git_apply() {
 
 clone_dir() {
     create_directory "package/A"
-    [[ -z $2 ]] && return
+    [[ $# -lt 1 ]] && return
     local repo_url branch temp_dir=$(mktemp -d)
     if [[ "$1" == */* ]]; then
         repo_url="$1"
@@ -120,9 +120,9 @@ clone_dir() {
         return 0
     }
 
-    [[ $repo_url == coolsnowwolf/packages ]] &&  {
+    [[ $repo_url == "coolsnowwolf/packages" ]] && {
         [[ $REPO_BRANCH =~ 23.05 ]] && set -- "$@" "golang" "bandwidthd"
-        [[ $REPO_BRANCH =~ 21.02 ]] && set -- "$@" "docker" "dockerd" "containerd" "runc" "btrfs-progs" "golang" "bandwidthd"
+        [[ $REPO_BRANCH =~ 21.02 ]] && set -- "$@" "golang" "bandwidthd" "docker" "dockerd" "containerd" "runc" "btrfs-progs"
     }
 
     for target_dir in "$@"; do
@@ -201,7 +201,7 @@ clone_url() {
     done
 }
 
-config (){
+_config (){
 	case "$TARGET_DEVICE" in
 		"x86_64")
 			cat >.config<<-EOF
@@ -217,11 +217,9 @@ config (){
 			# CONFIG_GRUB_EFI_IMAGES is not set
 			# CONFIG_VMDK_IMAGES is not set
 			EOF
-            DEVICE_NAME="x86_64"
-            FIRMWARE_TYPE="squashfs-combined"
-            [[ -n $IP ]] && \
-            sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
-            sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
+            export DEVICE_NAME="x86_64"
+            lan_ip "192.168.2.1"
+            export FIRMWARE_TYPE="squashfs-combined"
             ;;
         "r1-plus-lts"|"r1-plus"|"r4s"|"r2c"|"r2s")
 			cat >.config<<-EOF
@@ -240,11 +238,9 @@ config (){
             "r4s"|"r2c"|"r2s")
             echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >>.config ;;
             esac
-            DEVICE_NAME="$TARGET_DEVICE"
-            FIRMWARE_TYPE="sysupgrade"
-            [[ -n $IP ]] && \
-            sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
-            sed -i '/n) ipad/s/".*"/"192.168.2.1"/' $config_generate
+            lan_ip "192.168.2.1"
+            export DEVICE_NAME="$TARGET_DEVICE"
+            export FIRMWARE_TYPE="sysupgrade"
             ;;
         "newifi-d2")
 			cat >.config<<-EOF
@@ -252,11 +248,9 @@ config (){
 			CONFIG_TARGET_ramips_mt7621=y
 			CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 			EOF
-            DEVICE_NAME="Newifi-D2"
-            FIRMWARE_TYPE="sysupgrade"
-            [[ -n $IP ]] && \
-            sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
-            sed -i '/n) ipad/s/".*"/"192.168.1.1"/' $config_generate
+            lan_ip "192.168.2.1"
+            export DEVICE_NAME="Newifi-D2"
+            export FIRMWARE_TYPE="sysupgrade"
             ;;
         "phicomm_k2p")
 			cat >.config<<-EOF
@@ -264,11 +258,9 @@ config (){
 			CONFIG_TARGET_ramips_mt7621=y
 			CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 			EOF
-            DEVICE_NAME="Phicomm-K2P"
-            FIRMWARE_TYPE="sysupgrade"
-            [[ -n $IP ]] && \
-            sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
-            sed -i '/n) ipad/s/".*"/"192.168.1.1"/' $config_generate
+            lan_ip "192.168.1.1"
+            export DEVICE_NAME="Phicomm-K2P"
+            export FIRMWARE_TYPE="sysupgrade"
             ;;
         "asus_rt-n16")
             if [[ "${REPO_BRANCH#*-}" = "18.06" ]]; then
@@ -284,11 +276,9 @@ config (){
 				CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
 				EOF
 			fi
-            DEVICE_NAME="Asus-RT-N16"
-            FIRMWARE_TYPE="n16"
-            [[ -n $IP ]] && \
-            sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
-            sed -i '/n) ipad/s/".*"/"192.168.2.130"/' $config_generate
+            lan_ip "192.168.2.130"
+            export FIRMWARE_TYPE="n16"
+            export DEVICE_NAME="Asus-RT-N16"
             ;;
 		"armvirt-64-default")
 			cat >.config<<-EOF
@@ -296,17 +286,17 @@ config (){
 			CONFIG_TARGET_armvirt_64=y
 			CONFIG_TARGET_armvirt_64_Default=y
 			EOF
-            DEVICE_NAME="$TARGET_DEVICE"
-            FIRMWARE_TYPE="$TARGET_DEVICE"
-            [[ -n $IP ]] && \
-            sed -i '/n) ipad/s/".*"/"'"$IP"'"/' $config_generate || \
-            sed -i '/n) ipad/s/".*"/"192.168.2.110"/' $config_generate
+            lan_ip "192.168.2.110"
+            export DEVICE_NAME="$TARGET_DEVICE"
+            export FIRMWARE_TYPE="$TARGET_DEVICE"
             ;;
     esac
 }
 
 download_and_deploy_cache() {
-    echo -e "$(color cy '拉取源码....')\c"; begin_time=$(date '+%H:%M:%S')
+    local cmd
+    echo -e "$(color cy "拉取源码 $REPO ${REPO_BRANCH#*-}")\c"
+    begin_time=$(date '+%H:%M:%S')
     [ "$REPO_BRANCH" ] && cmd="-b $REPO_BRANCH --single-branch"
     git clone -q $cmd $REPO_URL $REPO_FLODER # --depth 1
     status $?
@@ -320,9 +310,9 @@ download_and_deploy_cache() {
     esac
     export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
     export CACHE_NAME="${REPO_URL##*/}-${REPO_BRANCH#*-}-$TOOLS_HASH-$NAME"
-    echo "CACHE_NAME=$CACHE_NAME" >>$GITHUB_ENV
+    echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
     if (grep -q "$CACHE_NAME" ../xa ../xc); then
-        ls ../*.tzst > /dev/null 2>&1 || {
+        ls ../*"$CACHE_NAME"* > /dev/null 2>&1 || {
             echo -e "$(color cy '下载tz-cache')\c"
             begin_time=$(date '+%H:%M:%S')
             grep -q "$CACHE_NAME" ../xa && \
@@ -330,7 +320,7 @@ download_and_deploy_cache() {
             status $?
         }
 
-        ls ../*.tzst > /dev/null 2>&1 && {
+        ls ../*"$CACHE_NAME"* > /dev/null 2>&1 && {
             echo -e "$(color cy '部署tz-cache')\c"; begin_time=$(date '+%H:%M:%S')
             (tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
                 if ! grep -q "$CACHE_NAME-cache.tzst" ../xa; then
@@ -342,13 +332,13 @@ download_and_deploy_cache() {
             [ -d staging_dir ]; status $?
         }
     else
-        echo "CACHE_ACTIONS=true" >>$GITHUB_ENV
+        echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
     fi
     echo -e "$(color cy '更新软件....')\c"; begin_time=$(date '+%H:%M:%S')
     ./scripts/feeds update -a 1>/dev/null 2>&1
     ./scripts/feeds install -a 1>/dev/null 2>&1
     status $?
-    config
+    _config
     wget -qO package/base-files/files/etc/banner git.io/JoNK8
 }
 
@@ -356,6 +346,7 @@ create_directory "firmware" "output"
 REPO=${REPO:-immortalwrt}
 REPO_URL="https://github.com/$REPO/$REPO"
 config_generate="package/base-files/files/bin/config_generate"
+settings="package/emortal/default-settings/files/99-default-settings"
 download_and_deploy_cache
 
 if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23.05|24.10 ]]; then
@@ -393,34 +384,33 @@ if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23.05|2
 	CONFIG_PACKAGE_luci-app-ddnsto=y
 	CONFIG_PACKAGE_luci-app-softwarecenter=y
 	EOF
-    if [[ $REPO =~ immortalwrt ]]; then
-        clone_dir sbwml/openwrt_helloworld luci-app-passwall2 luci-app-passwall luci-app-openclash luci-app-ssr-plus shadow-tls \
-            shadowsocks-libev shadowsocksr-libev
-        clone_dir xiaorouji/openwrt-passwall luci-app-passwall
-        clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-        # clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls shadowsocks-libev shadowsocksr-libev luci-app-openclash
-    else
+    if [[ $REPO =~ openwrt ]]; then
         clone_dir openwrt-24.10 immortalwrt/immortalwrt emortal bcm27xx-utils
-        clone_url "https://github.com/sbwml/openwrt_helloworld"
-        clone_dir xiaorouji/openwrt-passwall luci-app-passwall
-        clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-        echo '# CONFIG_PACKAGE_dnsmasq is not set' >> .config
+        _delpackage "dnsmasq"
         [[ $REPO_BRANCH =~ 23.05 ]] && clone_dir openwrt/packages openwrt-24.10 golang
     fi
 
+    # clone_url "
+    #     https://github.com/fw876/helloworld
+    #     https://github.com/xiaorouji/openwrt-passwall-packages
+    # "
+    clone_dir vernesong/OpenClash luci-app-openclash
+    clone_dir xiaorouji/openwrt-passwall luci-app-passwall
+    clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
+    clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls shadowsocks-rust shadowsocks-libev shadowsocksr-libev
     clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
         luci-app-diskman luci-app-cowb-speedlimit qBittorrent-static luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-        luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto
+        luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
     clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb luci-app-store \
         luci-app-bypass luci-app-pushbot taskd
+    [[ $REPO_BRANCH =~ 23.05 ]] && clone_dir coolsnowwolf/packages ""
 
     # git_diff "feeds/luci" "applications/luci-app-diskman" "applications/luci-app-passwall" "applications/luci-app-ssr-plus" "applications/luci-app-dockerman"
     
     sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk} || true
     sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${REPO_URL##*/}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release || true
-    settings=$(find package/ -type f -regex '.*default-settings$')
     [[ -f $settings ]] && \
-    sed -i "/exit 0/i uci -q set upnpd.config.enabled=\"1\" && uci -q commit upnpd\nsed -i 's/root::.*:::/root:\$1\$pn1ABFaI\$vt5cmIjlr6M7Z79Eds2lV0:16821:0:99999:7:::/g' /etc/shadow" $settings
+    sed -i "\$i uci -q set luci.main.mediaurlbase=\"/luci-static/bootstrap\" && uci -q set upnpd.config.enabled=\"1\" && uci -q commit upnpd\nsed -i 's/root::.*:::/root:\$1\$pn1ABFaI\$vt5cmIjlr6M7Z79Eds2lV0:16821:0:99999:7:::/g' /etc/shadow" $settings
     [[ $REPO_BRANCH =~ master|24.10 ]] && sed -i '/store\|deluge/d' .config
 else
 	cat >>.config <<-EOF
@@ -463,7 +453,6 @@ else
     sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
     sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk} || true
     sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config || true
-    settings=$(find package/ -type f -regex '.*default-settings$')
     [[ -f $settings ]] && \
     sed -i "\$i uci -q set luci.main.mediaurlbase=\"/luci-static/bootstrap\" && uci -q commit luci\nuci -q set upnpd.config.enabled=\"1\" && uci -q commit upnpd\nsed -i 's/root::.*:::/root:\$1\$pn1ABFaI\$vt5cmIjlr6M7Z79Eds2lV0:16821:0:99999:7:::/g' /etc/shadow" $settings
 
@@ -698,9 +687,7 @@ xb=$(_find "package/A/ feeds/luci/applications/" "luci-app-bypass")
 [[ -d $xb ]] && sed -i 's/default y/default n/g' $xb/Makefile
 #https://github.com/userdocs/qbittorrent-nox-static/releases
 xc=$(_find "package/A/ feeds/" "qBittorrent-static")
-[[ -d $xc ]] && {
-    sed -i "s/PKG_VERSION:=.*/PKG_VERSION:=${qBittorrent_version:-4.6.5}_v${libtorrent_version:-2.0.10}/" $xc/Makefile
-}
+[[ -d $xc ]] && sed -Ei "s/(PKG_VERSION:=).*/\1${qb_version:-4.5.2_v2.0.8}/" $xc/Makefile
 xd=$(_find "package/A/ feeds/luci/applications/" "luci-app-turboacc")
 [[ -d $xd ]] && sed -i '/hw_flow/s/1/0/;/sfe_flow/s/1/0/;/sfe_bridge/s/1/0/' $xd/root/etc/config/turboacc
 xe=$(_find "package/A/ feeds/luci/applications/" "luci-app-ikoolproxy")
@@ -711,13 +698,16 @@ xg=$(_find "package/A/ feeds/luci/applications/" "luci-app-pushbot")
     sed -i "s|-c pushbot|/usr/bin/pushbot/pushbot|" $xg/luasrc/controller/pushbot.lua
     sed -i '/start()/a[ "$(uci get pushbot.@pushbot[0].pushbot_enable)" -eq "0" ] && return 0' $xg/root/etc/init.d/pushbot
 }
+sed -i 's|/bin/login|/bin/login -f root|' feeds/packages/utils/ttyd/files/ttyd.config
 sed -i \
     -e 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' \
     -e 's?include \.\./\.\./\(lang\|devel\)?include $(TOPDIR)/feeds/packages/\1?' \
     -e "s/\(\(^\| \|    \)\(PKG_HASH\|PKG_MD5SUM\|PKG_MIRROR_HASH\|HASH\):=\).*/\1skip/" \
 package/A/*/Makefile 2>/dev/null
 for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
-    [[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
+    [[ $REPO_BRANCH =~ 18 ]] \
+    && [[ -d $p/zh_Hans && ! -e $p/zh-cn ]] && ln -s $p/zh_Hans $p/zh-cn 2>/dev/null \
+    || [[ -d $p/zh-cn && ! -e $p/zh_Hans ]] && ln -s $p/zh-cn $p/zh_Hans 2>/dev/null
 done
 
 echo -e "$(color cy '更新配置....')\c"; begin_time=$(date '+%H:%M:%S')
@@ -729,15 +719,15 @@ echo -e "$(color cy 当前机型) $(color cb ${REPO_URL##*/}-${REPO_BRANCH#*-}-$
 sed -i "/IMG_PREFIX:/ {s/=/=${REPO_URL##*/}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 
-# echo "SSH_ACTIONS=true" >>$GITHUB_ENV #SSH后台
-# echo "UPLOAD_PACKAGES=false" >>$GITHUB_ENV
-# echo "UPLOAD_SYSUPGRADE=false" >>$GITHUB_ENV
-echo "UPLOAD_BIN_DIR=false" >>$GITHUB_ENV
-# echo "UPLOAD_FIRMWARE=false" >>$GITHUB_ENV
-echo "UPLOAD_COWTRANSFER=false" >>$GITHUB_ENV
-echo "UPLOAD_WETRANSFER=false" >>$GITHUB_ENV
-echo "CLEAN=false" >>$GITHUB_ENV
-echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >>$GITHUB_ENV
-echo "VERSION=$VERSION" >>$GITHUB_ENV
+# echo "SSH_ACTIONS=true" >> $GITHUB_ENV #SSH后台
+# echo "UPLOAD_PACKAGES=false" >> $GITHUB_ENV
+# echo "UPLOAD_SYSUPGRADE=false" >> $GITHUB_ENV
+echo "UPLOAD_BIN_DIR=false" >> $GITHUB_ENV
+# echo "UPLOAD_FIRMWARE=false" >> $GITHUB_ENV
+echo "UPLOAD_COWTRANSFER=false" >> $GITHUB_ENV
+echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
+echo "CLEAN=false" >> $GITHUB_ENV
+echo "FIRMWARE_TYPE=$FIRMWARE_TYPE" >> $GITHUB_ENV
+echo "VERSION=$VERSION" >> $GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
