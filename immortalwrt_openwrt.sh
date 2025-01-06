@@ -17,7 +17,7 @@ color() {
 }
 
 status() {
-    local check="$1" end_time=$(date '+%H:%M:%S')
+    local check=$? end_time=$(date '+%H:%M:%S')
     _date=" ==>用时 $[$(date +%s -d "$end_time") - $(date +%s -d "$begin_time")] 秒"
     [[ $_date =~ [0-9]+ ]] || _date=""
     if [[ $check = 0 ]]; then
@@ -300,7 +300,7 @@ download_and_deploy_cache() {
     begin_time=$(date '+%H:%M:%S')
     [ "$REPO_BRANCH" ] && cmd="-b $REPO_BRANCH --single-branch"
     git clone -q $cmd $REPO_URL $REPO_FLODER # --depth 1
-    status $?
+    status
     [[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
     case "$TARGET_DEVICE" in
         "x86_64") export NAME="x86_64";;
@@ -318,7 +318,7 @@ download_and_deploy_cache() {
             begin_time=$(date '+%H:%M:%S')
             grep -q "$CACHE_NAME" ../xa && \
             wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xa) || wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xc)
-            status $?
+            status
         }
 
         ls ../*"$CACHE_NAME"* > /dev/null 2>&1 && {
@@ -330,7 +330,7 @@ download_and_deploy_cache() {
                 fi
                 sed -i 's/ $(tool.*\/stamp-compile)//' Makefile
             }
-            [ -d staging_dir ]; status $?
+            [ -d staging_dir ]; status
         }
     else
         echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
@@ -338,7 +338,7 @@ download_and_deploy_cache() {
     echo -e "$(color cy '更新软件....')\c"; begin_time=$(date '+%H:%M:%S')
     ./scripts/feeds update -a 1>/dev/null 2>&1
     ./scripts/feeds install -a 1>/dev/null 2>&1
-    status $?
+    status
     _config
     wget -qO package/base-files/files/etc/banner git.io/JoNK8
 }
@@ -711,7 +711,7 @@ done
 
 echo -e "$(color cy '更新配置....')\c"; begin_time=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
-status $?
+status
 
 LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
 echo -e "$(color cy 当前机型) $(color cb ${REPO_URL##*/}-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME}${VERSION:+-$VERSION})"
