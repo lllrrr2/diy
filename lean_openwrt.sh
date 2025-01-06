@@ -115,7 +115,7 @@ clone_dir() {
     mkdir -p  "package/A"
     [[ $# -lt 1 ]] && return
     local repo_url branch temp_dir=$(mktemp -d)
-    if [[ "$1" == */* ]]; then
+    if [[ $1 == */* ]]; then
         repo_url="$1"
         shift
     else
@@ -123,9 +123,10 @@ clone_dir() {
         repo_url="$2"
         shift 2
     fi
+    [[ $repo_url =~ ^https?:// ]] || repo_url="https://github.com/$repo_url"
 
-    git clone -q $branch --depth 1 "https://github.com/$repo_url" $temp_dir 2>/dev/null || {
-        _printf "$(color cr 拉取) https://github.com/$repo_url [ $(color cr ✕) ]"
+    git clone -q $branch --depth 1 "$repo_url" $temp_dir 2>/dev/null || {
+        _printf "$(color cr 拉取) $repo_url [ $(color cr ✕) ]"
         return 1
     }
 
@@ -273,7 +274,7 @@ _config(){
             ;;
     esac
     echo -e 'CONFIG_KERNEL_BUILD_USER="win3gp"\nCONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"' >> .config
-    addpackage "luci-app-bypass luci-app-cowb-speedlimit luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-upnp luci-app-uhttpd luci-app-wizard luci-app-homeproxy"
+    addpackage "luci-app-bypass luci-app-cowb-speedlimit luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-homeproxy luci-app-openclash luci-app-passwall luci-app-passwall2 luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-uhttpd luci-app-wizard"
     delpackage "luci-app-ddns luci-app-autoreboot luci-app-wol luci-app-vlmcsd luci-app-filetransfer"
 }
 
@@ -345,35 +346,20 @@ if [[ $REPO_URL =~ "coolsnowwolf" ]]; then
     sed -i 's/invalid users = root/#&/g' feeds/packages/net/samba4/files/smb.conf.template
     sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_NAME-$(TZ=UTC-8 date +%Y年%m月%d日) '/}" package/*/*/*/openwrt_release
     sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
-    sed -i "/openwrt_release/d" package/lean/*/*/*default-settings
-	cat <<-SETTINGS >package/base-files/files/etc/uci-defaults/99-zzzz
-	#!/bin/sh
-	uci -q batch <<-EOF >/dev/null
-		set system.@system[0].hostname='OpenWrt'
-		commit system
-		set network.lan.ipaddr='${IP:-192.168.2.1}'
-		commit network
-		set luci.main.mediaurlbase='/luci-static/bootstrap'
-		commit luci
-	EOF
-	[ -f '/bin/bash' ] && sed -i '/\\\/ash$/s/ash/bash/' /etc/passwd
-	sed -i 's/^root:.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow
-	/etc/init.d/network restart
-	rm -rf /tmp/luci-*
-	exit 0
-	SETTINGS
+    sed -i "{
+            /upnp\|openwrt_release\|shadow/d
+            /uci commit system/i\uci set system.@system[0].hostname=OpenWrt
+            /uci commit system/a\uci set luci.main.mediaurlbase=/luci-static/bootstrap\nuci commit luci\n[ -f '/bin/bash' ] && sed -i '/\\\/ash$/s/ash/bash/' /etc/passwd\nsed -i 's/root::.*/root:\$1\$RysBCijW\$wIxPNkj9Ht9WhglXAXo4w0:18206:0:99999:7:::/g' /etc/shadow
+            }" package/lean/*/*/*default-settings
 fi
 # git diff ./ >> ../output/t.patch || true
-clone_dir vernesong/OpenClash luci-app-openclash
-clone_dir xiaorouji/openwrt-passwall luci-app-passwall
-clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-clone_dir sbwml/openwrt_helloworld trojan-plus geoview
-clone_dir openwrt-24.10 immortalwrt/luci luci-app-homeproxy
-clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-    luci-app-diskman luci-app-cowb-speedlimit qBittorrent-static luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-    luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker luci-app-netdata lsscsi
-clone_dir kiddin9/kwrt-packages luci-app-bypass luci-lib-taskd luci-lib-xterm lua-maxminddb luci-app-store \
-    luci-app-pushbot taskd
+# clone_dir sbwml/openwrt_helloworld 
+clone_dir hong0980/build lsscsi luci-app-ddnsto luci-app-diskman luci-app-dockerman \
+    luci-app-filebrowser luci-app-poweroff luci-app-qbittorrent luci-app-softwarecenter \
+    luci-app-timedtask luci-app-tinynote luci-app-wizard luci-lib-docker
+clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-homeproxy \
+    luci-app-openclash luci-app-passwall luci-app-passwall2 luci-app-pushbot luci-app-store luci-lib-taskd \
+    luci-lib-xterm qBittorrent-static sing-box taskd trojan-plus xray-core
 
 # https://github.com/userdocs/qbittorrent-nox-static/releases
 xc=$(_find "package/A/ feeds/" "qBittorrent-static")
@@ -381,20 +367,24 @@ xc=$(_find "package/A/ feeds/" "qBittorrent-static")
 
 case $TARGET_DEVICE in
 "x86_64")
+    lan_ip "192.168.2.150"
     FIRMWARE_TYPE="squashfs-combined"
     addpackage "#git-http #luci-app-amule #subversion-client #unixodbc automount autosamba #htop lscpu lsscsi lsusb luci-app-deluge luci-app-diskman luci-app-dockerman luci-app-netdata luci-app-poweroff luci-app-qbittorrent luci-app-store #nano #pciutils pv #screen"
     ;;
 "newifi-d2")
+    lan_ip "192.168.2.1"
     FIRMWARE_TYPE="sysupgrade"
     addpackage "luci-app-easymesh"
     delpackage "ikoolproxy openclash transmission softwarecenter aria2 vssr adguardhome"
     ;;
 "phicomm_k2p")
+    lan_ip "192.168.2.1"
     FIRMWARE_TYPE="sysupgrade"
     addpackage "luci-app-easymesh"
     delpackage "samba4 luci-app-usb-printer luci-app-cifs-mount diskman cupsd autosamba automount"
     ;;
 "r1-plus-lts"|"r4s"|"r2c"|"r2s")
+    lan_ip "192.168.2.1"
     FIRMWARE_TYPE="sysupgrade"
     addpackage "
     luci-app-cpufreq
@@ -421,9 +411,11 @@ case $TARGET_DEVICE in
     # git_apply "raw.githubusercontent.com/hong0980/diy/master/files/r1-plus-lts-patches/0001-Add-pwm-fan.sh.patch"
     ;;
 "asus_rt-n16")
+    lan_ip "192.168.2.130"
     FIRMWARE_TYPE="n16"
     ;;
 "armvirt-64-default")
+    lan_ip "192.168.2.110"
     FIRMWARE_TYPE="$TARGET_DEVICE"
     sed -i '/easymesh/d' .config
     # clone_url "https://github.com/tuanqing/install-program" && rm -rf package/A/install-program/tools

@@ -103,10 +103,10 @@ git_apply() {
 }
 
 clone_dir() {
-    create_directory "package/A"
+    mkdir -p  "package/A"
     [[ $# -lt 1 ]] && return
     local repo_url branch temp_dir=$(mktemp -d)
-    if [[ "$1" == */* ]]; then
+    if [[ $1 == */* ]]; then
         repo_url="$1"
         shift
     else
@@ -114,10 +114,11 @@ clone_dir() {
         repo_url="$2"
         shift 2
     fi
+    [[ $repo_url =~ ^https?:// ]] || repo_url="https://github.com/$repo_url"
 
-    git clone -q $branch --depth 1 "https://github.com/$repo_url" $temp_dir 2>/dev/null || {
-        _printf "$(color cr 拉取) https://github.com/$repo_url [ $(color cr ✕) ]"
-        return 0
+    git clone -q $branch --depth 1 "$repo_url" $temp_dir 2>/dev/null || {
+        _printf "$(color cr 拉取) $repo_url [ $(color cr ✕) ]"
+        return 1
     }
 
     [[ $repo_url == "coolsnowwolf/packages" ]] && {
