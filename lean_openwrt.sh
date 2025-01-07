@@ -349,11 +349,11 @@ clone_dir vernesong/OpenClash luci-app-openclash
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
 clone_dir openwrt-24.10 immortalwrt/luci luci-app-homeproxy
-clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-	luci-app-diskman luci-app-cowb-speedlimit uci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
+# clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
+# 	luci-app-diskman luci-app-cowb-speedlimit uci-app-qbittorrent luci-app-wizard luci-app-dockerman \
+# 	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
 clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot \
-	luci-app-store luci-lib-taskd luci-lib-xterm qBittorrent-static sing-box taskd trojan-plus xray-core
+	luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core
 	
 # https://github.com/userdocs/qbittorrent-nox-static/releases
 xc=$(_find "package/A/ feeds/" "qBittorrent-static")
