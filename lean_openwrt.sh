@@ -171,7 +171,7 @@ set_config() {
 			EOF
 			lan_ip "192.168.2.150"
 			echo "FIRMWARE_TYPE=squashfs-combined" >> $GITHUB_ENV
-			addpackage "#git-http #luci-app-amule #subversion-client #unixodbc automount autosamba #htop lscpu lsscsi lsusb luci-app-deluge luci-app-diskman luci-app-dockerman luci-app-netdata luci-app-poweroff luci-app-qbittorrent luci-app-store #nano #pciutils pv #screen"
+			addpackage "#git-http #luci-app-amule #subversion-client #unixodbc #htop #lscpu #lsscsi #lsusb luci-app-deluge luci-app-diskman luci-app-dockerman #luci-app-netdata luci-app-poweroff luci-app-qbittorrent #luci-app-store #nano #pciutils pv #screen"
 			;;
 		r[124]*)
 			cat >.config<<-EOF
@@ -264,7 +264,7 @@ set_config() {
 			;;
 	esac
 	echo -e 'CONFIG_KERNEL_BUILD_USER="win3gp"\nCONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"' >> .config
-	addpackage "luci-app-bypass luci-app-cowb-speedlimit luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-upnp luci-app-uhttpd #luci-app-wizard luci-app-homeproxy"
+	addpackage "luci-app-bypass #luci-app-cowb-speedlimit #luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 #luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-uhttpd luci-app-wizard luci-app-homeproxy"
 	delpackage "luci-app-ddns luci-app-autoreboot luci-app-wol luci-app-vlmcsd luci-app-filetransfer"
 }
 
@@ -343,14 +343,18 @@ if [[ $REPO_URL =~ "coolsnowwolf" ]]; then
 			}" package/lean/*/*/*default-settings
 fi
 # git diff ./ >> ../output/t.patch || true
-# clone_dir sbwml/openwrt_helloworld 
-clone_dir hong0980/build lsscsi luci-app-ddnsto luci-app-diskman luci-app-dockerman \
-	luci-app-filebrowser luci-app-poweroff luci-app-qbittorrent luci-app-softwarecenter \
-	luci-app-timedtask luci-app-tinynote luci-app-wizard luci-lib-docker
-clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-homeproxy \
-	luci-app-openclash luci-app-passwall luci-app-passwall2 luci-app-pushbot luci-app-store luci-lib-taskd \
-	luci-lib-xterm qBittorrent-static sing-box taskd trojan-plus xray-core
+# clone_dir sbwml/openwrt_helloworld trojan-plus geoview
 
+clone_dir vernesong/OpenClash luci-app-openclash
+clone_dir xiaorouji/openwrt-passwall luci-app-passwall
+clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
+clone_dir openwrt-24.10 immortalwrt/luci luci-app-homeproxy
+clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
+	luci-app-diskman luci-app-cowb-speedlimit qBittorrent-static luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
+	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
+clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot \
+	luci-app-store luci-lib-taskd luci-lib-xterm qBittorrent-static sing-box taskd trojan-plus xray-core
+	
 # https://github.com/userdocs/qbittorrent-nox-static/releases
 xc=$(_find "package/A/ feeds/" "qBittorrent-static")
 [[ -d $xc ]] && sed -Ei "s/(PKG_VERSION:=).*/\1${qb_version:-4.5.2_v2.0.8}/" $xc/Makefile
