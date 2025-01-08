@@ -264,7 +264,7 @@ set_config() {
 			;;
 	esac
 	echo -e 'CONFIG_KERNEL_BUILD_USER="win3gp"\nCONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"' >> .config
-	addpackage "luci-app-bypass #luci-app-cowb-speedlimit #luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 #luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-uhttpd luci-app-wizard luci-app-homeproxy"
+	addpackage "luci-app-bypass #luci-app-cowb-speedlimit #luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 #luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-uhttpd #luci-app-wizard luci-app-homeproxy"
 	# delpackage "luci-app-ddns luci-app-autoreboot luci-app-wol luci-app-vlmcsd luci-app-filetransfer"
 }
 
@@ -349,9 +349,9 @@ clone_dir vernesong/OpenClash luci-app-openclash
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
 clone_dir openwrt-24.10 immortalwrt/luci luci-app-homeproxy
-# clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-# 	luci-app-diskman luci-app-cowb-speedlimit uci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-# 	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
+clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
+	luci-app-diskman luci-app-cowb-speedlimit uci-app-qbittorrent luci-app-wizard luci-app-dockerman \
+	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
 clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot \
 	luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core
 	
@@ -360,9 +360,11 @@ xc=$(_find "package/A/ feeds/" "qBittorrent-static")
 [[ -d $xc ]] && sed -Ei "s/(PKG_VERSION:=).*/\1${qb_version:-4.5.2_v2.0.8}/" $xc/Makefile
 sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 2>/dev/null
 
-for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
-	[[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
-done
+[[ $REPO_BRANCH =~ 23 ]] && {
+	for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
+		[[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
+	done
+}
 
 echo -e "$(color cy '更新配置....')\c"; begin_time=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
