@@ -317,7 +317,7 @@ download_and_deploy_cache() {
 		ls ../*"$CACHE_NAME"* > /dev/null 2>&1 && {
 			echo -e "$(color cy '部署tz-cache')\c"; begin_time=$(date '+%H:%M:%S')
 			(tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
-				if ! grep -q "$CACHE_NAME-cache.tzst" ../xa; then
+				if ! grep -q "$CACHE_NAME" ../xa; then
 					cp ../*.tzst ../output
 					echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
 				fi
