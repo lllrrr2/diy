@@ -361,7 +361,7 @@ if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23|24 ]
 	clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
 		luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
 		luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
-	clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot \
+	clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot luci-app-nlbwmon \
 		luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core qBittorrent-static
 	[[ $REPO_BRANCH =~ 23 ]] && clone_dir coolsnowwolf/packages ""
 
@@ -391,7 +391,7 @@ else
 	clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
 	clone_dir master UnblockNeteaseMusic/luci-app-unblockneteasemusic luci-app-unblockneteasemusic
 	clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
-		luci-app-bypass luci-app-store luci-app-pushbot taskd
+		luci-app-bypass luci-app-store luci-app-pushbot taskd luci-app-nlbwmon
 
 	[[ "$TARGET_DEVICE" =~ phicomm|newifi|asus ]] || {
 		_packages "
