@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 curl -sL https://raw.githubusercontent.com/klever1988/nanopi-openwrt/zstd-bin/zstd | sudo tee /usr/bin/zstd > /dev/null
 qb_version=$(curl -sL https://api.github.com/repos/userdocs/qbittorrent-nox-static/releases | grep -oP '(?<="browser_download_url": ").*?release-\K(.*?)(?=/)' | sort -Vr | uniq | awk 'NR==1')
+cache_url="$GITHUB_API_URL/repos/hong0980/Actions-OpenWrt/releases"
+curl -sL "$cache_url?page=1" | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' > xa
+curl -sL "$cache_url?page=2" | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >> xa
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
-curl -sL api.github.com/repos/hong0980/Actions-OpenWrt/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xa
-mkdir firmware output &>/dev/null
 
-if [[ $cache_Release = 'true' ]]; then
+if [[ $cache_Release == 'true' ]]; then
 	count=0
 	while read -r line && [ $count -lt 4 ]; do
 		filename="${line##*/}"
@@ -23,7 +24,7 @@ if [[ $cache_Release = 'true' ]]; then
 	exit 0
 fi
 
-if [[ $CACHE_ACTIONS = 'true' ]]; then
+if [[ $CACHE_ACTIONS == 'true' ]]; then
 	echo "打包cache"
 	REPO_FLODER=${REPO_FLODER:-openwrt}
 	hx=`ls $REPO_FLODER/bin/targets/*/*/*toolchain* 2>/dev/null | sed "s/openwrt/$CACHE_NAME/g" 2>/dev/null`
@@ -70,6 +71,24 @@ _find() {
 	find $1 -maxdepth 5 -type d -name "$2" -print -quit 2>/dev/null
 }
 
+create_directory() {
+	for dir in $@; do
+		mkdir -p "$dir" 2>/dev/null || return 1
+	done
+}
+
+git_diff() {
+	local path="$1"
+	[[ -d $path ]] && safe_pushd "$path" || return 1
+	shift
+
+	for i in $@; do
+		[[ -d $i || -f $i ]] && \
+			git diff -- "$i" > $GITHUB_WORKSPACE/firmware/${REPO_BRANCH}-${i##*/}.patch
+	done
+	safe_popd
+}
+
 git_apply() {
 	for z in $@; do
 		[[ $z =~ \# ]] || wget -qO- $z | git apply --reject --ignore-whitespace
@@ -88,15 +107,12 @@ delpackage() {
 	done
 }
 
-_pushd() {
-	if ! pushd "$@" &> /dev/null; then
-		printf '\n%b\n' "该目录不存在。"
-	fi
+safe_pushd() {
+	pushd "$1" &> /dev/null || echo -e "$(color cr ${1} '该目录不存在。')"
 }
-_popd() {
-	if ! popd &> /dev/null; then
-		printf '%b\n' "该目录不存在。"
-	fi
+
+safe_popd() {
+	popd &> /dev/null || echo -e "$(color cr '该目录不存在。')"
 }
 
 _printf() {
@@ -105,11 +121,11 @@ _printf() {
 }
 
 lan_ip() {
-	sed -i "s/192.168.1.1/${IP:-$1}/" package/base-files/*/bin/config_generate
+	sed -i '/lan) ipad/s/".*"/"'"${IP:-$1}"'"/' package/base-files/*/bin/config_generate
 }
 
 clone_dir() {
-	mkdir -p  "package/A"
+	create_directory "package/A"
 	[[ $# -lt 1 ]] && return
 	local repo_url branch temp_dir=$(mktemp -d)
 	if [[ $1 == */* ]]; then
@@ -168,7 +184,7 @@ set_config() {
 			EOF
 			lan_ip "192.168.2.150"
 			echo "FIRMWARE_TYPE=squashfs-combined" >> $GITHUB_ENV
-			addpackage "#git-http #subversion-client #unixodbc #htop #lscpu #lsscsi #lsusb #luci-app-deluge luci-app-diskman luci-app-dockerman #luci-app-netdata luci-app-poweroff #luci-app-qbittorrent #luci-app-store #nano #pciutils #pv #screen"
+			addpackage "#git-http #subversion-client #unixodbc #htop #lscpu #lsscsi #lsusb #luci-app-deluge luci-app-diskman luci-app-dockerman #luci-app-netdata luci-app-poweroff luci-app-qbittorrent #luci-app-store #nano #pciutils #pv #screen"
 			;;
 		r[124]*)
 			cat >.config<<-EOF
@@ -188,7 +204,7 @@ set_config() {
 			lan_ip "192.168.2.1"
 			echo "FIRMWARE_TYPE=sysupgrade" >> $GITHUB_ENV
 			addpackage "
-			luci-app-cpufreq  luci-app-dockerman luci-app-qbittorrent luci-app-turboacc
+			luci-app-cpufreq luci-app-dockerman luci-app-qbittorrent luci-app-turboacc
 			luci-app-passwall2 #luci-app-easymesh luci-app-store luci-app-netdata
 			luci-app-deluge htop lscpu lsscsi lsusb #nano pciutils screen zstd pv
 			#AmuleWebUI-Reloaded #subversion-client #unixodbc #git-http
@@ -261,77 +277,81 @@ set_config() {
 			;;
 	esac
 	echo -e 'CONFIG_KERNEL_BUILD_USER="win3gp"\nCONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"' >> .config
-	addpackage "luci-app-bypass #luci-app-cowb-speedlimit #luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 #luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-uhttpd luci-app-wizard luci-app-homeproxy"
+	addpackage "luci-app-bypass #luci-app-cowb-speedlimit #luci-app-cowbping #luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 #luci-app-simplenetwork luci-app-ssr-plus #luci-app-timedtask #luci-app-tinynote luci-app-ttyd luci-app-uhttpd #luci-app-wizard #luci-app-homeproxy"
 	# delpackage "luci-app-ddns luci-app-autoreboot luci-app-wol luci-app-vlmcsd luci-app-filetransfer"
 }
 
-REPO_URL="https://github.com/coolsnowwolf/lede"
-echo -e "$(color cy '拉取源码....')\c"
-begin_time=$(date '+%H:%M:%S')
-git clone -q $REPO_URL $REPO_FLODER
-status
-cd $REPO_FLODER || exit
+download_and_deploy_cache() {
+	local cmd
+	echo -e "$(color cy '拉取源码....')\c"
+	begin_time=$(date '+%H:%M:%S')
+	[ "$REPO_BRANCH" ] && cmd="-b $REPO_BRANCH --single-branch"
+	git clone -q $cmd $REPO_URL $REPO_FLODER # --depth 1
+	status
+	[[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 
-case "$TARGET_DEVICE" in
-	x86_64) export DEVICE_NAME="x86_64";;
-	r[124]*) export DEVICE_NAME="rockchip_armv8";;
-	asus_rt-n16) export DEVICE_NAME="bcm47xx_mips74k";;
-	armvirt-64-default) export DEVICE_NAME="armvirt_64";;
-	newifi-d2|phicomm_k2p) export DEVICE_NAME="ramips_mt7621";;
-esac
+	case "$TARGET_DEVICE" in
+		x86_64) export DEVICE_NAME="x86_64";;
+		r[124]*) export DEVICE_NAME="rockchip_armv8";;
+		asus_rt-n16) export DEVICE_NAME="bcm47xx_mips74k";;
+		armvirt-64-default) export DEVICE_NAME="armvirt_64";;
+		newifi-d2|phicomm_k2p) export DEVICE_NAME="ramips_mt7621";;
+	esac
 
-SOURCE_NAME=$(basename $(dirname $REPO_URL))
-export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
-export CACHE_NAME="$SOURCE_NAME-$REPO_BRANCH-$TOOLS_HASH-$DEVICE_NAME"
-echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
+	SOURCE_NAME=$(basename $(dirname $REPO_URL))
+	export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
+	export CACHE_NAME="$SOURCE_NAME-$REPO_BRANCH-$TOOLS_HASH-$DEVICE_NAME"
+	echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
 
-if (grep -q "$CACHE_NAME" ../xa ../xc); then
-	ls ../*"$CACHE_NAME"* > /dev/null 2>&1 || {
-		echo -e "$(color cy '下载tz-cache')\c"
-		begin_time=$(date '+%H:%M:%S')
-		grep -q "$CACHE_NAME" ../xa && \
-		wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xa) || wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xc)
-		status
-	}
-
-	ls ../*"$CACHE_NAME"* > /dev/null 2>&1 && {
-		echo -e "$(color cy '部署tz-cache')\c"
-		begin_time=$(date '+%H:%M:%S')
-		(tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
-			if ! grep -q "$CACHE_NAME-cache.tzst" ../xa; then
-				cp ../*.tzst ../output
-				echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
-			fi
-			sed -i 's/ $(tool.*\/stamp-compile)//' Makefile
+	if (grep -q "$CACHE_NAME" ../xa ../xc); then
+		ls ../*"$CACHE_NAME"* > /dev/null 2>&1 || {
+			echo -e "$(color cy '下载tz-cache')\c"
+			begin_time=$(date '+%H:%M:%S')
+			grep -q "$CACHE_NAME" ../xa && \
+			wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xa) || wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xc)
+			status
 		}
-		[ -d staging_dir ]; status
-	}
-else
-	echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
-fi
 
-echo -e "$(color cy '更新软件....')\c"
-begin_time=$(date '+%H:%M:%S')
-sed -i '/#.*helloworld/ s/^#//' feeds.conf.default
-./scripts/feeds update -a 1>/dev/null 2>&1
-./scripts/feeds install -a 1>/dev/null 2>&1
-status
-color cy "自定义设置.... "
-set_config
+		ls ../*"$CACHE_NAME"* > /dev/null 2>&1 && {
+			echo -e "$(color cy '部署tz-cache')\c"
+			begin_time=$(date '+%H:%M:%S')
+			(tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
+				if ! grep -q "$CACHE_NAME" ../xa; then
+					cp ../*.tzst ../output
+					echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
+				fi
+				sed -i 's/ $(tool.*\/stamp-compile)//' Makefile
+			}
+			[ -d staging_dir ]; status
+		}
+	else
+		echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
+	fi
 
-wget -qO package/base-files/files/etc/banner git.io/JoNK8
+	echo -e "$(color cy '更新软件....')\c"
+	begin_time=$(date '+%H:%M:%S')
+	sed -i '/#.*helloworld/ s/^#//' feeds.conf.default
+	./scripts/feeds update -a 1>/dev/null 2>&1
+	./scripts/feeds install -a 1>/dev/null 2>&1
+	status
+	color cy "自定义设置.... "
+	set_config
+	wget -qO package/base-files/files/etc/banner git.io/JoNK8
+}
+
+create_directory "firmware" "output"
+REPO_URL="https://github.com/coolsnowwolf/lede"
+download_and_deploy_cache
+
 if [[ $REPO_URL =~ "coolsnowwolf" ]]; then
 	REPO_BRANCH=$(sed -En 's/^src-git luci.*;(.*)/\1/p' feeds.conf.default)
 	REPO_BRANCH=${REPO_BRANCH:-18.06}
 	# sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
+	sed -i 's/invalid users = root/#&/g' feeds/*/*/*/files/smb.conf.template
+	sed -i 's|/bin/login|/bin/login -f root|' feeds/*/*/*/files/ttyd.config
 	sed -i 's/option enabled.*/option enabled 1/' feeds/*/*/*/*/upnpd.config
-	# 设置ttyd免帐号登录
-	sed -i 's|/bin/login|/bin/login -f root|' feeds/packages/utils/ttyd/files/ttyd.config
-	# 调整 x86 型号只显示 CPU 型号
+	sed -i "s/%R/-$SOURCE_NAME-$(TZ=UTC-8 date +%Y年%m月%d日)/" package/*/*/*/openwrt_release
 	sed -i 's/${g}.*/${a}${b}${c}${d}${e}${f}${hydrid}/g' package/lean/autocore/files/x86/autocore
-	# samba解除root限制
-	sed -i 's/invalid users = root/#&/g' feeds/packages/net/samba4/files/smb.conf.template
-	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_NAME-$(TZ=UTC-8 date +%Y年%m月%d日) '/}" package/*/*/*/openwrt_release
 	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk
 	sed -i "{
 			/upnp\|openwrt_release\|shadow/d
@@ -347,7 +367,7 @@ clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
 clone_dir openwrt-24.10 immortalwrt/luci luci-app-homeproxy
 clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-	luci-app-diskman luci-app-cowb-speedlimit uci-app-qbittorrent luci-app-wizard luci-app-dockerman \
+	luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
 	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
 clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot \
 	luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core
@@ -355,10 +375,11 @@ clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypas
 # https://github.com/userdocs/qbittorrent-nox-static/releases
 xc=$(_find "package/A/ feeds/" "qBittorrent-static")
 [[ -d $xc ]] && sed -Ei "s/(PKG_VERSION:=).*/\1${qb_version:-4.5.2_v2.0.8}/" $xc/Makefile
-sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 2>/dev/null
+sed -i 's|../../luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/luci-app*/Makefile 2>/dev/null
 
 [[ $REPO_BRANCH =~ 23 ]] && {
 	for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
+		# [[ -d $p/zh-cn ]] && ln -s zh-cn $p/zh_Hans 2>/dev/null
 		[[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
 	done
 }
