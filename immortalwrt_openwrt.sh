@@ -391,8 +391,8 @@ else
 		fullconenat fullconenat-nft libnftnl nftables openssl opkg ppp sonfilter ucode
 		#fstools odhcp6c iptables ipset dropbear usbmode
 	clone_dir openwrt-24.10 immortalwrt/packages attr bandwidthd bash bluez btrfs-progs lua-openssl \
-		containerd curl dbus docker dockerd gawk golang htop jq libwebsockets mwan3 nghttp3 \
-		nginx-util ngtcp2 parted pciutils runc samba4 smartdns #miniupnpc miniupnpd
+		containerd curl dbus docker dockerd gawk golang htop jq libwebsockets mwan3 nghttp3 nginx-util \
+		ngtcp2 parted pciutils runc samba4 smartdns #miniupnpc miniupnpd
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
@@ -478,5 +478,5 @@ echo "UPLOAD_BIN_DIR=false" >> $GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >> $GITHUB_ENV
 echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
 echo "CLEAN=false" >> $GITHUB_ENV
-
+_find . "luci-app-ttyd"
 echo -e "\e[1;35m脚本运行完成！\e[0m"
