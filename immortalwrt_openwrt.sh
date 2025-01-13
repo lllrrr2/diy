@@ -388,12 +388,27 @@ else
 	# git diff ./ >> ../output/t.patch || true
 	# clone_dir coolsnowwolf/packages qtbase qttools qBittorrent
 	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
-	clone_dir openwrt-23.05 immortalwrt/immortalwrt automount busybox dnsmasq firewall4 \
-		fullconenat fullconenat-nft libnftnl nftables openssl opkg ppp sonfilter ucode
+	# clone_dir openwrt-23.05 immortalwrt/immortalwrt automount busybox dnsmasq firewall4 \
+	# 	fullconenat fullconenat-nft libnftnl nftables openssl opkg ppp sonfilter ucode
+	# 	#fstools odhcp6c iptables ipset dropbear usbmode
+	# clone_dir openwrt-24.10 immortalwrt/packages attr bandwidthd bash bluez btrfs-progs lua-openssl \
+	# 	containerd curl dbus docker dockerd gawk golang htop jq libwebsockets mwan3 nghttp3 nginx-util \
+	# 	ngtcp2 parted pciutils runc samba4 smartdns mosdns #miniupnpc miniupnpd
+	clone_url "
+		https://github.com/hong0980/build
+		https://github.com/fw876/helloworld
+		https://github.com/xiaorouji/openwrt-passwall-packages
+	"
+
+	clone_dir sbwml/openwrt_helloworld luci-app-openclash luci-app-ssr-plus shadowsocks-rust #luci-app-passwall2 luci-app-passwall
+	clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
+		luci-app-bypass luci-app-store luci-app-pushbot taskd qBittorrent-static luci-app-syncdial
+	clone_dir immortalwrt/packages nghttp3 ngtcp2 bash samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
+		lua-openssl smartdns bluez curl #miniupnpc miniupnpd
+	clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
+		dnsmasq nftables libnftnl sonfilter opkg fullconenat fullconenat-nft \
 		#fstools odhcp6c iptables ipset dropbear usbmode
-	clone_dir openwrt-24.10 immortalwrt/packages attr bandwidthd bash bluez btrfs-progs lua-openssl \
-		containerd curl dbus docker dockerd gawk golang htop jq libwebsockets mwan3 nghttp3 nginx-util \
-		ngtcp2 parted pciutils runc samba4 smartdns mosdns #miniupnpc miniupnpd
+	clone_dir coolsnowwolf/lede ucode firewall4
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
