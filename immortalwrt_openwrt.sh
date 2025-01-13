@@ -129,6 +129,7 @@ clone_dir() {
 	}
 
 	for target_dir in "$@"; do
+		# [[ $target_dir =~ ^luci-app- ]] && create_directory "/feeds/luci/applications/$target_dir"
 		local source_dir current_dir destination_dir
 		if [[ ${repo_url##*/} == ${target_dir} ]]; then
 			mv -f ${temp_dir} ${target_dir}
@@ -387,7 +388,7 @@ else
 	# git diff ./ >> ../output/t.patch || true
 	# clone_dir coolsnowwolf/packages qtbase qttools qBittorrent
 	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
-	clone_dir openwrt-24.10 immortalwrt/immortalwrt automount busybox dnsmasq firewall4 \
+	clone_dir openwrt-23.05 immortalwrt/immortalwrt automount busybox dnsmasq firewall4 \
 		fullconenat fullconenat-nft libnftnl nftables openssl opkg ppp sonfilter ucode
 		#fstools odhcp6c iptables ipset dropbear usbmode
 	clone_dir openwrt-24.10 immortalwrt/packages attr bandwidthd bash bluez btrfs-progs lua-openssl \
@@ -478,5 +479,5 @@ echo "UPLOAD_BIN_DIR=false" >> $GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >> $GITHUB_ENV
 echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
 echo "CLEAN=false" >> $GITHUB_ENV
-_find . "luci-app-ttyd"
+
 echo -e "\e[1;35m脚本运行完成！\e[0m"
