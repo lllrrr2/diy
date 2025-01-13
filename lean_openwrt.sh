@@ -5,6 +5,7 @@ cache_url="$GITHUB_API_URL/repos/hong0980/Actions-OpenWrt/releases"
 curl -sL "$cache_url?page=1" | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' > xa
 curl -sL "$cache_url?page=2" | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >> xa
 curl -sL api.github.com/repos/hong0980/OpenWrt-Cache/releases | grep -oP '"browser_download_url": "\K[^"]*cache[^"]*' >xc
+mkdir firmware output &>/dev/null
 
 if [[ $cache_Release == 'true' ]]; then
 	count=0
@@ -183,6 +184,7 @@ set_config() {
 				# CONFIG_GRUB_EFI_IMAGES is not set
 			EOF
 			lan_ip "192.168.2.150"
+			export DEVICE_NAME="$TARGET_DEVICE"
 			echo "FIRMWARE_TYPE=squashfs-combined" >> $GITHUB_ENV
 			addpackage "#git-http #subversion-client #unixodbc #htop #lscpu #lsscsi #lsusb #luci-app-deluge luci-app-diskman luci-app-dockerman #luci-app-netdata luci-app-poweroff luci-app-qbittorrent #luci-app-store #nano #pciutils #pv #screen"
 			;;
@@ -202,6 +204,7 @@ set_config() {
 				*) echo "CONFIG_TARGET_rockchip_armv8_DEVICE_friendlyarm_nanopi-$TARGET_DEVICE=y" >>.config ;;
 			esac
 			lan_ip "192.168.2.1"
+			export DEVICE_NAME="$TARGET_DEVICE"
 			echo "FIRMWARE_TYPE=sysupgrade" >> $GITHUB_ENV
 			addpackage "
 			luci-app-cpufreq luci-app-dockerman luci-app-qbittorrent luci-app-turboacc
@@ -221,6 +224,7 @@ set_config() {
 				CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 			EOF
 			lan_ip "192.168.2.1"
+			export DEVICE_NAME="Newifi-D2"
 			echo "FIRMWARE_TYPE=sysupgrade" >> $GITHUB_ENV
 			;;
 		phicomm_k2p)
@@ -230,6 +234,7 @@ set_config() {
 				CONFIG_TARGET_ramips_mt7621_DEVICE_phicomm_k2p=y
 			EOF
 			lan_ip "192.168.2.1"
+			export DEVICE_NAME="Phicomm-K2P"
 			echo "FIRMWARE_TYPE=sysupgrade" >> $GITHUB_ENV
 			;;
 		asus_rt-n16)
@@ -239,6 +244,7 @@ set_config() {
 				CONFIG_TARGET_bcm47xx_mips74k_DEVICE_asus_rt-n16=y
 			EOF
 			lan_ip "192.168.2.130"
+			export DEVICE_NAME="Asus-RT-N16"
 			echo "FIRMWARE_TYPE=n16" >> $GITHUB_ENV
 			;;
 		armvirt-64-default)
@@ -248,6 +254,7 @@ set_config() {
 				CONFIG_TARGET_armvirt_64_Default=y
 			EOF
 			lan_ip "192.168.2.110"
+			export DEVICE_NAME="$TARGET_DEVICE"
 			echo "FIRMWARE_TYPE=$TARGET_DEVICE" >> $GITHUB_ENV
 			sed -i '/easymesh/d' .config
 			addpackage "attr bash blkid brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio
@@ -277,30 +284,15 @@ set_config() {
 			;;
 	esac
 	echo -e 'CONFIG_KERNEL_BUILD_USER="win3gp"\nCONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"' >> .config
-	addpackage "luci-app-bypass #luci-app-cowb-speedlimit #luci-app-cowbping #luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 #luci-app-simplenetwork luci-app-ssr-plus #luci-app-timedtask #luci-app-tinynote luci-app-ttyd luci-app-uhttpd #luci-app-wizard #luci-app-homeproxy"
-	# delpackage "luci-app-ddns luci-app-autoreboot luci-app-wol luci-app-vlmcsd luci-app-filetransfer"
+	addpackage "luci-app-bypass #luci-app-cowb-speedlimit luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 #luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-uhttpd luci-app-wizard luci-app-homeproxy"
+	delpackage "luci-app-ddns luci-app-autoreboot luci-app-wol luci-app-vlmcsd luci-app-filetransfer"
 }
 
-download_and_deploy_cache() {
-	local cmd
-	echo -e "$(color cy '拉取源码....')\c"
-	begin_time=$(date '+%H:%M:%S')
-	[ "$REPO_BRANCH" ] && cmd="-b $REPO_BRANCH --single-branch"
-	git clone -q $cmd $REPO_URL $REPO_FLODER # --depth 1
-	status
-	[[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
-
-	case "$TARGET_DEVICE" in
-		x86_64) export DEVICE_NAME="x86_64";;
-		r[124]*) export DEVICE_NAME="rockchip_armv8";;
-		asus_rt-n16) export DEVICE_NAME="bcm47xx_mips74k";;
-		armvirt-64-default) export DEVICE_NAME="armvirt_64";;
-		newifi-d2|phicomm_k2p) export DEVICE_NAME="ramips_mt7621";;
-	esac
-
-	SOURCE_NAME=$(basename $(dirname $REPO_URL))
-	export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
-	export CACHE_NAME="$SOURCE_NAME-$REPO_BRANCH-$TOOLS_HASH-$DEVICE_NAME"
+deploy_cache() {
+	ARCH=$(sed -nr 's/CONFIG_ARCH="(.*)"/\1/p' .config)
+	export SOURCE_NAME=$(basename $(dirname $REPO_URL))
+	TOOLS_HASH=$(git log --pretty=tformat:"%h" -n1 tools toolchain)
+	export CACHE_NAME="$SOURCE_NAME-$REPO_BRANCH-$TOOLS_HASH-$ARCH"
 	echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
 
 	if (grep -q "$CACHE_NAME" ../xa ../xc); then
@@ -327,6 +319,16 @@ download_and_deploy_cache() {
 	else
 		echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
 	fi
+}
+
+git_clone() {
+	local cmd
+	echo -e "$(color cy '拉取源码....')\c"
+	begin_time=$(date '+%H:%M:%S')
+	[ "$REPO_BRANCH" ] && cmd="-b $REPO_BRANCH --single-branch"
+	git clone -q $cmd $REPO_URL $REPO_FLODER # --depth 1
+	status
+	[[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
 
 	echo -e "$(color cy '更新软件....')\c"
 	begin_time=$(date '+%H:%M:%S')
@@ -339,9 +341,8 @@ download_and_deploy_cache() {
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
 }
 
-create_directory "firmware" "output"
 REPO_URL="https://github.com/coolsnowwolf/lede"
-download_and_deploy_cache
+git_clone
 
 if [[ $REPO_URL =~ "coolsnowwolf" ]]; then
 	REPO_BRANCH=$(sed -En 's/^src-git luci.*;(.*)/\1/p' feeds.conf.default)
@@ -366,9 +367,10 @@ clone_dir vernesong/OpenClash luci-app-openclash
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
 clone_dir openwrt-24.10 immortalwrt/luci luci-app-homeproxy
-clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-	luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
+clone_dir hong0980/build luci-app-poweroff luci-app-diskman luci-app-dockerman luci-app-qbittorrent luci-lib-docker
+# clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
+# 	luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
+# 	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
 clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot \
 	luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core
 	
@@ -379,7 +381,6 @@ sed -i 's|../../luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/luci-app*/Makef
 
 [[ $REPO_BRANCH =~ 23 ]] && {
 	for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
-		# [[ -d $p/zh-cn ]] && ln -s zh-cn $p/zh_Hans 2>/dev/null
 		[[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
 	done
 }
@@ -387,9 +388,10 @@ sed -i 's|../../luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/luci-app*/Makef
 echo -e "$(color cy '更新配置....')\c"; begin_time=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
+deploy_cache
 
-LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
-echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME}${VERSION:+-$VERSION})"
+LINUX_VERSION=$(sed -nr 's/CONFIG_LINUX_(.*)=y/\1/p' .config | tr '_' '.')
+echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME})"
 sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 echo "CLEAN=false" >> $GITHUB_ENV

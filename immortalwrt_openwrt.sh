@@ -122,9 +122,10 @@ clone_dir() {
 		return 1
 	}
 
-	[[ $repo_url == "coolsnowwolf/packages" ]] && {
-		[[ $REPO_BRANCH =~ 23.05 ]] && set -- "$@" "golang" "bandwidthd"
-		[[ $REPO_BRANCH =~ 21.02 ]] && set -- "$@" "golang" "bandwidthd" "docker" "dockerd" "containerd" "runc" "btrfs-progs"
+	[[ $repo_url =~ openwrt_helloworld && $REPO_BRANCH =~ 21 ]] && set -- "$@" "luci-app-homeproxy"
+	[[ $repo_url =~ coolsnowwolf/packages ]] && {
+		[[ $REPO_BRANCH =~ 23 ]] && set -- "$@" "golang" "bandwidthd"
+		[[ $REPO_BRANCH =~ 21 ]] && set -- "$@" "golang" "bandwidthd" "docker" "dockerd" "containerd" "runc" "btrfs-progs"
 	}
 
 	for target_dir in "$@"; do
@@ -222,6 +223,7 @@ set_config (){
 			lan_ip "192.168.2.1"
 			export DEVICE_NAME="x86_64"
 			echo "FIRMWARE_TYPE=squashfs-combined" >> $GITHUB_ENV
+			addpackage "autosamba luci-app-diskman luci-app-qbittorrent luci-app-poweroff luci-app-cowbping luci-app-cowb-speedlimit luci-app-pushbot luci-app-dockerman luci-app-softwarecenter luci-app-usb-printer"
 			;;
 		r[124]*)
 			cat >.config<<-EOF
@@ -241,6 +243,7 @@ set_config (){
 			lan_ip "192.168.2.1"
 			export DEVICE_NAME="$TARGET_DEVICE"
 			echo "FIRMWARE_TYPE=sysupgrade" >> $GITHUB_ENV
+			addpackage "autosamba luci-app-diskman luci-app-qbittorrent luci-app-poweroff luci-app-cowbping luci-app-cowb-speedlimit luci-app-pushbot luci-app-dockerman luci-app-softwarecenter luci-app-usb-printer"
 			;;
 		"newifi-d2")
 			cat >.config<<-EOF
@@ -292,36 +295,30 @@ set_config (){
 			;;
 	esac
 	echo -e 'CONFIG_KERNEL_BUILD_USER="win3gp"\nCONFIG_KERNEL_BUILD_DOMAIN="OpenWrt"' >> .config
-	addpackage "luci-app-arpbind luci-app-ksmbd luci-app-nlbwmon luci-app-upnp luci-app-bypass #luci-app-cowb-speedlimit #luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 #luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-uhttpd luci-app-wizard luci-app-homeproxy"
+	addpackage "luci-app-arpbind luci-app-ksmbd luci-app-nlbwmon luci-app-upnp luci-app-bypass luci-app-cowb-speedlimit luci-app-cowbping luci-app-ddnsto luci-app-filebrowser luci-app-openclash luci-app-passwall luci-app-passwall2 luci-app-simplenetwork luci-app-ssr-plus luci-app-timedtask luci-app-tinynote luci-app-ttyd luci-app-uhttpd luci-app-wizard luci-app-homeproxy"
 }
 
-download_and_deploy_cache() {
-	local cmd
-	echo -e "$(color cy "拉取源码 $REPO ${REPO_BRANCH#*-}")\c"
-	begin_time=$(date '+%H:%M:%S')
-	[ "$REPO_BRANCH" ] && cmd="-b $REPO_BRANCH --single-branch"
-	git clone -q $cmd $REPO_URL $REPO_FLODER # --depth 1
-	status
-	[[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
-
-	SOURCE_NAME=$(basename $(dirname $REPO_URL))
-	export TOOLS_HASH=`git log --pretty=tformat:"%h" -n1 tools toolchain`
-	export CACHE_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TOOLS_HASH-$NAME"
+deploy_cache() {
+	local ARCH=$(sed -nr 's/CONFIG_ARCH="(.*)"/\1/p' .config)
+	local TOOLS_HASH=$(git log --pretty=tformat:"%h" -n1 tools toolchain)
+	export SOURCE_NAME=$(basename $(dirname $REPO_URL))
+	CACHE_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TOOLS_HASH-$ARCH"
 	echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
-	if (grep -q "$CACHE_NAME" ../xa ../xc); then
-		ls ../*"$CACHE_NAME"* > /dev/null 2>&1 || {
+	if (grep -q "$CACHE_NAME-cache.tzst" ../xa ../xc); then
+		ls ../$CACHE_NAME-cache.tzst > /dev/null 2>&1 || {
 			echo -e "$(color cy '下载tz-cache')\c"
 			begin_time=$(date '+%H:%M:%S')
-			grep -q "$CACHE_NAME" ../xa && \
-			wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xa) || wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xc)
+			grep -q "$CACHE_NAME-cache.tzst" ../xa \
+			&& wget -qc -t=3 -P ../ $(grep "$CACHE_NAME-cache.tzst" ../xa) \
+			|| wget -qc -t=3 -P ../ $(grep "$CACHE_NAME-cache.tzst" ../xc)
 			status
 		}
 
-		ls ../*"$CACHE_NAME"* > /dev/null 2>&1 && {
+		ls ../$CACHE_NAME-cache.tzst > /dev/null 2>&1 && {
 			echo -e "$(color cy '部署tz-cache')\c"; begin_time=$(date '+%H:%M:%S')
 			(tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
-				if ! grep -q "$CACHE_NAME" ../xa; then
-					cp ../*.tzst ../output
+				if ! grep -q "$CACHE_NAME-cache.tzst" ../xa; then
+					cp ../$CACHE_NAME-cache.tzst ../output
 					echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
 				fi
 				sed -i 's/ $(tool.*\/stamp-compile)//' Makefile
@@ -331,7 +328,19 @@ download_and_deploy_cache() {
 	else
 		echo "CACHE_ACTIONS=true" >> $GITHUB_ENV
 	fi
-	echo -e "$(color cy '更新软件....')\c"; begin_time=$(date '+%H:%M:%S')
+}
+
+git_clone() {
+	local cmd
+	echo -e "$(color cy "拉取源码 $REPO ${REPO_BRANCH#*-}")\c"
+	begin_time=$(date '+%H:%M:%S')
+	[ "$REPO_BRANCH" ] && cmd="-b $REPO_BRANCH --single-branch"
+	git clone -q $cmd $REPO_URL $REPO_FLODER # --depth 1
+	status
+	[[ -d $REPO_FLODER ]] && cd $REPO_FLODER || exit
+
+	echo -e "$(color cy '更新软件....')\c"
+	begin_time=$(date '+%H:%M:%S')
 	./scripts/feeds update -a 1>/dev/null 2>&1
 	./scripts/feeds install -a 1>/dev/null 2>&1
 	status
@@ -339,8 +348,8 @@ download_and_deploy_cache() {
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
 
 	color cy "自定义设置.... "
-	sed -i "s/Immortal/Open/g" {$config_generate,include/version.mk} || true
-	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-${REPO_URL##*/}-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release || true
+	sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk} || true
+	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_NAME-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release || true
 	sed -i "/VERSION_NUMBER/ s/if.*/if \$(VERSION_NUMBER),\$(VERSION_NUMBER),${REPO_BRANCH#*-}-SNAPSHOT)/" include/version.mk || true
 	sed -i "\$i\uci -q set upnpd.config.enabled=\"1\"\nuci commit upnpd\nuci -q set system.@system[0].hostname=\"OpenWrt\"\nuci commit system\nuci -q set luci.main.mediaurlbase=\"/luci-static/bootstrap\"\nuci commit luci\nsed -i 's/root:.*/root:\$1\$pn1ABFaI\$vt5cmIjlr6M7Z79Eds2lV0:16821:0:99999:7:::/g' /etc/shadow" package/emortal/*/files/*default-settings
 }
@@ -349,58 +358,41 @@ create_directory "firmware" "output"
 REPO=${REPO:-immortalwrt}
 REPO_URL="https://github.com/$REPO/$REPO"
 config_generate="package/base-files/files/bin/config_generate"
-download_and_deploy_cache
+git_clone
+
+clone_dir fw876/helloworld luci-app-ssr-plus
+clone_dir vernesong/OpenClash luci-app-openclash
+clone_dir xiaorouji/openwrt-passwall luci-app-passwall
+clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
+clone_dir sbwml/openwrt_helloworld chinadns-ng dns2socks dns2tcp geoview \
+	ipt2socks microsocks shadow-tls shadowsocks-libev shadowsocks-rust \
+	shadowsocksr-libev simple-obfs sing-box tcping trojan-plus v2ray-core \
+	v2ray-geodata v2ray-plugin xray-core
+clone_dir hong0980/build luci-app-cowb-speedlimit luci-app-cowbping luci-app-ddnsto \
+	luci-app-diskman luci-app-dockerman luci-app-filebrowser luci-app-poweroff \
+	luci-app-pwdHackDeny luci-app-qbittorrent luci-app-softwarecenter luci-app-timedtask \
+	luci-app-tinynote luci-app-wizard luci-lib-docker
+clone_dir kiddin9/kwrt-packages lua-maxminddb luci-app-bypass luci-app-pushbot \
+	luci-app-store luci-lib-taskd luci-lib-xterm taskd qBittorrent-static
 
 if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23|24 ]]; then
 	if [[ $REPO =~ openwrt ]]; then
 		clone_dir openwrt-24.10 immortalwrt/immortalwrt emortal bcm27xx-utils
 		delpackage "dnsmasq"
-		[[ $REPO_BRANCH =~ 23.05 ]] && clone_dir openwrt/packages openwrt-24.10 golang
 	fi
-
-	# clone_url "
-	#     https://github.com/fw876/helloworld
-	#     https://github.com/xiaorouji/openwrt-passwall-packages
-	# "
-	clone_dir vernesong/OpenClash luci-app-openclash
-	clone_dir xiaorouji/openwrt-passwall luci-app-passwall
-	clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-	clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls shadowsocks-rust shadowsocks-libev shadowsocksr-libev
-	clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-		luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-		luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
-	clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot \
-		luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core qBittorrent-static
 	[[ $REPO_BRANCH =~ 23 ]] && clone_dir coolsnowwolf/packages ""
-
-	# git_diff "feeds/luci" "applications/luci-app-diskman" "applications/luci-app-passwall" "applications/luci-app-ssr-plus" "applications/luci-app-dockerman"
-	addpackage "autosamba luci-app-diskman luci-app-qbittorrent luci-app-poweroff luci-app-cowbping luci-app-cowb-speedlimit luci-app-pushbot luci-app-dockerman luci-app-softwarecenter luci-app-usb-printer"
 	[[ $REPO_BRANCH =~ master|24 ]] && sed -i '/store\|deluge/d' .config
+	# git_diff "feeds/luci" "applications/luci-app-diskman" "applications/luci-app-passwall" "applications/luci-app-ssr-plus" "applications/luci-app-dockerman"
 else
 	# git diff ./ >> ../output/t.patch || true
-	clone_url "
-		https://github.com/hong0980/build
-		https://github.com/fw876/helloworld
-		https://github.com/xiaorouji/openwrt-passwall-packages
-	"
-
-	clone_dir sbwml/openwrt_helloworld luci-app-openclash luci-app-ssr-plus shadowsocks-rust #luci-app-passwall2 luci-app-passwall
-	clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
-	clone_dir master UnblockNeteaseMusic/luci-app-unblockneteasemusic luci-app-unblockneteasemusic
-	clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
-		luci-app-bypass luci-app-store luci-app-pushbot taskd luci-app-nlbwmon
-
+	# clone_dir coolsnowwolf/packages qtbase qttools qBittorrent
 	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
-	# [[ $TARGET_DEVICE =~ ^r ]] && \
-	# sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
-	clone_dir immortalwrt/packages nghttp3 ngtcp2 bash
-	clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
-		dnsmasq nftables libnftnl sonfilter opkg fullconenat fullconenat-nft \
+	clone_dir openwrt-24.10 immortalwrt/immortalwrt automount busybox dnsmasq firewall4 \
+		fullconenat fullconenat-nft libnftnl nftables openssl opkg ppp sonfilter ucode
 		#fstools odhcp6c iptables ipset dropbear usbmode
-	clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
-		lua-openssl smartdns bluez curl #miniupnpc miniupnpd
-	clone_dir openwrt-23.05 immortalwrt/luci luci-app-syncdial luci-app-mwan3
-	clone_dir coolsnowwolf/lede ucode firewall4
+	clone_dir openwrt-24.10 immortalwrt/packages attr bandwidthd bash bluez btrfs-progs lua-openssl \
+		containerd curl dbus docker dockerd gawk golang htop jq libwebsockets mwan3 nghttp3 \
+		nginx-util ngtcp2 parted pciutils runc samba4 smartdns #miniupnpc miniupnpd
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
@@ -450,7 +442,6 @@ else
 	$(eval $(call KernelPackage,nf-socket))
 	EOF
 	curl -sSo include/openssl-module.mk https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
-
 	# mv -f package/A/luci-app* feeds/luci/applications/
 	# git diff -- feeds/luci/applications/luci-app-qbittorrent > ../firmware/$REPO_BRANCH-luci-app-qbittorrent.patch
 	sed -i '/bridge\|vssr\|deluge/d' .config
@@ -468,13 +459,15 @@ for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do
 	[[ -L $p/zh_Hans || -L $p/zh-cn ]] || (ln -s zh-cn $p/zh_Hans 2>/dev/null || ln -s zh_Hans $p/zh-cn 2>/dev/null)
 done
 
-echo -e "$(color cy '更新配置....')\c"; begin_time=$(date '+%H:%M:%S')
+echo -e "$(color cy '更新配置....')\c"
+begin_time=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
+deploy_cache
 
-LINUX_VERSION=$(grep 'CONFIG_LINUX.*=y' .config | sed -r 's/CONFIG_LINUX_(.*)=y/\1/' | tr '_' '.')
-echo -e "$(color cy 当前机型) $(color cb ${REPO_URL##*/}-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME}${VERSION:+-$VERSION})"
-sed -i "/IMG_PREFIX:/ {s/=/=${REPO_URL##*/}-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
+LINUX_VERSION=$(sed -nr 's/CONFIG_LINUX_(.*)=y/\1/p' .config | tr '_' '.')
+echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME})"
+sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 
 # echo "SSH_ACTIONS=true" >> $GITHUB_ENV #SSH后台
@@ -485,6 +478,5 @@ echo "UPLOAD_BIN_DIR=false" >> $GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >> $GITHUB_ENV
 echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
 echo "CLEAN=false" >> $GITHUB_ENV
-echo "VERSION=$VERSION" >> $GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
