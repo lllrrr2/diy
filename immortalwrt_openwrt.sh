@@ -393,7 +393,7 @@ else
 		#fstools odhcp6c iptables ipset dropbear usbmode
 	clone_dir openwrt-24.10 immortalwrt/packages attr bandwidthd bash bluez btrfs-progs lua-openssl \
 		containerd curl dbus docker dockerd gawk golang htop jq libwebsockets mwan3 nghttp3 nginx-util \
-		ngtcp2 parted pciutils runc samba4 smartdns #miniupnpc miniupnpd
+		ngtcp2 parted pciutils runc samba4 smartdns mosdns #miniupnpc miniupnpd
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
