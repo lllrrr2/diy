@@ -393,25 +393,23 @@ else
 		https://github.com/xiaorouji/openwrt-passwall-packages
 	"
 
+	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
 	clone_dir vernesong/OpenClash luci-app-openclash
 	clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 	clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-	clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls shadowsocks-rust shadowsocks-libev shadowsocksr-libev
 	clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
 		luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
 		luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
 	clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
 	clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb luci-app-syncdial \
 		luci-app-bypass luci-app-store luci-app-pushbot taskd luci-app-nlbwmon luci-app-wizard
-
-	create_directory "package/utils/ucode" "package/network/utils/fullconenat-nft"
-	mv package/network/config/firewall package/network/config/firewall4
 	clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
 		dnsmasq nftables libnftnl sonfilter opkg fullconenat fullconenat-nft \
-		ucode firewall4 #fstools odhcp6c iptables ipset dropbear usbmode
+		ucode firewall firewall4 #fstools odhcp6c iptables ipset dropbear usbmode
 	clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
 		lua-openssl smartdns bluez curl nghttp3 ngtcp2 bash #miniupnpc miniupnpd
 	# clone_dir coolsnowwolf/lede ucode firewall4
+	clone_dir sbwml/openwrt_helloworld shadowsocks-rust
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
