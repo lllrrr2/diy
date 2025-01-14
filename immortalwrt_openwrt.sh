@@ -391,8 +391,8 @@ else
 	# 	dockerd gawk golang htop jq libwebsockets lua-openssl mwan3 nghttp3 \
 	# 	nginx-util ngtcp2 pciutils runc samba4 smartdns
 		#miniupnpc miniupnpd
-	clone_dir coolsnowwolf/packages "golang" "bandwidthd" "docker" "dockerd" "containerd" "runc" "btrfs-progs"
-	clone_dir coolsnowwolf/lede firewall4 fullconenat fullconenat-nft firewall ucode
+	clone_dir coolsnowwolf/packages golang bandwidthd docker dockerd containerd runc btrfs-progs
+	clone_dir coolsnowwolf/lede firewall4 fullconenat fullconenat-nft firewall ucode iptables
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
