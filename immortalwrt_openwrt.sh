@@ -361,53 +361,54 @@ REPO_URL="https://github.com/$REPO/$REPO"
 config_generate="package/base-files/files/bin/config_generate"
 git_clone
 
-clone_dir fw876/helloworld luci-app-ssr-plus
-clone_dir vernesong/OpenClash luci-app-openclash
-clone_dir xiaorouji/openwrt-passwall luci-app-passwall
-clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-clone_dir sbwml/openwrt_helloworld chinadns-ng dns2socks dns2tcp geoview \
-	ipt2socks microsocks shadow-tls shadowsocks-libev shadowsocks-rust \
-	shadowsocksr-libev simple-obfs sing-box tcping trojan-plus v2ray-core \
-	v2ray-geodata v2ray-plugin xray-core
-clone_dir hong0980/build luci-app-cowb-speedlimit luci-app-cowbping luci-app-ddnsto \
-	luci-app-diskman luci-app-dockerman luci-app-filebrowser luci-app-poweroff \
-	luci-app-pwdHackDeny luci-app-qbittorrent luci-app-softwarecenter luci-app-timedtask \
-	luci-app-tinynote luci-app-wizard luci-lib-docker
-clone_dir kiddin9/kwrt-packages lua-maxminddb luci-app-bypass luci-app-pushbot \
-	luci-app-store luci-lib-taskd luci-lib-xterm taskd qBittorrent-static
-
 if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23|24 ]]; then
 	if [[ $REPO =~ openwrt ]]; then
 		clone_dir openwrt-24.10 immortalwrt/immortalwrt emortal bcm27xx-utils
 		delpackage "dnsmasq"
+		[[ $REPO_BRANCH =~ 23.05 ]] && clone_dir openwrt/packages openwrt-24.10 golang
 	fi
+
+	# clone_url "
+	#     https://github.com/fw876/helloworld
+	#     https://github.com/xiaorouji/openwrt-passwall-packages
+	# "
+	clone_dir vernesong/OpenClash luci-app-openclash
+	clone_dir xiaorouji/openwrt-passwall luci-app-passwall
+	clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
+	clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls shadowsocks-rust shadowsocks-libev shadowsocksr-libev
+	clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
+		luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
+		luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
+	clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot luci-app-wizard \
+		luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core qBittorrent-static
 	[[ $REPO_BRANCH =~ 23 ]] && clone_dir coolsnowwolf/packages ""
-	[[ $REPO_BRANCH =~ master|24 ]] && sed -i '/store\|deluge/d' .config
+
 	# git_diff "feeds/luci" "applications/luci-app-diskman" "applications/luci-app-passwall" "applications/luci-app-ssr-plus" "applications/luci-app-dockerman"
+	addpackage "autosamba luci-app-diskman luci-app-qbittorrent luci-app-poweroff luci-app-cowbping luci-app-cowb-speedlimit luci-app-pushbot luci-app-dockerman luci-app-softwarecenter luci-app-usb-printer"
+	[[ $REPO_BRANCH =~ master|24 ]] && sed -i '/store\|deluge/d' .config
 else
 	# git diff ./ >> ../output/t.patch || true
-	# clone_dir coolsnowwolf/packages qtbase qttools qBittorrent
-	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
-	# clone_dir openwrt-23.05 immortalwrt/immortalwrt automount busybox dnsmasq firewall4 \
-	# 	fullconenat fullconenat-nft libnftnl nftables openssl opkg ppp sonfilter ucode
-	# 	#fstools odhcp6c iptables ipset dropbear usbmode
-	# clone_dir openwrt-24.10 immortalwrt/packages attr bandwidthd bash bluez btrfs-progs lua-openssl \
-	# 	containerd curl dbus docker dockerd gawk golang htop jq libwebsockets mwan3 nghttp3 nginx-util \
-	# 	ngtcp2 parted pciutils runc samba4 smartdns mosdns #miniupnpc miniupnpd
 	clone_url "
-		https://github.com/hong0980/build
 		https://github.com/fw876/helloworld
 		https://github.com/xiaorouji/openwrt-passwall-packages
 	"
 
-	clone_dir sbwml/openwrt_helloworld luci-app-openclash luci-app-ssr-plus shadowsocks-rust #luci-app-passwall2 luci-app-passwall
-	clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb \
-		luci-app-bypass luci-app-store luci-app-pushbot taskd qBittorrent-static luci-app-syncdial
-	clone_dir immortalwrt/packages nghttp3 ngtcp2 bash samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
-		lua-openssl smartdns bluez curl #miniupnpc miniupnpd
+	clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
+		luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
+		luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
+	clone_dir sbwml/openwrt_helloworld luci-app-openclash luci-app-ssr-plus shadowsocks-rust luci-app-passwall2 luci-app-passwall
+	clone_dir coolsnowwolf/packages qtbase qttools qBittorrent qBittorrent-static
+	clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb luci-app-syncdial \
+		luci-app-bypass luci-app-store luci-app-pushbot taskd luci-app-nlbwmon luci-app-wizard
+
+	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
+	# [[ $TARGET_DEVICE =~ ^r ]] && \
+	# sed -i "s|VERSION.*|VERSION-5.4 = .273|; s|HASH.*|HASH-5.4.273 = 8ba0cfd3faa7222542b30791def49f426d7b50a07217366ead655a5687534743|" include/kernel-5.4
 	clone_dir openwrt-23.05 immortalwrt/immortalwrt busybox ppp automount openssl \
 		dnsmasq nftables libnftnl sonfilter opkg fullconenat fullconenat-nft \
 		#fstools odhcp6c iptables ipset dropbear usbmode
+	clone_dir openwrt-23.05 immortalwrt/packages samba4 nginx-util htop pciutils libwebsockets gawk mwan3 \
+		lua-openssl smartdns bluez curl nghttp3 ngtcp2 bash #miniupnpc miniupnpd
 	clone_dir coolsnowwolf/lede ucode firewall4
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
@@ -458,6 +459,7 @@ else
 	$(eval $(call KernelPackage,nf-socket))
 	EOF
 	curl -sSo include/openssl-module.mk https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
+
 	# mv -f package/A/luci-app* feeds/luci/applications/
 	# git diff -- feeds/luci/applications/luci-app-qbittorrent > ../firmware/$REPO_BRANCH-luci-app-qbittorrent.patch
 	sed -i '/bridge\|vssr\|deluge/d' .config
