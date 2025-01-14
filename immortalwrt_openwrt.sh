@@ -129,7 +129,7 @@ clone_dir() {
 	}
 
 	for target_dir in $@; do
-		[[ $target_dir =~ ^luci-app- ]] && create_directory "feeds/luci/applications/$target_dir"
+		# [[ $target_dir =~ ^luci-app- ]] && create_directory "feeds/luci/applications/$target_dir"
 		local source_dir current_dir destination_dir
 		if [[ ${repo_url##*/} == ${target_dir} ]]; then
 			mv -f ${temp_dir} ${target_dir}
@@ -400,15 +400,15 @@ else
 		luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
 		luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
 	clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb luci-app-syncdial \
-		luci-app-bypass luci-app-store luci-app-pushbot taskd luci-app-nlbwmon luci-app-wizard qBittorrent-static
+		luci-app-bypass luci-app-store luci-app-pushbot taskd luci-app-nlbwmon luci-app-wizard
 	clone_dir openwrt-23.50 immortalwrt/immortalwrt busybox ppp automount openssl \
 		dnsmasq nftables libnftnl sonfilter opkg fullconenat fullconenat-nft \
 		ucode firewall4 #fstools odhcp6c iptables ipset dropbear usbmode
 	clone_dir openwrt-24.10 immortalwrt/packages samba4 nginx-util htop pciutils \
-		libwebsockets gawk mwan3 lua-openssl smartdns bluez curl nghttp3 ngtcp2 bash golang \
-		bandwidthd docker dockerd containerd runc btrfs-progs
+		libwebsockets gawk mwan3 lua-openssl smartdns bluez curl nghttp3 ngtcp2 bash
 		#miniupnpc miniupnpd
 	clone_dir sbwml/openwrt_helloworld shadowsocks-rust
+	clone_dir coolsnowwolf/packages qBittorrent-static
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
