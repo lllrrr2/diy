@@ -383,9 +383,9 @@ else
 		https://github.com/xiaorouji/openwrt-passwall-packages
 	"
 	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
-	clone_dir coolsnowwolf/lede automount busybox dnsmasq dropbear e2fsprogs f2fs-tools firewall \
-		firewall4 fstools fullconenat fullconenat-nft iproute2 ipset iptables iwinfo libnftnl \
-		nftables odhcp6c openssl opkg parted ppp smartmontools sonfilter ucode uhttpd usbmode rpcd
+	clone_dir coolsnowwolf/lede automount busybox dnsmasq e2fsprogs f2fs-tools firewall \
+		firewall4 fullconenat fullconenat-nft iproute2 iwinfo libnftnl \
+		nftables openssl opkg parted ppp smartmontools sonfilter ucode uhttpd
 		#fstools odhcp6c iptables ipset dropbear usbmode
 	clone_dir coolsnowwolf/packages bandwidthd bash bluez btrfs-progs containerd curl docker \
 		dockerd gawk golang htop jq libwebsockets lua-openssl miniupnpc miniupnpd mwan3 nghttp3 \
