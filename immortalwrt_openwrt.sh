@@ -303,7 +303,7 @@ deploy_cache() {
 	CACHE_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TOOLS_HASH-$ARCH"
 	echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
 	if (grep -q "$CACHE_NAME" ../xa ../xc); then
-		ls ../"$CACHE_NAME" > /dev/null 2>&1 || {
+		ls ../$CACHE_NAME > /dev/null 2>&1 || {
 			echo -e "$(color cy '下载tz-cache')\c"
 			begin_time=$(date '+%H:%M:%S')
 			grep -q "$CACHE_NAME" ../xa \
@@ -312,7 +312,7 @@ deploy_cache() {
 			status
 		}
 
-		ls ../"$CACHE_NAME" > /dev/null 2>&1 && {
+		ls ../$CACHE_NAME > /dev/null 2>&1 && {
 			echo -e "$(color cy '部署tz-cache')\c"; begin_time=$(date '+%H:%M:%S')
 			(tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
 				if ! grep -q "$CACHE_NAME" ../xa; then
@@ -383,14 +383,15 @@ else
 		https://github.com/xiaorouji/openwrt-passwall-packages
 	"
 	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
-	clone_dir coolsnowwolf/lede automount busybox dnsmasq f2fs-tools firewall \
-		firewall4 fullconenat fullconenat-nft iproute2 iwinfo libnftnl \
-		nftables openssl opkg parted ppp smartmontools sonfilter ucode
+	# clone_dir coolsnowwolf/lede automount busybox dnsmasq f2fs-tools firewall \
+	# 	firewall4 fullconenat fullconenat-nft iproute2 iwinfo libnftnl \
+	# 	nftables openssl opkg parted ppp smartmontools sonfilter ucode
 		#fstools odhcp6c iptables ipset dropbear usbmode
-	clone_dir coolsnowwolf/packages bandwidthd bash bluez btrfs-progs containerd curl docker \
-		dockerd gawk golang htop jq libwebsockets lua-openssl mwan3 nghttp3 \
-		nginx-util ngtcp2 pciutils runc samba4 smartdns
+	# clone_dir coolsnowwolf/packages bandwidthd bash bluez btrfs-progs containerd curl docker \
+	# 	dockerd gawk golang htop jq libwebsockets lua-openssl mwan3 nghttp3 \
+	# 	nginx-util ngtcp2 pciutils runc samba4 smartdns
 		#miniupnpc miniupnpd
+	clone_dir coolsnowwolf/packages "golang" "bandwidthd" "docker" "dockerd" "containerd" "runc" "btrfs-progs"
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)

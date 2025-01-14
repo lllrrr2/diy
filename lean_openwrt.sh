@@ -296,7 +296,7 @@ deploy_cache() {
 	echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
 
 	if (grep -q "$CACHE_NAME" ../xa ../xc); then
-		ls ../"$CACHE_NAME" > /dev/null 2>&1 || {
+		ls ../$CACHE_NAME > /dev/null 2>&1 || {
 			echo -e "$(color cy '下载tz-cache')\c"
 			begin_time=$(date '+%H:%M:%S')
 			grep -q "$CACHE_NAME" ../xa \
@@ -305,7 +305,7 @@ deploy_cache() {
 			status
 		}
 
-		ls ../"$CACHE_NAME" > /dev/null 2>&1 && {
+		ls ../$CACHE_NAME > /dev/null 2>&1 && {
 			echo -e "$(color cy '部署tz-cache')\c"
 			begin_time=$(date '+%H:%M:%S')
 			(tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
