@@ -392,7 +392,7 @@ else
 	# 	nginx-util ngtcp2 pciutils runc samba4 smartdns
 		#miniupnpc miniupnpd
 	clone_dir coolsnowwolf/packages "golang" "bandwidthd" "docker" "dockerd" "containerd" "runc" "btrfs-progs"
-	clone_dir coolsnowwolf/lede firewall4 fullconenat fullconenat-nft firewall
+	clone_dir coolsnowwolf/lede firewall4 fullconenat fullconenat-nft firewall ucode
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
