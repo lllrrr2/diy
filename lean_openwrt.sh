@@ -296,20 +296,21 @@ deploy_cache() {
 	echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
 
 	if (grep -q "$CACHE_NAME" ../xa ../xc); then
-		ls ../*"$CACHE_NAME"* > /dev/null 2>&1 || {
+		ls ../"$CACHE_NAME" > /dev/null 2>&1 || {
 			echo -e "$(color cy '下载tz-cache')\c"
 			begin_time=$(date '+%H:%M:%S')
-			grep -q "$CACHE_NAME" ../xa && \
-			wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xa) || wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xc)
+			grep -q "$CACHE_NAME" ../xa \
+				&& wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xa) \
+				|| wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xc)
 			status
 		}
 
-		ls ../*"$CACHE_NAME"* > /dev/null 2>&1 && {
+		ls ../"$CACHE_NAME" > /dev/null 2>&1 && {
 			echo -e "$(color cy '部署tz-cache')\c"
 			begin_time=$(date '+%H:%M:%S')
 			(tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
 				if ! grep -q "$CACHE_NAME" ../xa; then
-					cp ../*.tzst ../output
+					cp ../$CACHE_NAME-cache.tzst ../output
 					echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
 				fi
 				sed -i 's/ $(tool.*\/stamp-compile)//' Makefile
@@ -367,17 +368,16 @@ clone_dir vernesong/OpenClash luci-app-openclash
 clone_dir xiaorouji/openwrt-passwall luci-app-passwall
 clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
 clone_dir openwrt-24.10 immortalwrt/luci luci-app-homeproxy
-clone_dir hong0980/build luci-app-poweroff luci-app-diskman luci-app-dockerman luci-app-qbittorrent luci-lib-docker
-# clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-# 	luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-# 	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
+clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
+	luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
+	luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker lsscsi
 clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot \
 	luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core
 	
 # https://github.com/userdocs/qbittorrent-nox-static/releases
 xc=$(_find "package/A/ feeds/" "qBittorrent-static")
 [[ -d $xc ]] && sed -Ei "s/(PKG_VERSION:=).*/\1${qb_version:-4.5.2_v2.0.8}/" $xc/Makefile
-sed -i 's|../../luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/luci-app*/Makefile 2>/dev/null
+sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 2>/dev/null
 
 [[ $REPO_BRANCH =~ 23 ]] && {
 	for p in package/A/luci-app*/po feeds/luci/applications/luci-app*/po; do

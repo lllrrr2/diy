@@ -302,20 +302,20 @@ deploy_cache() {
 	export SOURCE_NAME=$(basename $(dirname $REPO_URL))
 	CACHE_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TOOLS_HASH-$ARCH"
 	echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
-	if (grep -q "$CACHE_NAME-cache.tzst" ../xa ../xc); then
-		ls ../$CACHE_NAME-cache.tzst > /dev/null 2>&1 || {
+	if (grep -q "$CACHE_NAME" ../xa ../xc); then
+		ls ../"$CACHE_NAME" > /dev/null 2>&1 || {
 			echo -e "$(color cy '下载tz-cache')\c"
 			begin_time=$(date '+%H:%M:%S')
-			grep -q "$CACHE_NAME-cache.tzst" ../xa \
-			&& wget -qc -t=3 -P ../ $(grep "$CACHE_NAME-cache.tzst" ../xa) \
-			|| wget -qc -t=3 -P ../ $(grep "$CACHE_NAME-cache.tzst" ../xc)
+			grep -q "$CACHE_NAME" ../xa \
+				&& wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xa) \
+				|| wget -qc -t=3 -P ../ $(grep "$CACHE_NAME" ../xc)
 			status
 		}
 
-		ls ../$CACHE_NAME-cache.tzst > /dev/null 2>&1 && {
+		ls ../"$CACHE_NAME" > /dev/null 2>&1 && {
 			echo -e "$(color cy '部署tz-cache')\c"; begin_time=$(date '+%H:%M:%S')
 			(tar -I unzstd -xf ../*.tzst || tar -xf ../*.tzst) && {
-				if ! grep -q "$CACHE_NAME-cache.tzst" ../xa; then
+				if ! grep -q "$CACHE_NAME" ../xa; then
 					cp ../$CACHE_NAME-cache.tzst ../output
 					echo "OUTPUT_RELEASE=true" >> $GITHUB_ENV
 				fi
@@ -373,7 +373,7 @@ if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23|24 ]
 	fi
 	[[ $REPO_BRANCH =~ 23 ]] && clone_dir coolsnowwolf/packages ""
 	# git_diff "feeds/luci" "applications/luci-app-diskman" "applications/luci-app-passwall" "applications/luci-app-ssr-plus" "applications/luci-app-dockerman"
-	clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls
+	clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls shadowsocks-libev shadowsocksr-libev
 	addpackage "autosamba luci-app-diskman luci-app-qbittorrent luci-app-poweroff luci-app-cowbping luci-app-cowb-speedlimit luci-app-pushbot luci-app-dockerman luci-app-softwarecenter luci-app-usb-printer"
 	[[ $REPO_BRANCH =~ master|24 ]] && sed -i '/store\|deluge/d' .config
 else
