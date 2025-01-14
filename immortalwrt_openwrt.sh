@@ -123,10 +123,7 @@ clone_dir() {
 	}
 
 	[[ $repo_url =~ openwrt_helloworld && $REPO_BRANCH =~ 21 ]] && set -- "$@" "luci-app-homeproxy"
-	[[ $repo_url =~ coolsnowwolf/packages ]] && {
-		[[ $REPO_BRANCH =~ 23 ]] && set -- "$@" "golang" "bandwidthd"
-		[[ $REPO_BRANCH =~ 21 ]] && set -- "$@" "golang" "bandwidthd" "docker" "dockerd" "containerd" "runc" "btrfs-progs"
-	}
+	[[ $repo_url =~ coolsnowwolf/packages && $REPO_BRANCH =~ 23 ]] && set -- "$@" "golang" "bandwidthd"
 
 	for target_dir in $@; do
 		# [[ $target_dir =~ ^luci-app- ]] && create_directory "feeds/luci/applications/$target_dir"
@@ -347,7 +344,6 @@ git_clone() {
 	status
 	set_config
 	wget -qO package/base-files/files/etc/banner git.io/JoNK8
-
 	color cy "自定义设置.... "
 	sed -i "s/ImmortalWrt/OpenWrt/g" {$config_generate,include/version.mk} || true
 	sed -i "/DISTRIB_DESCRIPTION/ {s/'$/-$SOURCE_NAME-$(TZ=UTC-8 date +%Y年%m月%d日)'/}" package/*/*/*/openwrt_release || true
@@ -361,29 +357,23 @@ REPO_URL="https://github.com/$REPO/$REPO"
 config_generate="package/base-files/files/bin/config_generate"
 git_clone
 
+clone_dir vernesong/OpenClash luci-app-openclash
+clone_dir xiaorouji/openwrt-passwall luci-app-passwall
+clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
+clone_dir hong0980/build luci-app-cowb-speedlimit luci-app-cowbping luci-app-ddnsto \
+	luci-app-diskman luci-app-dockerman luci-app-filebrowser luci-app-poweroff \
+	luci-app-pwdHackDeny luci-app-qbittorrent luci-app-softwarecenter luci-app-timedtask \
+	luci-app-tinynote luci-app-wizard luci-lib-docker
+
 if [[ "$TARGET_DEVICE" =~ x86_64|r1-plus-lts && "$REPO_BRANCH" =~ master|23|24 ]]; then
 	if [[ $REPO =~ openwrt ]]; then
 		clone_dir openwrt-24.10 immortalwrt/immortalwrt emortal bcm27xx-utils
 		delpackage "dnsmasq"
 		[[ $REPO_BRANCH =~ 23.05 ]] && clone_dir openwrt/packages openwrt-24.10 golang
 	fi
-
-	# clone_url "
-	#     https://github.com/fw876/helloworld
-	#     https://github.com/xiaorouji/openwrt-passwall-packages
-	# "
-	clone_dir vernesong/OpenClash luci-app-openclash
-	clone_dir xiaorouji/openwrt-passwall luci-app-passwall
-	clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-	clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls shadowsocks-rust shadowsocks-libev shadowsocksr-libev
-	clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-		luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-		luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
-	clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-pushbot luci-app-wizard \
-		luci-app-store luci-lib-taskd luci-lib-xterm sing-box taskd trojan-plus xray-core qBittorrent-static
 	[[ $REPO_BRANCH =~ 23 ]] && clone_dir coolsnowwolf/packages ""
-
 	# git_diff "feeds/luci" "applications/luci-app-diskman" "applications/luci-app-passwall" "applications/luci-app-ssr-plus" "applications/luci-app-dockerman"
+	clone_dir fw876/helloworld luci-app-ssr-plus shadow-tls
 	addpackage "autosamba luci-app-diskman luci-app-qbittorrent luci-app-poweroff luci-app-cowbping luci-app-cowb-speedlimit luci-app-pushbot luci-app-dockerman luci-app-softwarecenter luci-app-usb-printer"
 	[[ $REPO_BRANCH =~ master|24 ]] && sed -i '/store\|deluge/d' .config
 else
@@ -393,21 +383,12 @@ else
 		https://github.com/xiaorouji/openwrt-passwall-packages
 	"
 	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
-	clone_dir vernesong/OpenClash luci-app-openclash
-	clone_dir xiaorouji/openwrt-passwall luci-app-passwall
-	clone_dir xiaorouji/openwrt-passwall2 luci-app-passwall2
-	clone_dir hong0980/build luci-app-timedtask luci-app-tinynote luci-app-poweroff luci-app-filebrowser luci-app-cowbping \
-		luci-app-diskman luci-app-cowb-speedlimit luci-app-qbittorrent luci-app-wizard luci-app-dockerman \
-		luci-app-pwdHackDeny luci-app-softwarecenter luci-app-ddnsto luci-lib-docker
-	clone_dir kiddin9/kwrt-packages luci-lib-taskd luci-lib-xterm lua-maxminddb luci-app-syncdial \
-		luci-app-bypass luci-app-store luci-app-pushbot taskd luci-app-nlbwmon luci-app-wizard
-	clone_dir coolsnowwolf/lede busybox ppp automount openssl ucode firewall4 \
-		dnsmasq nftables libnftnl sonfilter opkg fullconenat fullconenat-nft \
-		#fstools odhcp6c iptables ipset dropbear usbmode
-	clone_dir coolsnowwolf/packages samba4 nginx-util htop pciutils qBittorrent-static \
-		libwebsockets gawk mwan3 lua-openssl smartdns bluez curl nghttp3 ngtcp2 bash
-		#miniupnpc miniupnpd
-	clone_dir sbwml/openwrt_helloworld shadowsocks-rust
+	clone_dir coolsnowwolf/lede automount busybox dnsmasq dropbear e2fsprogs f2fs-tools firewall \
+		firewall4 fstools fullconenat fullconenat-nft iproute2 ipset iptables iwinfo libnftnl \
+		nftables odhcp6c openssl opkg parted ppp smartmontools sonfilter ucode uhttpd usbmode
+	clone_dir coolsnowwolf/packages bandwidthd bash bluez btrfs-progs containerd curl docker \
+		dockerd gawk golang htop jq libwebsockets lua-openssl miniupnpc miniupnpd mwan3 nghttp3 \
+		nginx-util ngtcp2 pciutils runc samba4 smartdns
 	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
 	define KernelPackage/nft-tproxy
 	  SUBMENU:=$(NF_MENU)
@@ -462,6 +443,11 @@ else
 	# git diff -- feeds/luci/applications/luci-app-qbittorrent > ../firmware/$REPO_BRANCH-luci-app-qbittorrent.patch
 	sed -i '/bridge\|vssr\|deluge/d' .config
 fi
+
+clone_dir kiddin9/kwrt-packages chinadns-ng geoview lua-maxminddb luci-app-bypass luci-app-nlbwmon \
+	luci-app-pushbot luci-app-store luci-app-syncdial luci-app-wizard luci-lib-taskd luci-lib-xterm \
+	qBittorrent-static sing-box taskd trojan-plus xray-core
+clone_dir sbwml/openwrt_helloworld shadowsocks-rust
 
 sed -i "/listen_https/ {s/^/#/g}" package/*/*/*/files/uhttpd.config
 sed -i 's|/bin/login|/bin/login -f root|' feeds/packages/utils/ttyd/files/ttyd.config
