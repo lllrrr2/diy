@@ -122,7 +122,7 @@ clone_dir() {
 		return 1
 	}
 
-	[[ $repo_url =~ openwrt_helloworld && $REPO_BRANCH =~ 21 ]] && set -- "$@" "luci-app-homeproxy"
+	# [[ $repo_url =~ openwrt_helloworld && $REPO_BRANCH =~ 21 ]] && set -- "$@" "luci-app-homeproxy"
 	[[ $repo_url =~ coolsnowwolf/packages && $REPO_BRANCH =~ 23 ]] && set -- "$@" "golang" "bandwidthd"
 
 	for target_dir in $@; do
@@ -298,6 +298,7 @@ set_config (){
 
 deploy_cache() {
 	local TOOLS_HASH=$(git log --pretty=tformat:"%h" -n1 tools toolchain)
+	echo "tools toolchain 的md5值 $(find tools toolchain -type f -exec md5sum {} \; | sort | md5sum)"
 	export SOURCE_NAME=$(basename $(dirname $REPO_URL))
 	CACHE_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TOOLS_HASH-$ARCH"
 	echo "CACHE_NAME=$CACHE_NAME" >> $GITHUB_ENV
