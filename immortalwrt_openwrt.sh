@@ -394,8 +394,54 @@ else
 		#miniupnpc miniupnpd
 	clone_dir coolsnowwolf/packages golang bandwidthd docker dockerd containerd runc btrfs-progs
 	clone_dir immortalwrt/immortalwrt ppp busybox #firewall4 fullconenat fullconenat-nft firewall ucode iptables libnftnl libmd
-	curl -sSo package/kernel/linux/modules/netfilter.mk \
-		https://raw.githubusercontent.com/coolsnowwolf/lede/refs/heads/master/package/kernel/linux/modules/netfilter.mk
+	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
+	define KernelPackage/nft-tproxy
+	  SUBMENU:=$(NF_MENU)
+	  TITLE:=Netfilter nf_tables tproxy support
+	  DEPENDS:=+kmod-nft-core +kmod-nf-tproxy +kmod-nf-conntrack
+	  FILES:=$(foreach mod,$(NFT_TPROXY-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NFT_TPROXY-m)))
+	  KCONFIG:=$(KCONFIG_NFT_TPROXY)
+	endef
+	$(eval $(call KernelPackage,nft-tproxy))
+	define KernelPackage/nf-tproxy
+	  SUBMENU:=$(NF_MENU)
+	  TITLE:=Netfilter tproxy support
+	  KCONFIG:= $(KCONFIG_NF_TPROXY)
+	  FILES:=$(foreach mod,$(NF_TPROXY-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NF_TPROXY-m)))
+	endef
+	$(eval $(call KernelPackage,nf-tproxy))
+	define KernelPackage/nft-compat
+	  SUBMENU:=$(NF_MENU)
+	  TITLE:=Netfilter nf_tables compat support
+	  DEPENDS:=+kmod-nft-core +kmod-nf-ipt
+	  FILES:=$(foreach mod,$(NFT_COMPAT-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NFT_COMPAT-m)))
+	  KCONFIG:=$(KCONFIG_NFT_COMPAT)
+	endef
+	$(eval $(call KernelPackage,nft-compat))
+	define KernelPackage/ipt-socket
+	  TITLE:=Iptables socket matching support
+	  DEPENDS+=+kmod-nf-socket +kmod-nf-conntrack
+	  KCONFIG:=$(KCONFIG_IPT_SOCKET)
+	  FILES:=$(foreach mod,$(IPT_SOCKET-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(IPT_SOCKET-m)))
+	  $(call AddDepends/ipt)
+	endef
+	define KernelPackage/ipt-socket/description
+	  Kernel modules for socket matching
+	endef
+	$(eval $(call KernelPackage,ipt-socket))
+	define KernelPackage/nf-socket
+	  SUBMENU:=$(NF_MENU)
+	  TITLE:=Netfilter socket lookup support
+	  KCONFIG:= $(KCONFIG_NF_SOCKET)
+	  FILES:=$(foreach mod,$(NF_SOCKET-m),$(LINUX_DIR)/net/$(mod).ko)
+	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NF_SOCKET-m)))
+	endef
+	$(eval $(call KernelPackage,nf-socket))
+	EOF
 	curl -sSo include/openssl-module.mk \
 		https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
 
