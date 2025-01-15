@@ -289,7 +289,6 @@ set_config() {
 }
 
 deploy_cache() {
-	ARCH=$(sed -nr 's/CONFIG_ARCH="(.*)"/\1/p' .config)
 	export SOURCE_NAME=$(basename $(dirname $REPO_URL))
 	TOOLS_HASH=$(git log --pretty=tformat:"%h" -n1 tools toolchain)
 	export CACHE_NAME="$SOURCE_NAME-$REPO_BRANCH-$TOOLS_HASH-$ARCH"
@@ -388,12 +387,15 @@ sed -i 's|\.\./\.\./luci.mk|$(TOPDIR)/feeds/luci/luci.mk|' package/A/*/Makefile 
 echo -e "$(color cy '更新配置....')\c"; begin_time=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
+ARCH=$(sed -nr 's/CONFIG_ARCH="(.*)"/\1/p' .config)
+LINUX_VERSION=$(sed -nr 's/CONFIG_LINUX_(.*)=y/\1/p' .config | tr '_' '.')
 deploy_cache
 
-LINUX_VERSION=$(sed -nr 's/CONFIG_LINUX_(.*)=y/\1/p' .config | tr '_' '.')
 echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME})"
 sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
+
+echo "ARCH=$ARCH"  >> $GITHUB_ENV
 echo "CLEAN=false" >> $GITHUB_ENV
 echo "UPLOAD_BIN_DIR=false" >> $GITHUB_ENV
 # echo "UPLOAD_PACKAGES=false" >> $GITHUB_ENV
@@ -402,5 +404,6 @@ echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=false" >> $GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >> $GITHUB_ENV
 echo "REPO_BRANCH=${REPO_BRANCH#*-}" >> $GITHUB_ENV
+echo "LINUX_VERSION_ARCH=$LINUX_VERSION-$ARCH" >> $GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"

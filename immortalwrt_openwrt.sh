@@ -297,7 +297,6 @@ set_config (){
 }
 
 deploy_cache() {
-	local ARCH=$(sed -nr 's/CONFIG_ARCH="(.*)"/\1/p' .config)
 	local TOOLS_HASH=$(git log --pretty=tformat:"%h" -n1 tools toolchain)
 	export SOURCE_NAME=$(basename $(dirname $REPO_URL))
 	CACHE_NAME="$SOURCE_NAME-${REPO_BRANCH#*-}-$TOOLS_HASH-$ARCH"
@@ -392,56 +391,11 @@ else
 	# 	nginx-util ngtcp2 pciutils runc samba4 smartdns
 		#miniupnpc miniupnpd
 	clone_dir coolsnowwolf/packages golang bandwidthd docker dockerd containerd runc btrfs-progs
-	clone_dir coolsnowwolf/lede firewall4 fullconenat fullconenat-nft firewall ucode iptables
-	cat <<-\EOF >>package/kernel/linux/modules/netfilter.mk
-	define KernelPackage/nft-tproxy
-	  SUBMENU:=$(NF_MENU)
-	  TITLE:=Netfilter nf_tables tproxy support
-	  DEPENDS:=+kmod-nft-core +kmod-nf-tproxy +kmod-nf-conntrack
-	  FILES:=$(foreach mod,$(NFT_TPROXY-m),$(LINUX_DIR)/net/$(mod).ko)
-	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NFT_TPROXY-m)))
-	  KCONFIG:=$(KCONFIG_NFT_TPROXY)
-	endef
-	$(eval $(call KernelPackage,nft-tproxy))
-	define KernelPackage/nf-tproxy
-	  SUBMENU:=$(NF_MENU)
-	  TITLE:=Netfilter tproxy support
-	  KCONFIG:= $(KCONFIG_NF_TPROXY)
-	  FILES:=$(foreach mod,$(NF_TPROXY-m),$(LINUX_DIR)/net/$(mod).ko)
-	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NF_TPROXY-m)))
-	endef
-	$(eval $(call KernelPackage,nf-tproxy))
-	define KernelPackage/nft-compat
-	  SUBMENU:=$(NF_MENU)
-	  TITLE:=Netfilter nf_tables compat support
-	  DEPENDS:=+kmod-nft-core +kmod-nf-ipt
-	  FILES:=$(foreach mod,$(NFT_COMPAT-m),$(LINUX_DIR)/net/$(mod).ko)
-	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NFT_COMPAT-m)))
-	  KCONFIG:=$(KCONFIG_NFT_COMPAT)
-	endef
-	$(eval $(call KernelPackage,nft-compat))
-	define KernelPackage/ipt-socket
-	  TITLE:=Iptables socket matching support
-	  DEPENDS+=+kmod-nf-socket +kmod-nf-conntrack
-	  KCONFIG:=$(KCONFIG_IPT_SOCKET)
-	  FILES:=$(foreach mod,$(IPT_SOCKET-m),$(LINUX_DIR)/net/$(mod).ko)
-	  AUTOLOAD:=$(call AutoProbe,$(notdir $(IPT_SOCKET-m)))
-	  $(call AddDepends/ipt)
-	endef
-	define KernelPackage/ipt-socket/description
-	  Kernel modules for socket matching
-	endef
-	$(eval $(call KernelPackage,ipt-socket))
-	define KernelPackage/nf-socket
-	  SUBMENU:=$(NF_MENU)
-	  TITLE:=Netfilter socket lookup support
-	  KCONFIG:= $(KCONFIG_NF_SOCKET)
-	  FILES:=$(foreach mod,$(NF_SOCKET-m),$(LINUX_DIR)/net/$(mod).ko)
-	  AUTOLOAD:=$(call AutoProbe,$(notdir $(NF_SOCKET-m)))
-	endef
-	$(eval $(call KernelPackage,nf-socket))
-	EOF
-	curl -sSo include/openssl-module.mk https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
+	clone_dir openwrt-24.10 immortalwrt/immortalwrt firewall4 fullconenat fullconenat-nft firewall ucode iptables ppp busybox
+	curl -sSo package/kernel/linux/modules/netfilter.mk \
+		https://raw.githubusercontent.com/immortalwrt/immortalwrt/refs/heads/openwrt-24.10/package/kernel/linux/modules/netfilter.mk
+	curl -sSo include/openssl-module.mk \
+		https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
 
 	# mv -f package/A/luci-app* feeds/luci/applications/
 	# git diff -- feeds/luci/applications/luci-app-qbittorrent > ../firmware/$REPO_BRANCH-luci-app-qbittorrent.patch
@@ -469,14 +423,15 @@ echo -e "$(color cy '更新配置....')\c"
 begin_time=$(date '+%H:%M:%S')
 make defconfig 1>/dev/null 2>&1
 status
+ARCH=$(sed -nr 's/CONFIG_ARCH="(.*)"/\1/p' .config)
+LINUX_VERSION=$(sed -nr 's/CONFIG_LINUX_(.*)=y/\1/p' .config | tr '_' '.')
 deploy_cache
 
-LINUX_VERSION=$(sed -nr 's/CONFIG_LINUX_(.*)=y/\1/p' .config | tr '_' '.')
 echo -e "$(color cy 当前机型) $(color cb $SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-${DEVICE_NAME})"
 sed -i "/IMG_PREFIX:/ {s/=/=$SOURCE_NAME-${REPO_BRANCH#*-}-$LINUX_VERSION-\$(shell TZ=UTC-8 date +%m%d-%H%M)-/}" include/image.mk
 # sed -i -E 's/# (CONFIG_.*_COMPRESS_UPX) is not set/\1=y/' .config && make defconfig 1>/dev/null 2>&1
 
-# echo "SSH_ACTIONS=true" >> $GITHUB_ENV #SSH后台
+echo "ARCH=$ARCH"  >> $GITHUB_ENV
 # echo "UPLOAD_PACKAGES=false" >> $GITHUB_ENV
 # echo "UPLOAD_SYSUPGRADE=false" >> $GITHUB_ENV
 echo "UPLOAD_BIN_DIR=false" >> $GITHUB_ENV
@@ -484,5 +439,6 @@ echo "UPLOAD_BIN_DIR=false" >> $GITHUB_ENV
 echo "UPLOAD_COWTRANSFER=false" >> $GITHUB_ENV
 echo "UPLOAD_WETRANSFER=false" >> $GITHUB_ENV
 echo "CLEAN=false" >> $GITHUB_ENV
+echo "LINUX_VERSION_ARCH=$LINUX_VERSION-$ARCH" >> $GITHUB_ENV
 
 echo -e "\e[1;35m脚本运行完成！\e[0m"
