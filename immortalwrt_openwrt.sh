@@ -381,7 +381,8 @@ else
 		https://github.com/fw876/helloworld
 		https://github.com/xiaorouji/openwrt-passwall-packages
 	"
-	create_directory "package/utils/ucode" "package/network/config/firewall4" "package/network/utils/fullconenat-nft"
+	create_directory "package/utils/ucode" "package/network/config/firewall4" \
+		"package/network/utils/fullconenat-nft" "package/libs/libmd"
 	# clone_dir coolsnowwolf/lede automount busybox dnsmasq f2fs-tools firewall \
 	# 	firewall4 fullconenat fullconenat-nft iproute2 iwinfo libnftnl \
 	# 	nftables openssl opkg parted ppp smartmontools sonfilter ucode
@@ -391,7 +392,7 @@ else
 	# 	nginx-util ngtcp2 pciutils runc samba4 smartdns
 		#miniupnpc miniupnpd
 	clone_dir coolsnowwolf/packages golang bandwidthd docker dockerd containerd runc btrfs-progs
-	clone_dir immortalwrt/immortalwrt firewall4 fullconenat fullconenat-nft firewall ucode iptables ppp busybox libnftnl
+	clone_dir immortalwrt/immortalwrt firewall4 fullconenat fullconenat-nft firewall ucode iptables ppp busybox libnftnl libmd
 	curl -sSo package/kernel/linux/modules/netfilter.mk \
 		https://raw.githubusercontent.com/immortalwrt/immortalwrt/refs/heads/openwrt-24.10/package/kernel/linux/modules/netfilter.mk
 	curl -sSo include/openssl-module.mk \
