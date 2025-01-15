@@ -395,7 +395,7 @@ else
 	clone_dir coolsnowwolf/packages golang bandwidthd docker dockerd containerd runc btrfs-progs
 	clone_dir immortalwrt/immortalwrt ppp busybox #firewall4 fullconenat fullconenat-nft firewall ucode iptables libnftnl libmd
 	curl -sSo package/kernel/linux/modules/netfilter.mk \
-		https://raw.githubusercontent.com/immortalwrt/immortalwrt/refs/heads/openwrt-24.10/package/kernel/linux/modules/netfilter.mk
+		https://raw.githubusercontent.com/coolsnowwolf/lede/refs/heads/master/package/kernel/linux/modules/netfilter.mk
 	curl -sSo include/openssl-module.mk \
 		https://raw.githubusercontent.com/immortalwrt/immortalwrt/master/include/openssl-module.mk
 
